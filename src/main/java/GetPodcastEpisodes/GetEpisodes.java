@@ -6,7 +6,7 @@ import java.lang.InterruptedException;
 import java.lang.Thread;
 import java.io.File;
 
-public class GetPodcasts {
+public class GetEpisodes {
 
   private static String get (String term, String searchType) {
 
@@ -59,6 +59,7 @@ public class GetPodcasts {
     }
   }
 
+  // gets rss data for a podcast
   public static void main(String[] args){
     boolean refreshData = false;
     for (String s: args) {
@@ -67,96 +68,6 @@ public class GetPodcasts {
       }
     };
     
-    // TODO find related search queries manually...or even Google APIs? Could make this part of the whole thing
-    String[] searchTerms = {
-      "data engineering",
-      "big data",
-      "streaming architecture",
-      "apache kafka",
-      "kafka",
-      // isn't returning anything...
-      "apache cassandra",
-      "cassandra db",
-      // isn't returning anything...
-      "apache spark",
-      "spark data",
-      // isn't returning anything...
-      "apache hadoop",
-      "hadoop",
-      "hadoop infrastructure",
-      "data lakes",
-      "data warehouses",
-      "hadoop ecosystem",
-      "apache flume",
-      "apache hbase",
-      "apache hadoop yarn",
-      "apache avro",
-      "avro",
-      "apache storm",
-      "apache samza",
-      "mapreduce",
-      "distributed file systems", 
-      "distributed systems",
-      "apache hive",
-      "zookeeper",
-      "airflow",
-      "apache airflow",
-
-      "elasticsearch",
-      "logstash",
-      "kibana",
-      "lucene",
-      "apache lucene",
-      "apache solr",
-      "solr",
-
- 
-      "microservices",
-      "docker",
-      "kubernetes",
-      "containerization",
-      "hashicorp",
-      "vagrant",
-      "hashicorp vagrant",
-      "packer",
-      "hashicorp packer",
-
-      "hortonworks",
-      "mapr",
-      "mapr data platform",
-      "cloudera",
-      "new relic",
-
-      "datastax",
-      "confluent",
-
-      "machine learning",
-      "data science",
-      "tensorflow",
-
-      "aws",
-      "amazon web services",
-      "aws dynamodb",
-
-      "microsoft azure",
-      "google cloud platform",
-      "cloud services",
-      "digital ocean",
-
-      "full stack development",
-      "software engineering",
-      "backend engineering",
-      "devops",
-    };
-
-    String[] searchTypes = {
-      // empty for getting default, which I believe searches more generally (?) or maybe all terms
-      "all",
-      "titleTerm", 
-      "keywordsTerm", 
-      "descriptionTerm"
-      "artistTerm"
-    };
 
 
     //for each term, send as several different types of terms 
