@@ -5,7 +5,7 @@ import java.io.IOException;  // Import the IOException class to handle errors
 public class CreateFile {
   public static void write(String filename, String content) {
     try {
-			FileWriter writer = new FileWriter(filename);
+			FileWriter writer = new FileWriter("podcast-data/" + filename);
 			writer.write(content);
 			writer.close();
 

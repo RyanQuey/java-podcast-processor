@@ -65,20 +65,30 @@ public class GetPodcasts {
     String[] searchTerms = {
       "data engineering",
       "big data",
-      "apache kafka",
-      "apache cassandra",
-      "apache spark",
-      "apache hadoop",
+      "Apache Kafka",
+      "Apache Cassandra",
+      "Apache Spark",
+      "Apache hadoop",
+      "DataStax",
+      "Confluent",
+
       "machine learning",
       "data science",
+      "TensorFlow",
+
+      "AWS",
+      "Microsoft Azure",
+      "Google Cloud Platform",
+
       "full stack development",
       "software engineering",
+      "backend engineering",
+      "DevOps",
     };
 
     //for each term, ask itunes for results
 
-    for (int i = 0; i < searchTerms.length; i++) {
-      String term = searchTerms[i];
+    for (String term : searchTerms) {
       String podcastJSON = get(term);
 
       // write to a file 
