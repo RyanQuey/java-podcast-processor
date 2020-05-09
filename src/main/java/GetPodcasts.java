@@ -14,14 +14,15 @@ public class GetPodcasts {
 
     try {
 
-      // set limit to 200, let's just get all of it (default: 50)
-      // contents = urllib.request.urlopen(f"?media=podcast&term={term}&limit=200&version=2&lang=en_us&country=US").read()
+      // apparently apple doesn't like the pluses (?)
       String queryTerm = term.replaceAll(" ", " ");
       String urlStr = "https://itunes.apple.com/search";
 
       Map<String, String> queryParams = new HashMap<>();
       queryParams.put("media", "podcast");
       queryParams.put("term", queryTerm);
+
+      // set limit to 200, let's just get all of it (default: 50, max: 200)
       queryParams.put("limit", "200");
       // set version, language and country in case their defaults change
       queryParams.put("version", "2");
@@ -61,17 +62,30 @@ public class GetPodcasts {
   public static void main(String[] args){
     // TODO 
     // later iterate over terms array
-    //for each term, ask itunes for results
-    // TODO iterate over array of search terms
-    //for term in search-terms:
-    // convert term to url encoded, using + (as according to itunes examples)
-    String term = "data engineering";
-    String podcastJSON = get(term);
+    String[] searchTerms = {
+      "data engineering",
+      "big data",
+      "apache kafka",
+      "apache cassandra",
+      "apache spark",
+      "apache hadoop",
+      "machine learning",
+      "data science",
+      "full stack development",
+      "software engineering",
+    };
 
-    // write to a file 
-    String filename = term.replaceAll(" ", "-") + ".json";
-    CreateFile.write(filename, podcastJSON);
-    
+    //for each term, ask itunes for results
+
+    for (int i = 0; i < searchTerms.length; i++) {
+      String term = searchTerms[i];
+      String podcastJSON = get(term);
+
+      // write to a file 
+      String filename = term.replaceAll(" ", "-") + ".json";
+      CreateFile.write(filename, podcastJSON);
+    };
+
     System.out.println("finished");     
   }
 }
