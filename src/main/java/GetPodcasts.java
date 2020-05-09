@@ -2,6 +2,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.lang.System;
 import java.lang.Exception;
+import java.lang.InterruptedException;
+import java.lang.Thread;
+import java.io.File;
+
 // leave spaces here for easy reading, but change when putting into file or search terms
 /* 
 search-terms = [
@@ -10,7 +14,8 @@ search-terms = [
 */
 
 public class GetPodcasts {
-  private static String get (String term) {
+
+  private static String get (String term, String searchType) {
 
     try {
 
@@ -28,6 +33,9 @@ public class GetPodcasts {
       queryParams.put("version", "2");
       queryParams.put("lang", "en_us");
       queryParams.put("country", "US");
+      if (searchType != "all") {
+        queryParams.put("attribute", searchType);
+      }
        
       // write params to request...yes it's this crazy.
       // Basically converts our map to a string, then writes that string to the http url connection via "output stream" api. 
@@ -58,43 +66,131 @@ public class GetPodcasts {
     }
   }
 
-
   public static void main(String[] args){
+    boolean refreshData = false;
+    for (String s: args) {
+      if (s == "refresh-data") {
+        refreshData = true;
+      }
+    };
+    
     // TODO 
     // later iterate over terms array
     String[] searchTerms = {
       "data engineering",
       "big data",
-      "Apache Kafka",
-      "Apache Cassandra",
-      "Apache Spark",
-      "Apache hadoop",
-      "DataStax",
-      "Confluent",
+      "apache kafka",
+      "kafka",
+      // isn't returning anything...
+      "apache cassandra",
+      "cassandra db",
+      // isn't returning anything...
+      "apache spark",
+      "spark data",
+      // isn't returning anything...
+      "apache hadoop",
+      "hadoop",
+      "hadoop infrastructure",
+      "hadoop ecosystem",
+      "apache flume",
+      "apache hbase",
+      "apache hadoop yarn",
+      "mapreduce",
+      "distributed file systems", 
+      "distributed systems",
+      "apache hive",
+      "zookeeper",
+      "airflow",
+      "apache airflow",
+ 
+      "microservices",
+      "docker",
+      "kubernetes",
+      "containerization",
+      "hashicorp",
+      "vagrant",
+      "hashicorp vagrant",
+      "packer",
+      "hashicorp packer",
+
+      "hortonworks",
+      "mapr",
+      "mapr data platform",
+      "cloudera",
+      "new relic",
+
+      "datastax",
+      "confluent",
 
       "machine learning",
       "data science",
-      "TensorFlow",
+      "tensorflow",
 
-      "AWS",
-      "Microsoft Azure",
-      "Google Cloud Platform",
+      "aws",
+      "amazon web services",
+      "aws dynamodb",
+
+      "microsoft azure",
+      "google cloud platform",
+      "cloud services",
+      "digital ocean",
 
       "full stack development",
       "software engineering",
       "backend engineering",
-      "DevOps",
+      "devops",
     };
 
-    //for each term, ask itunes for results
+    String[] searchTypes = {
+      // empty for getting default, which I believe searches more generally (?) or maybe all terms
+      "all",
+      "titleTerm", 
+      "keywordsTerm", 
+      "descriptionTerm"
+    };
+
+
+    //for each term, send as several different types of terms 
+    int counter = 0;
+    long start = System.currentTimeMillis();
 
     for (String term : searchTerms) {
-      String podcastJSON = get(term);
 
-      // write to a file 
-      String filename = term.replaceAll(" ", "-") + ".json";
-      CreateFile.write(filename, podcastJSON);
-    };
+      for (String searchType : searchTypes) {
+        String typePrefix = searchType != "all" ? searchType.replace("Term", "") : "generalSearch" ;
+        String filename = typePrefix + "_" + term.replaceAll(" ", "-")  + ".json";
+
+        File f = new File("podcast-data/" + filename);
+        // check if we should skip
+        if(!refreshData && f.exists()) { 
+          System.out.println("skipping " + filename);
+          continue;
+        }
+
+        String podcastJSON = get(term, searchType);
+
+        // write to a file 
+        CreateFile.write(filename, podcastJSON);
+
+
+        counter ++;
+        if (counter > 18) {
+          // sleep one minute so we don't hit quotas (supposed to be 20/min)
+          counter = 0;
+          try {
+            System.out.println("Sleep time in ms = "+(System.currentTimeMillis()-start));
+            long timePassed = System.currentTimeMillis()-start;
+            if (timePassed < 60*1000) {
+              Thread.sleep(60*1000 - timePassed);
+            }
+
+          } catch (InterruptedException e) {
+            System.out.println(e);
+
+          }
+        }
+      }
+    }
 
     System.out.println("finished");     
   }
