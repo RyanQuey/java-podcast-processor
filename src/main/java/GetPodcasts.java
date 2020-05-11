@@ -154,13 +154,14 @@ public class GetPodcasts {
       "all",
       "titleTerm", 
       "keywordsTerm", 
-      "descriptionTerm"
+      "descriptionTerm",
       "artistTerm"
     };
 
 
     //for each term, send as several different types of terms 
-    int counter = 0;
+    int totalCounter = 0;
+    int byMinuteCounter = 0;
     long start = System.currentTimeMillis();
 
     for (String term : searchTerms) {
@@ -182,11 +183,12 @@ public class GetPodcasts {
         CreateFile.write(filename, podcastJSON);
 
 
-        counter ++;
-        if (counter > 18) {
+        totalCounter ++;
+        byMinuteCounter ++;
+        if (byMinuteCounter > 18) {
           // sleep one minute so we don't hit quotas (supposed to be 20/min)
           // ...but I had a timer and it still hit a 403, but several minutes passed where I was under 20 and ok. But then waited 5 minutes, and did 5 or so more, and it hit quota again. So I'm guessing there's other quotas also
-          counter = 0;
+          byMinuteCounter = 0;
           try {
             System.out.println("Sleep time in ms = "+(System.currentTimeMillis()-start));
             long timePassed = System.currentTimeMillis()-start;
@@ -197,10 +199,16 @@ public class GetPodcasts {
           } catch (InterruptedException e) {
             System.out.println(e);
 
-          }
-        }
-      }
-    }
+          };
+
+        } else if (totalCounter > 100) {
+          // just a shot in the dark, but let's not hit more than 100 times per run
+        };
+
+        System.out.println("******************************************");
+        System.out.println("Total retrieved so far for this run: " + totalCounter);
+      };
+    };
 
     System.out.println("finished");     
   }
