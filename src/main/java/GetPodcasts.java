@@ -6,6 +6,10 @@ import java.lang.InterruptedException;
 import java.lang.Thread;
 import java.io.File;
 
+// local imports
+//import helpers.HttpReq;
+//import helpers.FileHelpers;
+
 public class GetPodcasts {
 
   private static String get (String term, String searchType) {
@@ -170,7 +174,7 @@ public class GetPodcasts {
         String typePrefix = searchType != "all" ? searchType.replace("Term", "") : "generalSearch" ;
         String filename = typePrefix + "_" + term.replaceAll(" ", "-")  + ".json";
 
-        File f = new File("podcast-data/" + filename);
+        File f = new File(FileHelpers.getFilePath("podcast-data/" + filename));
         // check if we should skip
         if(!refreshData && f.exists()) { 
           System.out.println("skipping " + filename);
@@ -180,7 +184,7 @@ public class GetPodcasts {
         String podcastJSON = get(term, searchType);
 
         // write to a file 
-        CreateFile.write(filename, podcastJSON);
+        FileHelpers.write("podcast-data/" + filename, podcastJSON);
 
 
         totalCounter ++;
