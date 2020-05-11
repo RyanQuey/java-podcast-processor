@@ -1,0 +1,29 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.lang.System;
+import java.lang.Exception;
+import java.lang.InterruptedException;
+import java.lang.Thread;
+import java.io.File;
+
+// local imports
+//import helpers.HttpReq;
+//import helpers.FileHelpers;
+
+public class Main {
+
+  public static void main(String[] args){
+    boolean refreshData = false;
+    for (String s: args) {
+      if (s == "refresh-data") {
+        refreshData = true;
+      }
+    };
+    
+    GetPodcasts.main(args);
+
+    System.out.println("finished");     
+  }
+}
+
+
