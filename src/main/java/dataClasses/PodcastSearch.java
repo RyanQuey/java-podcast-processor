@@ -107,6 +107,8 @@ public class PodcastSearch {
     "artistTerm"
   };
 
+  ArrayList<File> resultFiles = new ArrayList<File>();
+
   // performs a single search 
   private static String performQuery (String term, String searchType) {
 
@@ -182,18 +184,19 @@ public class PodcastSearch {
       for (String searchType : searchTypes) {
         String typePrefix = searchType != "all" ? searchType.replace("Term", "") : "generalSearch" ;
         String filename = typePrefix + "_" + term.replaceAll(" ", "-")  + ".json";
+        String filepath = "podcast-data/" + filename;
 
-        File f;
+        File file;
         try {
           // 
-          f = new File(FileHelpers.getFilePath("podcast-data/" + filename));
+          file = new File(FileHelpers.getFilePath(filepath));
         } catch (IOException e) {
           System.out.println("Error getting file: " + filename);
           continue;
         }
 
         // check if we should skip
-        if(!refreshData && f.exists()) { 
+        if(!refreshData && file.exists()) { 
           System.out.println("skipping " + filename);
           continue;
         }
@@ -201,8 +204,8 @@ public class PodcastSearch {
         String podcastJSON = performQuery(term, searchType);
 
         // write to a file 
-        FileHelpers.write("podcast-data/" + filename, podcastJSON);
-
+        FileHelpers.write(filepath, podcastJSON);
+        resultFiles.add(file);
 
         totalCounter ++;
         byMinuteCounter ++;
@@ -231,7 +234,7 @@ public class PodcastSearch {
       };
     };
 
-    System.out.println("finished");     
+    System.out.println("finished finding podcasts");     
   }
 }
 

@@ -10,3 +10,5 @@
 - Perform a search for podcasts and then run:
 `java -cp target/podcast-analyzer-0.1.0.jar Main --perform-search`
 
+- Process our default query only ("podcast-data/artist_big-data.json"). Mostly for testing:
+`java -cp target/podcast-analyzer-0.1.0.jar Main --process-default-query`

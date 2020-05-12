@@ -60,19 +60,22 @@ public class FileHelpers {
       }
   }
 
-  // finds a file from the classpath (ie target/classes)
-  // this is where resources and our src/main/java files get copied into, so this is more general
-  // NOTE not currently using
-	public static InputStream getFile(String filepath) {
-		// gets the classpath
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		// finds file (relative to class path, eg target/classes/...)
-		InputStream input = classLoader.getResourceAsStream(filepath);
+	// returns a string of all files recursively, when given a directory
+  public static ListArray<String> getFilenamesFor(File[] files) {
+    fileNames = new ArrayList<String>();
+    for (File file : files) {
+			if (file.isDirectory()) {
+				System.out.println("Directory: " + file.getName());
+				showFiles(file.listFiles()); // Calls same method again.
 
-		return input;
-  }
+			} else {
+				System.out.println("File: " + file.getName());
+			}
+    }
+	}
 
   // NOTE no longer using
+  // returns path to src resource directory
   public static String getResourcesDir() {
     Path root = FileSystems.getDefault().getPath("").toAbsolutePath();
     Path filePath = Paths.get(root.toString(), "target", "main", "resources");
