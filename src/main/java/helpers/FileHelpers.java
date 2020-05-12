@@ -9,9 +9,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.FileSystems;
 import org.apache.commons.io.IOUtils;
+import java.net.URL;
 
 import java.io.IOException; 
 import java.net.URISyntaxException;
+
+import helpers.HttpReq;
 
 
 public class FileHelpers {
@@ -40,11 +43,18 @@ public class FileHelpers {
 	}
   
   // note that filename can also be a relative path, relative to the class path, eg "podcast-data/my-file.json"
+  // https://stackoverflow.com/questions/17351043/how-to-get-absolute-path-to-file-in-resources-folder-of-your-project
   public static String getFilePath (String filename) 
     throws IOException { 
       try  {
-        return Paths.get(ClassLoader.getSystemResource(filename).toURI()).toString();
-      } catch (URISyntaxException e) {
+        // TODO find more robust /dynamic way to access these files that were originally in the src/main/resources folder
+        File file = new File("target/classes/" + filename);
+        String absolutePath = file.getAbsolutePath();
+
+        return absolutePath;
+
+      } catch (Exception e) {
+        // not sure what Exception would be caught; set that once I find out
         // TODO figure out how to handle this case...for now just throwing what its callers would throw, for ease of use
         throw new IOException();
       }
