@@ -1,10 +1,10 @@
 <project>
-  <groupId>edu.berkeley</groupId>
-  <artifactId>data-engineering-podcast-analyzer</artifactId>
+  <groupId>ryanquey.podcast-analyzer</groupId>
+  <artifactId>podcast-analyzer</artifactId>
   <modelVersion>4.0.0</modelVersion>
   <name>Data Engineering Podcast Analyzer</name>
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>0.1.0</version>
   <dependencies>
     <dependency> <!-- Spark dependency -->
       <groupId>org.apache.spark</groupId>
@@ -16,6 +16,8 @@
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
 			<version>20180130</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/target/dependency/json-20180130.jar</systemPath>
 		</dependency>
   </dependencies>
   <properties>

@@ -1,3 +1,5 @@
+package dataClasses;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.lang.System;
@@ -51,7 +53,7 @@ public class Podcast {
   }
 
   // TODO 
-  private static String getRss () {
+  private String getRss () {
 
     try {
 

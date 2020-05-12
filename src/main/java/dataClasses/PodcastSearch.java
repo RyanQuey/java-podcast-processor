@@ -1,3 +1,5 @@
+package dataClasses;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.lang.System;
@@ -5,14 +7,106 @@ import java.lang.Exception;
 import java.lang.InterruptedException;
 import java.lang.Thread;
 import java.io.File;
+import org.json.simple.JSONObject;
 
 // local imports
 import helpers.HttpReq;
 import helpers.FileHelpers;
 
-public class GetPodcasts {
+public class PodcastSearch {
 
-  private static String get (String term, String searchType) {
+  private String[] searchTerms = {
+    "data engineering",
+    "big data",
+    "streaming architecture",
+    "apache kafka",
+    "kafka",
+    // isn't returning anything...
+    "apache cassandra",
+    "cassandra db",
+    // isn't returning anything...
+    "apache spark",
+    "spark data",
+    // isn't returning anything...
+    "apache hadoop",
+    "hadoop",
+    "hadoop infrastructure",
+    "data lakes",
+    "data warehouses",
+    "hadoop ecosystem",
+    "apache flume",
+    "apache hbase",
+    "apache hadoop yarn",
+    "apache avro",
+    "avro",
+    "apache storm",
+    "apache samza",
+    "mapreduce",
+    "distributed file systems", 
+    "distributed systems",
+    "apache hive",
+    "zookeeper",
+    "airflow",
+    "apache airflow",
+
+    "elasticsearch",
+    "logstash",
+    "kibana",
+    "lucene",
+    "apache lucene",
+    "apache solr",
+    "solr",
+
+
+    "microservices",
+    "docker",
+    "kubernetes",
+    "containerization",
+    "hashicorp",
+    "vagrant",
+    "hashicorp vagrant",
+    "packer",
+    "hashicorp packer",
+
+    "hortonworks",
+    "mapr",
+    "mapr data platform",
+    "cloudera",
+    "new relic",
+
+    "datastax",
+    "confluent",
+
+    "machine learning",
+    "data science",
+    "tensorflow",
+
+    "aws",
+    "amazon web services",
+    "aws dynamodb",
+
+    "microsoft azure",
+    "google cloud platform",
+    "cloud services",
+    "digital ocean",
+
+    "full stack development",
+    "software engineering",
+    "backend engineering",
+    "devops",
+  };
+
+  private String[] searchTypes = {
+    // empty for getting default, which I believe searches more generally (?) or maybe all terms
+    "all",
+    "titleTerm", 
+    "keywordsTerm", 
+    "descriptionTerm",
+    "artistTerm"
+  };
+
+  // performs a single search 
+  private static String performQuery (String term, String searchType) {
 
     try {
 
@@ -63,7 +157,9 @@ public class GetPodcasts {
     }
   }
 
-  public static void main(String[] args){
+  // TODO refactor, separate out 
+  // TODO maintain references to files made in this search
+  public void performAllQueries(String[] args){
     boolean refreshData = false;
     for (String s: args) {
       if (s == "refresh-data") {
@@ -72,98 +168,9 @@ public class GetPodcasts {
     };
     
     // TODO find related search queries manually...or even Google APIs? Could make this part of the whole thing
-    String[] searchTerms = {
-      "data engineering",
-      "big data",
-      "streaming architecture",
-      "apache kafka",
-      "kafka",
-      // isn't returning anything...
-      "apache cassandra",
-      "cassandra db",
-      // isn't returning anything...
-      "apache spark",
-      "spark data",
-      // isn't returning anything...
-      "apache hadoop",
-      "hadoop",
-      "hadoop infrastructure",
-      "data lakes",
-      "data warehouses",
-      "hadoop ecosystem",
-      "apache flume",
-      "apache hbase",
-      "apache hadoop yarn",
-      "apache avro",
-      "avro",
-      "apache storm",
-      "apache samza",
-      "mapreduce",
-      "distributed file systems", 
-      "distributed systems",
-      "apache hive",
-      "zookeeper",
-      "airflow",
-      "apache airflow",
-
-      "elasticsearch",
-      "logstash",
-      "kibana",
-      "lucene",
-      "apache lucene",
-      "apache solr",
-      "solr",
-
- 
-      "microservices",
-      "docker",
-      "kubernetes",
-      "containerization",
-      "hashicorp",
-      "vagrant",
-      "hashicorp vagrant",
-      "packer",
-      "hashicorp packer",
-
-      "hortonworks",
-      "mapr",
-      "mapr data platform",
-      "cloudera",
-      "new relic",
-
-      "datastax",
-      "confluent",
-
-      "machine learning",
-      "data science",
-      "tensorflow",
-
-      "aws",
-      "amazon web services",
-      "aws dynamodb",
-
-      "microsoft azure",
-      "google cloud platform",
-      "cloud services",
-      "digital ocean",
-
-      "full stack development",
-      "software engineering",
-      "backend engineering",
-      "devops",
-    };
-
-    String[] searchTypes = {
-      // empty for getting default, which I believe searches more generally (?) or maybe all terms
-      "all",
-      "titleTerm", 
-      "keywordsTerm", 
-      "descriptionTerm",
-      "artistTerm"
-    };
-
 
     //for each term, send as several different types of terms 
+    // TODO make these instance level
     int totalCounter = 0;
     int byMinuteCounter = 0;
     long start = System.currentTimeMillis();
@@ -181,7 +188,7 @@ public class GetPodcasts {
           continue;
         }
 
-        String podcastJSON = get(term, searchType);
+        String podcastJSON = performQuery(term, searchType);
 
         // write to a file 
         FileHelpers.write("podcast-data/" + filename, podcastJSON);
