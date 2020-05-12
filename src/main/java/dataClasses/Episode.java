@@ -43,7 +43,7 @@ public class Episode {
   private Podcast podcast;
 
   // TODO make a flag to signal initialization from our db rather than from rss
-  Episode(String episodeRss) {
+  public Episode(String episodeRss) {
     //  assuming Itunes as API...:
     /*
     this.artistName = (String) episodeRss.get("artistName"); 

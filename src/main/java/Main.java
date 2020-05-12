@@ -1,9 +1,13 @@
 import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 import java.lang.System;
 import java.lang.Exception;
-import java.lang.InterruptedException;
 import java.lang.Thread;
+import java.lang.InterruptedException;
+import java.io.IOException; 
+import java.io.FileNotFoundException;
 import java.io.File;
 import org.json.JSONObject;
 
@@ -19,29 +23,29 @@ import dataClasses.Episode;
 public class Main {
 
   /////////////////////////////////////
-  // instance vars
+  // static vars
 
   // if true, get new search results as well.
-  boolean podcastSearchRequested = false;
+  static boolean podcastSearchRequested = false;
 
   // if true, only process the search results we just received (not all)
-  boolean processNewSearches = false;
+  static boolean processNewSearches = false;
   
   // if true, process a default query (mostly for testing)
-  boolean processDefaultQuery = false;
+  static boolean processDefaultQuery = false;
 
-  PodcastSearch podcastSearch = new PodcastSearch();
+  static PodcastSearch podcastSearch = new PodcastSearch();
 
   // which files to process
-  ArrayList<File> searchResultsToProcess = new ArrayList<File>();
+  static ArrayList<File> searchResultsToProcess = new ArrayList<File>();
 
   // podcasts that have already been processed (or at least started to be processed, whether successful or not)
   // TODO maybe later, will know if we want this to be files or strings. Strings are less memory presumably
-  ArrayList<Podcast> podcastIdsProcessed = new ArrayList<String>();
+  static ArrayList<String> podcastIdsProcessed = new ArrayList<String>();
   // keyed by podcast id
-  Map<String, Podcast> podcastsProcessed = new Map<String, Podcast>(); 
+  static HashMap<String, Podcast> podcastsProcessed = new HashMap<String, Podcast>(); 
 
-  ArrayList<Episode> episodesFound = new ArrayList<Episode>();
+  static ArrayList<Episode> episodesFound = new ArrayList<Episode>();
 
   ///////////////////////////////////////
   // private static methods
@@ -53,58 +57,82 @@ public class Main {
 
       if (s.equals("--perform-search")) {
         podcastSearchRequested = true;
-      } else {
-        System.out.println("skipping search this time");     
       };
 
-      if (s.equals("--process-new-searches")) {
+      if (s.equals("--process=new")) {
         processNewSearches = true;
       };
 
-      if (s.equals("--process-default-query")) {
+      if (s.equals("--process=default-query")) {
         processDefaultQuery = true;
       };
     };
   }
 
-  private static void performSearch() {
+  private static void performSearch(String[] args) {
     podcastSearch.performAllQueries(args);
 
     if (processNewSearches) {
-      searchResultsToProcess.addAll(podcastSearch.resultPaths);
+      searchResultsToProcess.addAll(podcastSearch.resultFiles);
     }
   }
 
   private static void setSearchResultsToProcess() {
     // process all files in folder
     if (processDefaultQuery) {
-      File file = new File(FileHelpers.getFilePath("podcast-data/artist_big-data.json"));
+      try {
+        File file = new File(FileHelpers.getFilePath("podcast-data/artist_big-data.json"));
 
-      // beware, will be more than one, in case user passed in --process-new-searches too on accident. 
-      searchResultsToProcess.add(file);
+        // beware, will be more than one, in case user passed in --process-new-searches too on accident. 
+        searchResultsToProcess.add(file);
+      } catch (IOException e) { 
+        System.out.println("Failed to process default query");
+        System.out.println(e);
+      }
 
     } else if (processNewSearches) {
       System.out.println("only processing new search results");
       // note: if didn't run search, won't do anything
 
     } else {
-      // process all files
-      File[] files = new File(FileHelpers.getFilePath("")).listFiles();
+      try {
+        // process all files
+        List<File> files = Arrays.asList(new File(FileHelpers.getFilePath("podcast-data")).listFiles());
 
-      searchResultsToProcess.addAll(files);
+        searchResultsToProcess.addAll(files);
+      } catch (IOException e) { 
+        System.out.println("Failed to process default query");
+        System.out.println(e);
+      }
+
     }
   }
 
   private static void getEpisodes() {
-    System.out.println("now processing files:");     
-    System.out.println(searchResultsToProcess);     
+    System.out.println("now processing files (count): " + searchResultsToProcess.size());
     for (File searchResultFile : searchResultsToProcess) {
       String filename = searchResultFile.getName();
 
       // get the episodes for a given search result
-      QueryResults queryResults = new QueryResults(searchResultFile);
-      queryResults.getPodcasts();
-      queryResults.getEpisodes();
+      QueryResults queryResults; 
+      try {
+        queryResults = new QueryResults(searchResultFile);
+      } catch (FileNotFoundException e) {
+        System.out.println("skipping missing file: " + filename);
+        continue;
+      }
+
+      try {
+				queryResults.getPodcasts();
+				queryResults.getEpisodes();
+      } catch (IOException e) {
+				System.out.println("An error occurred while retrieving podcast and episode data for :" + queryResults.filename);
+				System.out.println(e);
+				e.printStackTrace();
+				System.out.println("continuing...");
+
+        continue;
+      }
     }
   }
 
@@ -115,7 +143,7 @@ public class Main {
     processArgs(args);
 
     if (podcastSearchRequested) {
-      performSearch();
+      performSearch(args);
     } 
 
     setSearchResultsToProcess();
