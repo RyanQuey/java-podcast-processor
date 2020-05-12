@@ -1,3 +1,5 @@
+package dataClasses;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.lang.System;
@@ -9,23 +11,17 @@ import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
 
 /* 
+ * Represents a single file of search results
  * For one file, gets all search results and retrieves the rss feed data
  *
  */
-public class GetEpisodes {
-
-  private String readFile(String filename)
-		throws IOException {
-			FileInputStream fis = new FileInputStream("src/test/resources/fileTest.txt");
-    	String contents = IOUtils.toString(fis, "UTF-8");
-
-			return contents;
-	}
+public class QueryResults {
+  String filename = "./podcast-data/artist_big-data.json";
 
   // reads file, pulls data we need, and sets to array
-  private static String getSearchResults (String filename) {
+  private String getSearchResults (String filename) {
     try {
-      String fileContents = readFile(filename);
+      String fileContents = FileHelpers.readFile(filename);
       System.out.println(fileContents);
       JSONObject contentsJson = (JSONObject) new JSONObject(fileContents);
       int resultsCount = fileContents.get("resultCount");
@@ -41,15 +37,14 @@ public class GetEpisodes {
     }
   };
 
-  // gets rss data for a podcast
-  public static void main(String[] args){
+  // gets rss data for a podcast (which includes all the episode data)
+  public void getEpisodes(String[] args){
     boolean refreshData = false;
     for (String s: args) {
       System.out.println(s);
     };
 
     // TODO eventually iterate over each file dynamically
-    String filename = "./podcast-data/artist_big-data.json";
     JSONObject resultsJson = getSearchResults(filename);
 
     for (int i = 0; i < resultsJson.length(); i++) {
@@ -59,6 +54,10 @@ public class GetEpisodes {
       System.out.println(podcast);
 
       // get RSS for podcast, to get episode list
+
+      // translate RSS into something more readable/useful...unless we want to data lake it
+
+      // write to file. Later TODO send to db
     };
 
 
