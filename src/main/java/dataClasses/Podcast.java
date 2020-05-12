@@ -43,12 +43,14 @@ public class Podcast {
   int episodeCount;
   String id;
   String rssFeed;
+  QueryResults fromQuery; 
+  Exception errorGettingRss; 
 
   // access through getters
   private ArrayList<Episode> episodes = new ArrayList<Episode>();
 
   // TODO add some error handling, so that for every attribute, if it doesn't work, just move on, no problem. Just get as much information as we can
-  public Podcast(JSONObject podcastJson) 
+  public Podcast(JSONObject podcastJson, QueryResults fromQuery) 
     throws ExecutionException {
       // really is an `org.apache.commons.exec.ExecuteException`, but that inherits from IOException
       // sometimes it is `org.json.JSONException` which causes teh ExecuteException 
@@ -80,15 +82,24 @@ public class Podcast {
 
       this.id = this.api + "-" + this.apiId;
       this.episodeCount = (int) podcastJson.get("trackCount");
+      this.fromQuery = fromQuery;
   }
 
   // TODO 
-  private String getRss () {
+  private String getRss () throws Exception {
     if (rssFeed != null) {
       return rssFeed;
     }
 
+    // some data is faulty, so skip
+    if (this.feedUrl == null || this.feedUrl == "") {
+      // TODO maybe want better error handling for this
+      return "";
+    }
+
     try {
+      System.out.println("Podcast info file at: " + this.feedUrl);
+      System.out.println("Making request to: " + this.feedUrl);
       String result = HttpReq.get(this.feedUrl, null);
 
       System.out.println("RSS retrieved");
@@ -98,21 +109,27 @@ public class Podcast {
       return this.rssFeed;
 
     } catch (Exception e) {
-      System.out.println("Error:");
-      System.out.println(e);
+      System.out.println("Error: " + e);
+      e.printStackTrace();
 
-      return null;
+      throw e;
     }
   }
 
   public String getEpisodes () {
-    if (true) {
+    if (this.episodes.size() != 0) {
       // TODO return episodes
       return rssFeed;// this.episodes;
     }
 
     // TODO will have different return value later;
-    return getRss();
+    try {
+      return getRss();
+    } catch (Exception e) {
+      this.errorGettingRss = e;
+      return null;
+    }
+
     // extract episodes from rss feed;
     // TODO
   }
