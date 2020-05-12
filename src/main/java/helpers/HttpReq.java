@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
 public class HttpReq {
 // add what will be returned
   public static String get(String urlStr, Map queryParams) 
+    // TODO just declare multiple throws
     throws Exception {
       // set limit to 200, let's just get all of it (default: 50)
       // contents = urllib.request.urlopen(f"?media=podcast&term={term}&limit=200&version=2&lang=en_us&country=US").read()
@@ -33,16 +34,24 @@ public class HttpReq {
 
       try {
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
+        // add a user agent so are less likely to get so many 403's
+        // https://stackoverflow.com/a/5202215/6952495
+        con.addRequestProperty("User-Agent", "Mozilla/4.76"); 
+
         con.setRequestMethod("GET");
 
         // write params to request...yes it's this crazy.
         // Basically converts our map to a string, then writes that string to the http url connection via "output stream" api. 
         // (is an api for writing data to something, in this case, writing params to the url)
-        con.setDoOutput(true);
-        DataOutputStream out = new DataOutputStream(con.getOutputStream());
-        out.writeBytes(getParamsString(queryParams));
-        out.flush();
-        out.close();
+        if (queryParams != null) {
+          // allows for a get request (false forces a POST)
+          con.setDoOutput(true);
+
+          DataOutputStream out = new DataOutputStream(con.getOutputStream());
+          out.writeBytes(getParamsString(queryParams));
+          out.flush();
+          out.close();
+        }
 
         // begin reading (sends the http request itself...I think)
         int status = con.getResponseCode();

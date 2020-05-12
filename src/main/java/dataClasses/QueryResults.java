@@ -86,7 +86,7 @@ public class QueryResults {
 
         Podcast podcast;
         try {
-          podcast = new Podcast(podcastJson);
+          podcast = new Podcast(podcastJson, this);
         } catch (Exception e) {
           // normally just allow ExecutionException (which is what this ends up being), at least what I've seen so far) to throw, but for this, is really just a json issue, want to continue no matter what
           System.out.println("Error getting info for podcast " + i);

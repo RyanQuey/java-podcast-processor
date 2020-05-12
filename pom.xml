@@ -61,6 +61,6 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <mainClass>Main</mainClass>
     <defaultPerformSearch>false</defaultPerformSearch>
-    <defaultProcess>all</defaultProcess>
+    <defaultProcess>default</defaultProcess>
 	</properties>
 </project>
