@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.lang.System;
 import java.lang.Exception;
-import java.lang.InterruptedException;
 import java.lang.Thread;
 import java.io.File;
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
+
+import java.io.IOException; 
+import java.lang.InterruptedException;
 
 // local imports
 import helpers.HttpReq;
@@ -181,7 +183,15 @@ public class PodcastSearch {
         String typePrefix = searchType != "all" ? searchType.replace("Term", "") : "generalSearch" ;
         String filename = typePrefix + "_" + term.replaceAll(" ", "-")  + ".json";
 
-        File f = new File(FileHelpers.getFilePath("podcast-data/" + filename));
+        File f;
+        try {
+          // 
+          f = new File(FileHelpers.getFilePath("podcast-data/" + filename));
+        } catch (IOException e) {
+          System.out.println("Error getting file: " + filename);
+          continue;
+        }
+
         // check if we should skip
         if(!refreshData && f.exists()) { 
           System.out.println("skipping " + filename);

@@ -7,8 +7,11 @@ import java.lang.Exception;
 import java.lang.InterruptedException;
 import java.lang.Thread;
 import java.io.File;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONArray;
+
+import helpers.HttpReq;
+import helpers.FileHelpers;
 
 /* 
  * Represents a single file of search results
@@ -19,13 +22,15 @@ public class QueryResults {
   String filename = "./podcast-data/artist_big-data.json";
 
   // reads file, pulls data we need, and sets to array
-  private String getSearchResults (String filename) {
+  private JSONArray getSearchResults () {
     try {
-      String fileContents = FileHelpers.readFile(filename);
+      String fileContents = FileHelpers.read(this.filename);
       System.out.println(fileContents);
       JSONObject contentsJson = (JSONObject) new JSONObject(fileContents);
-      int resultsCount = fileContents.get("resultCount");
-      JSONObject resultsJson = (JSONArray) fileContents.get("results");
+
+      JSONArray resultsJson = (JSONArray) contentsJson.get("results");
+      // currently not using
+      //int resultsCount = (int) contentsJson.get("resultCount");
 
       return resultsJson;
 
@@ -38,17 +43,12 @@ public class QueryResults {
   };
 
   // gets rss data for a podcast (which includes all the episode data)
-  public void getEpisodes(String[] args){
-    boolean refreshData = false;
-    for (String s: args) {
-      System.out.println(s);
-    };
-
+  public void getEpisodes(boolean refreshData){
     // TODO eventually iterate over each file dynamically
-    JSONObject resultsJson = getSearchResults(filename);
+    JSONArray resultsJson = getSearchResults();
 
     for (int i = 0; i < resultsJson.length(); i++) {
-      JSONObject podcastJson = resultsJson.getJSONArray(i);
+      JSONObject podcastJson = resultsJson.getJSONObject(i);
       System.out.println(podcastJson);
       Podcast podcast = new Podcast(podcastJson);
       System.out.println(podcast);
