@@ -1,0 +1,12 @@
+# Package:
+
+`mvn package`
+
+# Run
+
+- Run (does not search for new podcasts, but processes data we already have):
+`java -cp target/podcast-analyzer-0.1.0.jar Main`
+
+- Perform a search for podcasts and then run:
+`java -cp target/podcast-analyzer-0.1.0.jar Main --perform-search`
+
