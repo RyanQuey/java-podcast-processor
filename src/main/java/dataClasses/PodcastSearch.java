@@ -1,5 +1,6 @@
 package dataClasses;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.lang.System;
@@ -107,7 +108,7 @@ public class PodcastSearch {
     "artistTerm"
   };
 
-  ArrayList<File> resultFiles = new ArrayList<File>();
+  public ArrayList<File> resultFiles = new ArrayList<File>();
 
   // performs a single search 
   private static String performQuery (String term, String searchType) {

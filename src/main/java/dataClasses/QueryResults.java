@@ -1,5 +1,6 @@
 package dataClasses;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.lang.System;
@@ -7,6 +8,9 @@ import java.lang.Exception;
 import java.lang.InterruptedException;
 import java.lang.Thread;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -21,39 +25,56 @@ import dataClasses.Podcast;
  *
  */
 public class QueryResults {
-  String filename;
-  File file;
+  public String filename;
+  public String relativePath;
+  public File file;
   private ArrayList<Podcast> podcasts = new ArrayList<Podcast>();
   private ArrayList<String> podcastIds = new ArrayList<String>();
 
-  Episode(File queryResultsFile) {
-    this.file = queryResultsFile;
-    this.filename = this.file.getName();
+  public QueryResults(File queryResultsFile) 
+    throws FileNotFoundException {
+      this.file = queryResultsFile;
+      this.filename = this.file.getName();
+      this.relativePath = "podcast-data/" + this.file.getName();
+
+      if (!file.exists()) {
+        throw new FileNotFoundException(this.filename + "not found (No such file or directory)!");
+      }
   }
 
   // reads file, pulls data we need, and sets to array
   // no reason to set to variable, should only call once ever per QueryResult instance
-  private JSONArray getSearchResults () {
-    try {
-      String fileContents = FileHelpers.read(this.filename);
-      System.out.println(fileContents);
-      JSONObject contentsJson = (JSONObject) new JSONObject(fileContents);
+  private JSONArray getSearchResults () throws IOException {
+    String fileContents;
 
+    try {
+      fileContents = FileHelpers.read(this.relativePath);
+    } catch (IOException e) {
+			// could be different types of errors I think...though maybe all are IO? but Exception is fiene
+      System.out.println(e);
+      e.printStackTrace();
+
+      throw e;
+    }
+
+    try {
+      JSONObject contentsJson = (JSONObject) new JSONObject(fileContents);
       JSONArray resultsJson = (JSONArray) contentsJson.get("results");
       // currently not using
       //int resultsCount = (int) contentsJson.get("resultCount");
 
       return resultsJson;
 
-    } catch (Exception e) {
-      System.out.println("Error:");
+    } catch (JSONException e) {
       System.out.println(e);
+      e.printStackTrace();
 
-      return null;
+      // so that this can only throw one type of exception:
+      throw new IOException("failed to read JSON for file " + this.filename);
     }
   };
 
-  ArrayList<Podcast> getPodcasts () {
+  public ArrayList<Podcast> getPodcasts () throws IOException {
     if (podcasts.size() > 0) {
       return podcasts;
 
@@ -62,16 +83,27 @@ public class QueryResults {
 
       for (int i = 0; i < resultsJson.length(); i++) {
         JSONObject podcastJson = resultsJson.getJSONObject(i);
-        System.out.println(podcastJson);
 
-        Podcast podcast = new Podcast(podcastJson);
+        Podcast podcast;
+        try {
+          podcast = new Podcast(podcastJson);
+        } catch (Exception e) {
+          // normally just allow ExecutionException (which is what this ends up being), at least what I've seen so far) to throw, but for this, is really just a json issue, want to continue no matter what
+          System.out.println("Error getting info for podcast " + i);
+          System.out.println("moving to next");
+          System.out.println(e);
+          e.printStackTrace();
+          continue;
+        }
         podcasts.add(podcast);
         podcastIds.add(podcast.id);
       }
     };
+
+    return podcasts;
   }
 
-  ArrayList<String> getPodcastIds () {
+  public ArrayList<String> getPodcastIds () throws IOException {
     if (podcastIds.size() > 0) {
       return podcastIds;
 
@@ -83,10 +115,14 @@ public class QueryResults {
   }
 
   // gets rss data for a podcast (which includes all the episode data)
-  public void getEpisodes(Map<String, Podcast> podcastsProcessed, ArrayList<Podcast> podcastIdsProcessed, boolean refreshData){
+  // TODO currently, we are not verifying whether or not we've already gotten data for this podcast. 
+  // if we do, can use following method definition or something like it:
+  // public void getEpisodes(HashMap<String, Podcast> podcastsProcessed, ArrayList<Podcast> podcastIdsProcessed, boolean refreshData){
+  public void getEpisodes() throws IOException {
     for (Podcast podcast : getPodcasts()) {
 
       // get RSS for podcast, to get episode list
+
       podcast.getEpisodes();
 
 
@@ -95,7 +131,7 @@ public class QueryResults {
     };
 
 
-    System.out.println("finished getting episodes for this set of query results, stored in: ", this.filename);     
+    System.out.println("finished getting episodes for this set of query results which is stored in: " + this.filename);
   }
 }
 

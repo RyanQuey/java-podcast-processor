@@ -20,14 +20,47 @@
 			<version>1.1.1</version>
 		</dependency>
 -->
-			<dependency>
+		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180130</version>
+			<version>20190722</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+		<dependency> 
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
+		</dependency> 
   </dependencies>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<configuration>
+					<mainClass>${mainClass}</mainClass>
+					<!-- https://stackoverflow.com/questions/15013651/using-maven-execexec-with-arguments -->
+					<executable>java</executable>
+					<arguments>
+						<argument>-Djava.library.path=${project.build.directory}</argument>
+						<argument>-classpath</argument>
+						<classpath />
+						<argument>${mainClass}</argument>
+
+						<argument>--process=${defaultProcess}</argument>
+						<argument>--perform-search=${defaultPerformSearch}</argument>
+						<argument></argument>
+					</arguments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
+    <mainClass>Main</mainClass>
+    <defaultPerformSearch>false</defaultPerformSearch>
+    <defaultProcess>all</defaultProcess>
 	</properties>
 </project>

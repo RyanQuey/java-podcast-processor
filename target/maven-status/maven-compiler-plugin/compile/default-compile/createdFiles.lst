@@ -1,0 +1,7 @@
+helpers/HttpReq.class
+dataClasses/PodcastSearch.class
+Main.class
+dataClasses/Podcast.class
+dataClasses/Episode.class
+helpers/FileHelpers.class
+dataClasses/QueryResults.class

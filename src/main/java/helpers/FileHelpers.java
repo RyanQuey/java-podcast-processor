@@ -1,5 +1,8 @@
 package helpers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Arrays;
 import java.io.File;
 import java.io.FileWriter;
 
@@ -9,6 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.FileSystems;
 import org.apache.commons.io.IOUtils;
+
+import org.json.JSONObject;
+import org.json.JSONArray;
 import java.net.URL;
 
 import java.io.IOException; 
@@ -28,15 +34,19 @@ public class FileHelpers {
 			System.out.println("File created: " + filename);
 
     } catch (IOException e) {
-      System.out.println("An error occurred.");
+      System.out.println("An error occurred while writing.");
+      System.out.println(e);
       e.printStackTrace();
     }
   }
 
   // assumes we're reading from resources folder
-  public static String read(String filename)
+  public static String read (String filename)
 		throws IOException {
-			FileInputStream fis = new FileInputStream(getFilePath(filename));
+			System.out.println("about to get file input stream");
+			String filepath = getFilePath(filename);
+
+			FileInputStream fis = new FileInputStream(filepath);
     	String contents = IOUtils.toString(fis, "UTF-8");
 
 			return contents;
@@ -56,22 +66,30 @@ public class FileHelpers {
       } catch (Exception e) {
         // not sure what Exception would be caught; set that once I find out
         // TODO figure out how to handle this case...for now just throwing what its callers would throw, for ease of use
+				System.out.println("Error getting file path");
+				System.out.println(e);
         throw new IOException();
       }
   }
 
 	// returns a string of all files recursively, when given a directory
-  public static ListArray<String> getFilenamesFor(File[] files) {
-    fileNames = new ArrayList<String>();
+	// TODO untested
+  public static List<String> getFilenamesFor (List<File> files) {
+    ArrayList<String> fileNames = new ArrayList<String>();
     for (File file : files) {
 			if (file.isDirectory()) {
 				System.out.println("Directory: " + file.getName());
-				showFiles(file.listFiles()); // Calls same method again.
+
+        List<File> nextLayerFiles = Arrays.asList(file.listFiles());
+				getFilenamesFor(nextLayerFiles); // Calls same method again.
 
 			} else {
+				fileNames.add(file.getName());
 				System.out.println("File: " + file.getName());
 			}
     }
+
+    return fileNames;
 	}
 
   // NOTE no longer using
@@ -88,5 +106,19 @@ public class FileHelpers {
   public static String getResourceFilePath(String filename) {
     return getResourcesDir() + "/" + filename;
   }
+
+	// DOES NOT work for nested json
+	// converts ints to Strings
+	public static ArrayList<String> jsonArrayToList (JSONArray jsonArray) {
+		ArrayList<String> list = new ArrayList<String>();     
+		if (jsonArray != null) { 
+   		int len = jsonArray.length();
+   		for (int i=0;i<len;i++){ 
+    		list.add(jsonArray.get(i).toString());
+   		}
+		}
+
+		return list;
+  } 
 
 }
