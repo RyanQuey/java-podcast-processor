@@ -16,8 +16,11 @@ public class Main {
 
   public static void main(String[] args){
     boolean podcastSearchRequested = false;
+    System.out.println("Running with options:");     
     for (String s: args) {
-      if (s == "perform-search") {
+      System.out.println(s);     
+
+      if (s.equals("--perform-search")) {
         podcastSearchRequested = true;
       } else {
         System.out.println("skipping search this time");     
