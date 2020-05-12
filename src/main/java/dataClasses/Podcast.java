@@ -13,27 +13,33 @@ import org.json.JSONObject;
 import helpers.HttpReq;
 import helpers.FileHelpers;
 
+import dataClasses.Episode;
+
 /* 
  * For one file, gets all search results and retrieves the rss feed data
  *
  */
 public class Podcast {
-  private final String artistName; 
-  private final String name; 
-  private final String imageUrl30;  
-  private final String imageUrl60;  
-  private final String imageUrl100;  
-  private final String imageUrl600;  
-  private final String apiId;
-  private final String apiUrl;
-  private final String country;
-  private final String feedUrl; // rss feed url
-  private final ArrayList<String> genres;
-  private final ArrayList<String> apiGenreIds;
-  private final String primaryGenre;
-  private final String releaseDate;
-  private final boolean explicit;
-  private final int episodeCount;
+  String artistName; 
+  String name; 
+  String imageUrl30;  
+  String imageUrl60;  
+  String imageUrl100;  
+  String imageUrl600;  
+  String api; // name of the api
+  String apiId; // id assigned by api
+  String apiUrl; // url within api
+  String country;
+  String feedUrl; // rss feed url
+  ArrayList<String> genres;
+  ArrayList<String> apiGenreIds;
+  String primaryGenre;
+  String releaseDate;
+  boolean explicit;
+  int episodeCount;
+
+  // access through getters
+  private ArrayList<Episode> episodes = new ArrayList<Episode>();
 
   Podcast(JSONObject podcastJson) {
     //  assuming Itunes as API...:
@@ -43,6 +49,8 @@ public class Podcast {
     this.imageUrl60 = (String) podcastJson.get("artworkUrl60");  
     this.imageUrl100 = (String) podcastJson.get("artworkUrl100");  
     this.imageUrl600 = (String) podcastJson.get("artworkUrl600");  
+    // TODO find way to dynamically get this from the file. Perhaps bake it into the filename or get from apiUrl 
+    this.api = "itunes"; 
     this.apiId = (String) podcastJson.get("collectionId");
     this.apiUrl = (String) podcastJson.get("collectionViewUrl");
     this.country = (String) podcastJson.get("country");
@@ -54,19 +62,23 @@ public class Podcast {
     this.releaseDate = (String) podcastJson.get("releaseDate");
     this.explicit = (String) podcastJson.get("contentAdvisoryRating") == "Clean";
     this.episodeCount = (int) podcastJson.get("trackCount");
+
+    this.id = this.api + "-" + this.apiId;
   }
 
   // TODO 
   private String getRss () {
+    if (rssFeed) {
+      return rssFeed;
+    }
 
     try {
-
       String result = HttpReq.get(this.feedUrl, null);
 
       System.out.println(result);
 
-      // write to json file
-      return result;
+      this.rssFeed = result;
+      return this.rssFeed;
 
     } catch (Exception e) {
       System.out.println("Error:");
@@ -76,6 +88,15 @@ public class Podcast {
     }
   }
 
+  private String getEpisodes () {
+    if (this.episodes) {
+      return this.episodes;
+    }
+
+    getRss();
+    // extract episodes from rss feed;
+    // TODO
+  }
 };
 
 

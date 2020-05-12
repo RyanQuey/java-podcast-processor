@@ -13,15 +13,26 @@ import org.json.JSONArray;
 import helpers.HttpReq;
 import helpers.FileHelpers;
 
+import dataClasses.Podcast;
+
 /* 
  * Represents a single file of search results
  * For one file, gets all search results and retrieves the rss feed data
  *
  */
 public class QueryResults {
-  String filename = "./podcast-data/artist_big-data.json";
+  String filename;
+  File file;
+  private ArrayList<Podcast> podcasts = new ArrayList<Podcast>();
+  private ArrayList<String> podcastIds = new ArrayList<String>();
+
+  Episode(File queryResultsFile) {
+    this.file = queryResultsFile;
+    this.filename = this.file.getName();
+  }
 
   // reads file, pulls data we need, and sets to array
+  // no reason to set to variable, should only call once ever per QueryResult instance
   private JSONArray getSearchResults () {
     try {
       String fileContents = FileHelpers.read(this.filename);
@@ -42,26 +53,49 @@ public class QueryResults {
     }
   };
 
-  // gets rss data for a podcast (which includes all the episode data)
-  public void getEpisodes(boolean refreshData){
-    // TODO eventually iterate over each file dynamically
-    JSONArray resultsJson = getSearchResults();
+  ArrayList<Podcast> getPodcasts () {
+    if (podcasts.size() > 0) {
+      return podcasts;
 
-    for (int i = 0; i < resultsJson.length(); i++) {
-      JSONObject podcastJson = resultsJson.getJSONObject(i);
-      System.out.println(podcastJson);
-      Podcast podcast = new Podcast(podcastJson);
-      System.out.println(podcast);
+    } else {
+      JSONArray resultsJson = getSearchResults();
+
+      for (int i = 0; i < resultsJson.length(); i++) {
+        JSONObject podcastJson = resultsJson.getJSONObject(i);
+        System.out.println(podcastJson);
+
+        Podcast podcast = new Podcast(podcastJson);
+        podcasts.add(podcast);
+        podcastIds.add(podcast.id);
+      }
+    };
+  }
+
+  ArrayList<String> getPodcastIds () {
+    if (podcastIds.size() > 0) {
+      return podcastIds;
+
+    } else {
+      getPodcasts();
+      return podcastIds;
+
+    }
+  }
+
+  // gets rss data for a podcast (which includes all the episode data)
+  public void getEpisodes(Map<String, Podcast> podcastsProcessed, ArrayList<Podcast> podcastIdsProcessed, boolean refreshData){
+    for (Podcast podcast : getPodcasts()) {
 
       // get RSS for podcast, to get episode list
+      podcast.getEpisodes();
 
-      // translate RSS into something more readable/useful...unless we want to data lake it
 
-      // write to file. Later TODO send to db
+      // write to file. Later TODO send to db. Or do something useful with it! 
+
     };
 
 
-    System.out.println("finished");     
+    System.out.println("finished getting episodes for this set of query results, stored in: ", this.filename);     
   }
 }
 
