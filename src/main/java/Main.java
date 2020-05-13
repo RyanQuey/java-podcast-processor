@@ -14,6 +14,7 @@ import org.json.JSONObject;
 // local imports
 import helpers.HttpReq;
 import helpers.FileHelpers;
+import helpers.CassandraDb;
 
 import dataClasses.QueryResults;
 import dataClasses.PodcastSearch;
@@ -28,12 +29,8 @@ public class Main {
   // if true, get new search results as well.
   static boolean podcastSearchRequested = false;
 
-  // if true, only process the search results we just received (not all)
-  static boolean processNewSearches = false;
+  static String toProcess = "none";
   
-  // if true, process a default query (mostly for testing)
-  static boolean processDefaultQuery = false;
-
   static PodcastSearch podcastSearch = new PodcastSearch();
 
   // which files to process
@@ -46,6 +43,8 @@ public class Main {
   static HashMap<String, Podcast> podcastsProcessed = new HashMap<String, Podcast>(); 
 
   static ArrayList<Episode> episodesFound = new ArrayList<Episode>();
+
+  static CassandraDb db = new CassandraDb();
 
   ///////////////////////////////////////
   // private static methods
@@ -60,11 +59,14 @@ public class Main {
       };
 
       if (s.equals("--process=new")) {
-        processNewSearches = true;
-      };
+        // if true, only process the search results we just received (not all)
+        toProcess = "new-search";
 
-      if (s.equals("--process=default-query")) {
-        processDefaultQuery = true;
+      } else if (s.equals("--process=default-query")) {
+        // if true, process a default query (mostly for testing)
+        toProcess = "default-query";
+      } else if (s.equals("--process=none")) {
+        toProcess = "none";
       };
     };
   }
@@ -72,31 +74,34 @@ public class Main {
   private static void performSearch(String[] args) {
     podcastSearch.performAllQueries(args);
 
-    if (processNewSearches) {
+    if (toProcess.equals("new-search")) {
       searchResultsToProcess.addAll(podcastSearch.resultFiles);
     }
   }
 
   private static void setSearchResultsToProcess() {
     // process all files in folder
-    if (processDefaultQuery) {
+    if (toProcess.equals("default-query")) {
       try {
         File file = new File(FileHelpers.getFilePath("podcast-data/artist_big-data.json"));
 
-        // beware, will be more than one, in case user passed in --process-new-searches too on accident. 
+        // beware, will be more than one, in case user passed in --process-new-search too on accident. 
         searchResultsToProcess.add(file);
       } catch (IOException e) { 
         System.out.println("Failed to process default query");
         System.out.println(e);
       }
 
-    } else if (processNewSearches) {
+    } else if (toProcess.equals("new-search")) {
       System.out.println("only processing new search results");
       // note: if didn't run search, won't do anything
 
+    } else if (toProcess.equals("none")) {
+      System.out.println("processing none");
+
     } else {
+      // process all files
       try {
-        // process all files
         List<File> files = Arrays.asList(new File(FileHelpers.getFilePath("podcast-data")).listFiles());
 
         searchResultsToProcess.addAll(files);
@@ -110,10 +115,12 @@ public class Main {
 
   private static void getEpisodes() {
     System.out.println("now processing files (count): " + searchResultsToProcess.size());
+
+    // iterate over search result files
     for (File searchResultFile : searchResultsToProcess) {
       String filename = searchResultFile.getName();
 
-      // get the episodes for a given search result
+      // get the episodes for these results
       QueryResults queryResults; 
       try {
         queryResults = new QueryResults(searchResultFile);
@@ -139,7 +146,7 @@ public class Main {
   //////////////////////////////////
   // main
 
-  public static void main(String[] args){
+  public static void main (String[] args) {
     processArgs(args);
 
     if (podcastSearchRequested) {
