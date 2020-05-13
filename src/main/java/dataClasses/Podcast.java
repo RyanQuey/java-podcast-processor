@@ -14,6 +14,16 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.net.URL;
+import java.io.InputStreamReader;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.module.Module; // TODO confirm
+import com.rometools.rome.io.SyndFeedInput;
+import com.rometools.rome.io.XmlReader;
+import com.rometools.modules.itunes.AbstractITunesObject;
+import com.rometools.modules.itunes.EntryInformation;
+
 import helpers.HttpReq;
 import helpers.FileHelpers;
 
@@ -42,7 +52,8 @@ public class Podcast {
   boolean explicit;
   int episodeCount;
   String id;
-  String rssFeed;
+  SyndFeed rssFeed;
+  String rssFeedStr;
   QueryResults fromQuery; 
   Exception errorGettingRss; 
 
@@ -85,49 +96,145 @@ public class Podcast {
       this.fromQuery = fromQuery;
   }
 
-  // TODO 
-  private String getRss () throws Exception {
-    if (rssFeed != null) {
-      return rssFeed;
-    }
+	// wrapper around getRssStr and getRss, with extra error handling, and makes sure we don't make the http request multiple times if unnecessary
+	// TODO once we are sure with this can return, specify String or whatever rssFeed is 
+	private Object getRss () 
+	  throws Exception {
+      if (rssFeed != null) {
+        return rssFeed;
+      }
 
-    // some data is faulty, so skip
-    if (this.feedUrl == null || this.feedUrl == "") {
-      // TODO maybe want better error handling for this
-      return "";
-    }
+      // some data is faulty, so skip
+      if (this.feedUrl == null || this.feedUrl == "") {
+        // TODO maybe want better error handling for this
+        return "";
+      }
 
+      try {
+        System.out.println("Podcast info file at: " + this.feedUrl);
+        System.out.println("Making request to: " + this.feedUrl);
+
+        // getRssStr();
+        return getRssFeed();
+
+      } catch (Exception e) {
+        System.out.println("Error: " + e);
+        e.printStackTrace();
+
+        throw e;
+      }
+
+	}
+
+
+  // gets RSS and just outputs as string.
+	// not using as much now; using rss lib instead
+	// DEPRECATED; just use getRssFeed. Also returns string
+  private String getRssStr () 
+    throws Exception {
+      try {
+        String result = HttpReq.get(this.feedUrl, null);
+
+        System.out.println("RSS retrieved as String");
+        System.out.println(result);
+
+        this.rssFeedStr = result;
+        return this.rssFeedStr;
+
+      } catch (Exception e) {
+        System.out.println("Error: " + e);
+        e.printStackTrace();
+
+        throw e;
+      }
+  }
+
+  // gets RSS and just outputs as a Rome RSS `SyndFeed` obj
+	// TODO consider using this which has some sort of caching system built-in:
+	// https://rometools.github.io/rome/Fetcher/UsingTheRomeFetcherModuleToRetrieveFeeds.html
+  private SyndFeed getRssFeed () 
+    throws Exception {
+      try {
+        SyndFeedInput input = new SyndFeedInput();
+        // NOTE TODO add a more robust fetching mechanism, as recommended in the github home page and described here: `https://github.com/rometools/rome/issues/276`
+        SyndFeed syndfeed = input.build(new XmlReader(new URL(this.feedUrl)));
+
+        // TODO 
+        // can now do like getDescription, getTitle, etc. 
+        // if itunes, can do getImage, getCategory
+        //
+
+        this.rssFeed = syndfeed;
+        // TODO might not need to save the string
+        this.rssFeedStr = syndfeed.toString();
+   
+        return this.rssFeed;
+
+      } catch (Exception e) {
+        System.out.println("Error: " + e);
+        e.printStackTrace();
+
+        throw e;
+      }
+  }
+
+
+  // TODO what do I want to do for error handling?
+  // private Map<String, String> convertRssToMap () {
+  private void convertRssToMap () {
+    // inexpensive way to make sure that we have the feet already set
     try {
-      System.out.println("Podcast info file at: " + this.feedUrl);
-      System.out.println("Making request to: " + this.feedUrl);
-      String result = HttpReq.get(this.feedUrl, null);
+      this.getRss();
 
-      System.out.println("RSS retrieved");
-      System.out.println(result);
+      for (SyndEntry entry : this.rssFeed.getEntries()) {
+        // sets the module to use for this feed
+        // maybe use this instead:         final Module module = syndfeed.getModule(AbstractITunesObject.URI);
+        //
+        Module entryModule = entry.getModule("http://www.itunes.com/dtds/podcast-1.0.dtd");
+        EntryInformation entryInfo = (EntryInformation) entryModule;
+        // see here; base what we do off of tests
+        // https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/test/java/com/rometools/modules/itunes/ITunesParserTest.java#L128
+        // TODO NEXT
+        // also here: https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/EntryInformation.java
+        // 
+        // https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/EntryInformationImpl.java#L37-L42
 
-      this.rssFeed = result;
-      return this.rssFeed;
 
+      }
+      /*
+      XStream rssStream = new XStream();
+      Map<String, String> extractedMap = (Map<String, String>) rssStream.fromXML(xml);
+      assert extractedMap.get("name").equals("chris");
+      assert extractedMap.get("island").equals("faranga");
+  */
     } catch (Exception e) {
       System.out.println("Error: " + e);
       e.printStackTrace();
 
-      throw e;
+    
     }
+	}
+
+  // might not use since we're getting from the api already. but Good to have on hand
+  public void extractPodcastInfo () {
+    // see here for how this would look like https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/test/java/com/rometools/modules/itunes/ITunesParserTest.java#L78
   }
 
-  public String getEpisodes () {
+  public void getEpisodes () {
     if (this.episodes.size() != 0) {
       // TODO return episodes
-      return rssFeed;// this.episodes;
+      return ;// this.episodes;
     }
 
     // TODO will have different return value later;
     try {
-      return getRss();
+      getRss();
+      convertRssToMap();
+      
+
+
     } catch (Exception e) {
       this.errorGettingRss = e;
-      return null;
     }
 
     // extract episodes from rss feed;

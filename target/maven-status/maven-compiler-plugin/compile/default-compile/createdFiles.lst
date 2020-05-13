@@ -3,5 +3,6 @@ dataClasses/PodcastSearch.class
 Main.class
 dataClasses/Podcast.class
 dataClasses/Episode.class
+helpers/CassandraDb.class
 helpers/FileHelpers.class
 dataClasses/QueryResults.class

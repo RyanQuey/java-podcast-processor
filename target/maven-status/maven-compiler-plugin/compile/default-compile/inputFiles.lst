@@ -5,3 +5,4 @@
 /home/vagrant/projects/my-podcasts/src/main/java/Main.java
 /home/vagrant/projects/my-podcasts/src/main/java/helpers/FileHelpers.java
 /home/vagrant/projects/my-podcasts/src/main/java/helpers/HttpReq.java
+/home/vagrant/projects/my-podcasts/src/main/java/helpers/Cassandra.java
