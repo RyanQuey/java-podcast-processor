@@ -17,7 +17,7 @@ public class HttpReq {
 // add what will be returned
   public static String get(String urlStr, Map queryParams) 
     // TODO just declare multiple throws
-    throws Exception {
+    throws IOException {
       // set limit to 200, let's just get all of it (default: 50)
       // contents = urllib.request.urlopen(f"?media=podcast&term={term}&limit=200&version=2&lang=en_us&country=US").read()
       URL url;
@@ -87,6 +87,10 @@ public class HttpReq {
       for (Map.Entry<String, String> entry : params.entrySet()) {
         result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
         result.append("=");
+
+        // TODO add error handling so don't get NullPointerException on runtime, as runtime error, if something didn't get set key or value right. 
+        // want something on compile time if possible
+
         result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
         result.append("&");
       }

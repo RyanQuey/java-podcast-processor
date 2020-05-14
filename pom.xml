@@ -6,7 +6,14 @@
   <packaging>jar</packaging>
   <version>0.1.0</version>
   <dependencies>
-    <dependency> <!-- Spark dependency -->
+    <!-- Google core libraries for Java https://github.com/google/guava --> 
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>29.0-jre</version>
+		</dependency>
+    <!-- Spark dependency --> 
+    <dependency> 
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_2.12</artifactId>
       <version>2.4.5</version>
@@ -57,6 +64,7 @@
 			<artifactId>rome-modules</artifactId>
 			<version>1.5.0</version>
 		</dependency>
+    <!-- datastax/cassandra stuff -->
 		<dependency>
 			<groupId>com.datastax.oss</groupId>
 			<artifactId>java-driver-core</artifactId>
@@ -92,8 +100,8 @@
 						<classpath />
 						<argument>${mainClass}</argument>
 
-						<argument>--process=${defaultProcess}</argument>
-						<argument>--perform-search=${defaultPerformSearch}</argument>
+						<argument>--process=${searchResultsToProcess}</argument>
+						<argument>--perform-search=${performSearch}</argument>
 						<argument></argument>
 					</arguments>
 				</configuration>
@@ -104,7 +112,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <mainClass>Main</mainClass>
-    <defaultPerformSearch>false</defaultPerformSearch>
-    <defaultProcess>none</defaultProcess>
+    <performSearch>true</performSearch>
+    <searchResultsToProcess>none</searchResultsToProcess>
 	</properties>
 </project>
