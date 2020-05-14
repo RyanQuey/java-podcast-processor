@@ -21,10 +21,16 @@ import dataClasses.PodcastSearch;
 import dataClasses.Podcast;
 import dataClasses.Episode;
 
+// TODO remove...find more elegant solution
+import migrations.*;
+import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
+
 public class Main {
 
   /////////////////////////////////////
   // static vars
+
+  static CassandraDb db;
 
   // if true, get new search results as well.
   static boolean podcastSearchRequested = false;
@@ -34,7 +40,7 @@ public class Main {
   static PodcastSearch podcastSearch = new PodcastSearch();
 
   // which files to process
-  static ArrayList<File> searchResultsToProcess = new ArrayList<File>();
+  static ArrayList<QueryResults> searchResultsToProcess = new ArrayList<QueryResults>();
 
   // podcasts that have already been processed (or at least started to be processed, whether successful or not)
   // TODO maybe later, will know if we want this to be files or strings. Strings are less memory presumably
@@ -44,7 +50,6 @@ public class Main {
 
   static ArrayList<Episode> episodesFound = new ArrayList<Episode>();
 
-  static CassandraDb db = new CassandraDb();
 
   ///////////////////////////////////////
   // private static methods
@@ -54,7 +59,7 @@ public class Main {
     for (String s: args) {
       System.out.println(s);     
 
-      if (s.equals("--perform-search")) {
+      if (s.equals("--perform-search=true")) {
         podcastSearchRequested = true;
       };
 
@@ -72,21 +77,20 @@ public class Main {
   }
 
   private static void performSearch(String[] args) {
+    // initialize this when we initialize the podcastSearch itself
     podcastSearch.performAllQueries(args);
-
-    if (toProcess.equals("new-search")) {
-      searchResultsToProcess.addAll(podcastSearch.resultFiles);
-    }
   }
 
   private static void setSearchResultsToProcess() {
-    // process all files in folder
     if (toProcess.equals("default-query")) {
+      // process only the specified default file
       try {
-        File file = new File(FileHelpers.getFilePath("podcast-data/artist_big-data.json"));
+        String defaultTerm = "artist";
+        File file = new File(FileHelpers.getFilePath("podcast-data/" + defaultTerm + "_big-data.json"));
 
-        // beware, will be more than one, in case user passed in --process-new-search too on accident. 
-        searchResultsToProcess.add(file);
+        // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
+
+        searchResultsToProcess.add(new QueryResults(file));
       } catch (IOException e) { 
         System.out.println("Failed to process default query");
         System.out.println(e);
@@ -94,17 +98,21 @@ public class Main {
 
     } else if (toProcess.equals("new-search")) {
       System.out.println("only processing new search results");
+      searchResultsToProcess.addAll(podcastSearch.results);
       // note: if didn't run search, won't do anything
 
     } else if (toProcess.equals("none")) {
       System.out.println("processing none");
 
     } else {
-      // process all files
+      // process all files, not looking at podcasts
+      // TODO maybe better to just iterate over the podcasts, some of which might already have the data (?)
       try {
         List<File> files = Arrays.asList(new File(FileHelpers.getFilePath("podcast-data")).listFiles());
+        for (File file : files) {
+          searchResultsToProcess.add(new QueryResults(file));
+        }
 
-        searchResultsToProcess.addAll(files);
       } catch (IOException e) { 
         System.out.println("Failed to process default query");
         System.out.println(e);
@@ -117,17 +125,8 @@ public class Main {
     System.out.println("now processing files (count): " + searchResultsToProcess.size());
 
     // iterate over search result files
-    for (File searchResultFile : searchResultsToProcess) {
-      String filename = searchResultFile.getName();
-
-      // get the episodes for these results
-      QueryResults queryResults; 
-      try {
-        queryResults = new QueryResults(searchResultFile);
-      } catch (FileNotFoundException e) {
-        System.out.println("skipping missing file: " + filename);
-        continue;
-      }
+    for (QueryResults queryResults : searchResultsToProcess) {
+      String filename = queryResults.filename;
 
       try {
 				queryResults.getPodcasts();
@@ -143,11 +142,31 @@ public class Main {
     }
   }
 
+  // TODO split off somehow, and only run if haven't ran yet
+  // currently not maintaining versioning for this, not really necessary
+  // since doing IF NOT EXISTS then can run all these all the time we want to migrate
+  private static void runMigrations () throws InvalidQueryException {
+    M20200513211500CreateKeyspace.run(); 
+    M20200513221500CreateSearchResultsTable.run();
+  }
+
+  private static void initializeDb () throws InvalidQueryException {
+    db.initialize(); 
+    runMigrations();
+  }
+
+  // if we don't run this, this java package just keeps running
+  private static void closeDb () {
+    db.closeSession();
+  }
+
   //////////////////////////////////
   // main
 
-  public static void main (String[] args) {
+  // InvalidQueryException from initializing db. Make sure to not continue messing stuff up if the db isn't ready!
+  public static void main (String[] args) throws InvalidQueryException {
     processArgs(args);
+    initializeDb();
 
     if (podcastSearchRequested) {
       performSearch(args);
@@ -157,6 +176,8 @@ public class Main {
 
     getEpisodes();
 
+    // TODO note that this is still not letting process close
+    closeDb();
     System.out.println("Finished running");     
   }
 }

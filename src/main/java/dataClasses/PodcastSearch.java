@@ -3,6 +3,7 @@ package dataClasses;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.lang.System;
 import java.lang.Exception;
 import java.lang.Thread;
@@ -12,11 +13,24 @@ import org.json.JSONObject;
 import java.io.IOException; 
 import java.lang.InterruptedException;
 
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
+
 // local imports
 import helpers.HttpReq;
 import helpers.FileHelpers;
+import helpers.CassandraDb;
 
 public class PodcastSearch {
+
+  // if true, won't persist data corersponding to a given file to db more than one time, unless a new search is ran for that file
+  // later will probably remove so can see changes over time
+  private boolean persistEachFileOnce = true;
+  private String persistMethod = "both"; // could also be "write-to-file" or "db"
+  static private CassandraDb db;
+
+  private int totalCounter = 0;
+  private int byMinuteCounter = 0;
+  private long start;
 
   private String[] searchTerms = {
     "data engineering",
@@ -51,6 +65,12 @@ public class PodcastSearch {
     "zookeeper",
     "airflow",
     "apache airflow",
+
+    "gremlin graph", 
+    "tinkerpop", 
+    "apache tinkerpop", 
+    "graphDb", 
+    "Netflix OSS", 
 
     "elasticsearch",
     "logstash",
@@ -108,62 +128,36 @@ public class PodcastSearch {
     "artistTerm"
   };
 
-  public ArrayList<File> resultFiles = new ArrayList<File>();
+  public ArrayList<QueryResults> results = new ArrayList<QueryResults>();
 
-  // performs a single search 
-  private static String performQuery (String term, String searchType) {
+  private void incrementApiHitCounter () {
+    totalCounter ++;
+    byMinuteCounter ++;
+    if (byMinuteCounter > 18) {
+      // sleep one minute so we don't hit quotas (supposed to be 20/min)
+      // ...but I had a timer and it still hit a 403, but several minutes passed where I was under 20 and ok. But then waited 5 minutes, and did 5 or so more, and it hit quota again. So I'm guessing there's other quotas also
+      byMinuteCounter = 0;
+      try {
+        long timePassed = System.currentTimeMillis()-start;
+        System.out.println("time passed in ms = "+(System.currentTimeMillis()-start));
 
-    try {
+        if (timePassed < 60*1000) {
+          long sleepTime = 60*1000 - timePassed;
+          Thread.sleep(sleepTime);
+        }
 
-      // apparently apple doesn't like the pluses (?)
-      String queryTerm = term.replaceAll(" ", " ");
-      String urlStr = "https://itunes.apple.com/search";
+      } catch (InterruptedException e) {
+        System.out.println(e);
 
-      Map<String, String> queryParams = new HashMap<>();
-      queryParams.put("media", "podcast");
-      queryParams.put("term", queryTerm);
+      };
 
-      // set limit to 200, let's just get all of it (default: 50, max: 200)
-      queryParams.put("limit", "200");
-      // set version, language and country in case their defaults change
-      queryParams.put("version", "2");
-      queryParams.put("lang", "en_us");
-      queryParams.put("country", "US");
-      if (searchType != "all") {
-        queryParams.put("attribute", searchType);
-      }
-       
-      // write params to request...yes it's this crazy.
-      // Basically converts our map to a string, then writes that string to the http url connection via "output stream" api. 
-      // (is an api for writing data to something, in this case, writing params to the url)
-
-      // begin reading
-      String result = HttpReq.get(urlStr, queryParams);
-
-      System.out.println(result);
-      // use `with` to prevent leaving file open after code runs
-      // TODO
-      //term_for_file = re.sub(r"\s+", "-", term)
-      /* 
-      with open(f"{term}-podcasts.json", "r+") as file:
-          file.write(contents)
-          file.close()
-
-          */
-
-      // write to json file
-      return result;
-
-    } catch (Exception e) {
-      System.out.println("Error:");
-      System.out.println(e);
-
-      return null;
-    }
+    } else if (totalCounter > 100) {
+      // just a shot in the dark, but let's not hit more than 100 times per run
+    };
   }
-
-  // TODO refactor, separate out 
+  // TODO refactor, separate out  and put a lot into the QueryResults class
   // TODO maintain references to files made in this search
+  // TODO refactor: remove args from here, and just set as variable in the caller if we want to call that
   public void performAllQueries(String[] args){
     boolean refreshData = false;
     for (String s: args) {
@@ -175,60 +169,31 @@ public class PodcastSearch {
     // TODO find related search queries manually...or even Google APIs? Could make this part of the whole thing
 
     //for each term, send as several different types of terms 
-    // TODO make these instance level
-    int totalCounter = 0;
-    int byMinuteCounter = 0;
-    long start = System.currentTimeMillis();
+    System.out.println("Starting queries");
+
+    start = System.currentTimeMillis();
 
     for (String term : searchTerms) {
-
       for (String searchType : searchTypes) {
-        String typePrefix = searchType != "all" ? searchType.replace("Term", "") : "generalSearch" ;
-        String filename = typePrefix + "_" + term.replaceAll(" ", "-")  + ".json";
-        String filepath = "podcast-data/" + filename;
-
-        File file;
+        // don't want to throw errors for these
+        QueryResults queryResult = new QueryResults(term, searchType, refreshData);
         try {
-          // 
-          file = new File(FileHelpers.getFilePath(filepath));
+          queryResult.getPodcastJson(refreshData);
         } catch (IOException e) {
-          System.out.println("Error getting file: " + filename);
+          System.out.println("Skipping queryResult: " + term + " for type: " + searchType + "due to error");
+          // should log already before this
           continue;
         }
 
-        // check if we should skip
-        if(!refreshData && file.exists()) { 
-          System.out.println("skipping " + filename);
-          continue;
+        // right now, persisting no matter what. Even if we read from file, if persist-method is writing to file, will write again. Even if we read from db, if persist-method is reading to db, write again.
+        // TODO remove that redundancy mentioned above (?);
+        System.out.println("Persisting json to " + persistMethod);
+        queryResult.persistSearchResult(persistMethod, persistEachFileOnce);
+        results.add(queryResult);
+
+        if (queryResult.madeApiCall) {
+          incrementApiHitCounter(); 
         }
-
-        String podcastJSON = performQuery(term, searchType);
-
-        // write to a file 
-        FileHelpers.write(filepath, podcastJSON);
-        resultFiles.add(file);
-
-        totalCounter ++;
-        byMinuteCounter ++;
-        if (byMinuteCounter > 18) {
-          // sleep one minute so we don't hit quotas (supposed to be 20/min)
-          // ...but I had a timer and it still hit a 403, but several minutes passed where I was under 20 and ok. But then waited 5 minutes, and did 5 or so more, and it hit quota again. So I'm guessing there's other quotas also
-          byMinuteCounter = 0;
-          try {
-            System.out.println("Sleep time in ms = "+(System.currentTimeMillis()-start));
-            long timePassed = System.currentTimeMillis()-start;
-            if (timePassed < 60*1000) {
-              Thread.sleep(60*1000 - timePassed);
-            }
-
-          } catch (InterruptedException e) {
-            System.out.println(e);
-
-          };
-
-        } else if (totalCounter > 100) {
-          // just a shot in the dark, but let's not hit more than 100 times per run
-        };
 
         System.out.println("******************************************");
         System.out.println("Total retrieved so far for this run: " + totalCounter);
