@@ -56,6 +56,9 @@ public class QueryResults {
   // to be either fetched from api or file
   public String podcastJson;
 
+  // TODO when add other external apis, need to set dynamically
+  public String externalApi = "itunes";
+
   // whether or not had to hit the external api to retrieve the json
   public boolean madeApiCall;
 
@@ -114,18 +117,25 @@ public class QueryResults {
   // some db stuff 
   // TODO add into something all models can borrow from
 
-  // TODO add some in-instance caching, for when retrieving from database more than once
+  // TODO add some in-instance caching, for when retrieving from database more than once (?)
+  // TODO be careful using this, maybe better to not do this in general, since requires a read for every write? But want to avoid hitting external api quota...
   public boolean exists () {
-    ResultSet result = db.execute("SELECT * FROM search_results_by_filename WHERE filename='" + filename + "' LIMIT 1;");
+    ResultSet result = db.execute("SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 1;");
 
-    return Iterables.size(result) > 0;
+    System.out.println("checking for existence by using query: " + "SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 1;");
+
+    // will be null if nothing found
+    // NOTE that return Iterables.size(result) > 0; doesn't work, always returns 0 for some reason
+    Row row = result.one();
+
+    return row != null;
   }
 
   public void insertIntoDb () {
     Term ts = db.getTimestamp();
 
       /*
-    insertInto("search_results")
+    insertInto("search_results_by_term")
       .value("id", literal(UUID.randomUUID()))
       .value("filename", literal(this.filename))
       .value("term", literal(this.term))
@@ -136,23 +146,25 @@ public class QueryResults {
       .value("updated_at", ts);
       */
 
-    insertInto("search_results_by_filename")
+    String insertQuery = insertInto("search_results_by_term")
       .value("filename", literal(this.filename))
       .value("term", literal(this.term))
       .value("search_type", literal(this.searchType))
       .value("result_json", literal(this.podcastJson))
+      .value("external_api", literal(this.externalApi))
       .value("created_at", ts)
-      .value("updated_at", ts);
+      .value("updated_at", ts)
+      .asCql();
+
+    db.execute(insertQuery);
   }
 
 
   // persists the search results according to the persisting method
-  public void persistSearchResult (String persistMethod, boolean persistEachFileOnce) {
+  public void persistSearchResult (String persistMethod) {
     if (persistMethod.equals("both") || persistMethod.equals("write-to-file")) {
-      // write to a file 
-      if (!persistEachFileOnce || !this.exists()) {
-        FileHelpers.write(this.relativePath, this.podcastJson);
-      }
+     // write to a file 
+      FileHelpers.write(this.relativePath, this.podcastJson);
     } 
     
     if (persistMethod.equals("both") || persistMethod.equals("db")) {
@@ -264,7 +276,8 @@ public class QueryResults {
         // don't set this.madeApiCall = true here, since maybe we hit the external API earlier on in the lifecycle
         return this.podcastJson;
 
-      } else if (!refreshData && this.file.exists() ) { 
+      } else if (!refreshData && this.exists() ) { 
+        // hit db NOT files for testing if exists, Since eventually we are moving away from files
         // TODO probably faster to do this one time rather than hitting db every time for every file, for performance
         System.out.println("skipping search for" + filename);
         this.getPodcastJsonFromFile(); 
