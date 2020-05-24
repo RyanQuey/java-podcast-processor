@@ -150,8 +150,7 @@ public class Podcast {
       }
 
       try {
-        System.out.println("Podcast info file at: " + this.feedUrl);
-        System.out.println("Making request to: " + this.feedUrl);
+        System.out.println("Getting feed for: " + this.feedUrl);
 
         // getRssStr();
         return getRssFeed();
@@ -208,6 +207,7 @@ public class Podcast {
 
         // TODO might not need to save the string
         this.rssFeedStr = this.rssFeed.toString();
+        System.out.println("Got rss feed");
    
         return this.rssFeed;
 
@@ -288,7 +288,7 @@ public class Podcast {
 
     //feedInfo.getComplete(); (boolean, I'm guessing maybe for pagination?)
 
-    System.out.println("here is what we get for    " + this.name + "   "  + "with rss feed url at " + this.feedUrl);
+    System.out.println("Set properties for    " + this.name + "   "  + "with rss feed url at " + this.feedUrl);
     // NOTE feedInfo.getNewFeedUrl() not working
   }
 
@@ -320,7 +320,8 @@ public class Podcast {
     Map<String, String> foundBy = new HashMap<String, String>();
     foundBy.put("term", this.fromQuery.term);
     foundBy.put("searchType", this.fromQuery.searchType);
-    foundBy.put("searchedAt", ts.toString());
+    foundBy.put("searchedAt", db.getTimestampStr());
+    List<Map<String, String>> foundByList = Arrays.asList(foundBy);
 
     // want to create or update if exists
     String query = update("podcasts_by_language")
@@ -342,7 +343,7 @@ public class Podcast {
       .setColumn("explicit", literal(this.explicit))
       .setColumn("episode_count", literal(this.episodeCount))
       //.setColumn("rss_feed", literal(this.rssFeedStr)) // don't save this for now, is really large and since I'm printing query, hard to debug
-      .append("found_by_queries", literal(foundBy))
+      .append("found_by_queries", literal(foundByList))
       .setColumn("description", literal(this.description))
       .setColumn("summary", literal(this.summary))
       .setColumn("description_subtitle", literal(this.descriptionSubtitle))

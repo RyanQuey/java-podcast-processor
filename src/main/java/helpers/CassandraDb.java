@@ -63,4 +63,10 @@ public class CassandraDb {
     return currentTimestamp();
     //return TypeCodecs.TypeCodec(Instant.now()); 
   }
+
+  // string that matches format of cassandra's timestamp (Cassandra allows optional T letter)
+  // something like: "2020-05-24T22:10:29.748809"
+  public static String getTimestampStr() {
+    return LocalDateTime.now().toString();
+  }
 }

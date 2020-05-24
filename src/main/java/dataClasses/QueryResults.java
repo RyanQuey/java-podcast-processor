@@ -132,7 +132,7 @@ public class QueryResults {
   // some db stuff 
   // TODO add into something all models can borrow from
 
-  // TODO add some in-instance caching, for when retrieving from database more than once (?)
+  // TODO for performance, if known batch job, do a single query to grab all records for this partition once and check that instead? 
   // TODO be careful using this, maybe better to not do this in general, since requires a read for every write? But want to avoid hitting external api quota...
   // TODO rename to reflect that we're not testing to see if this object exists, but that we've already gotten search results and persisted them
   public boolean exists () {
@@ -142,7 +142,7 @@ public class QueryResults {
 
     ResultSet result = db.execute("SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 1;");
 
-    System.out.println("checking for existence by using query: " + "SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 2;");
+    System.out.println("checking for existence by using query: " + "SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 1;");
 
     // will be null if nothing found
     // NOTE that return Iterables.size(result) > 0; doesn't work, always returns 0 for some reason
@@ -266,6 +266,7 @@ public class QueryResults {
   };
 
   public ArrayList<Podcast> getPodcasts () throws IOException {
+    System.out.println("*********GETTING PODCASTS (" + this.term + ", " + this.searchType + ")*************");
     if (podcasts.size() > 0) {
       // already got them, so just return
       return podcasts;
@@ -295,10 +296,12 @@ public class QueryResults {
       }
     };
 
+    System.out.println("*********GOT PODCASTS*************");
     return podcasts;
   }
 
   public void persistPodcasts () throws IOException {
+    System.out.println("*********PERSISTING PODCASTS*************");
     if (podcasts.size() == 0) {
       // have none, so just return
       System.out.println("no this search didn't have any podcasts, so not persisting");
@@ -312,6 +315,7 @@ public class QueryResults {
 
       System.out.println("finished getting episodes for this set of query results which is stored in: " + this.filename);
     };
+    System.out.println("*********PERSISTED PODCASTS*************");
   }
 
   // retrieves either from db or file or from external api
