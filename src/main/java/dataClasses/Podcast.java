@@ -2,14 +2,18 @@ package dataClasses;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.lang.System;
 import java.lang.Exception;
 import java.lang.InterruptedException;
 import java.io.IOException; 
 import java.util.concurrent.ExecutionException;
+import java.lang.RuntimeException;
+import java.lang.IllegalArgumentException;
 import java.lang.Thread;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,9 +27,15 @@ import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import com.rometools.modules.itunes.AbstractITunesObject;
 import com.rometools.modules.itunes.EntryInformation;
+import com.rometools.modules.itunes.FeedInformationImpl;
+import com.rometools.modules.itunes.FeedInformation;
+
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
+import com.datastax.oss.driver.api.querybuilder.term.Term;
 
 import helpers.HttpReq;
 import helpers.FileHelpers;
+import helpers.CassandraDb;
 
 import dataClasses.Episode;
 
@@ -34,13 +44,13 @@ import dataClasses.Episode;
  *
  */
 public class Podcast {
-  String artistName; 
+  String owner; 
   String name; 
   String imageUrl30;  
   String imageUrl60;  
   String imageUrl100;  
   String imageUrl600;  
-  String api; // name of the api
+  String api; // name of the api TODO move this, apiId, and apiUrl to a nested map once we implement other apis
   String apiId; // id assigned by api
   String apiUrl; // url within api
   String country;
@@ -51,11 +61,38 @@ public class Podcast {
   String releaseDate;
   boolean explicit;
   int episodeCount;
-  String id;
   SyndFeed rssFeed;
   String rssFeedStr;
+  // test does it this way, demo (https://rometools.github.io/rome/Modules/ITunesPodcasting.html) does it FeedInformation
+  // FeedInformationImpl implements FeedInformation though, so probably use FeedInformationImpl
+  FeedInformationImpl feedInfo;
+  // FeedInformation feedInfo;
+
+  // to get from rss, that itunes doesn't return in search
+  // from description
+  String description;
+  // not sure how it would be different from description, but rome seems to include it as part of the itunes rss api
+  String summary;
+  // from itunes:subtitle
+  String descriptionSubtitle;
+  // from webMaster
+  String webmaster;
+  // from itunes:owner > itunes:email
+  String ownerEmail;
+  String author; //not yet sure how this is distinct from owner. But airflow's podcast for example has different http://feeds.soundcloud.com/users/soundcloud:users:385054355/sounds.rss
+  String language;
+  // from image:link
+  String websiteUrl; // TODO make all these urls of java class Url
+
+  // list of queries, each query giving term, searchType, api, and when search was performed
+  List<Map<String, String>> foundByQueries; 
+
+  String updatedAt;
+
   QueryResults fromQuery; 
   Exception errorGettingRss; 
+
+  private static CassandraDb db;
 
   // access through getters
   private ArrayList<Episode> episodes = new ArrayList<Episode>();
@@ -68,7 +105,7 @@ public class Podcast {
 
       //  assuming Itunes as API...:
 
-      this.artistName = (String) podcastJson.get("artistName"); 
+      this.owner = (String) podcastJson.get("artistName"); 
       this.name = (String) podcastJson.get("collectionName"); 
       this.imageUrl30 = (String) podcastJson.get("artworkUrl30");  
       this.imageUrl60 = (String) podcastJson.get("artworkUrl60");  
@@ -82,8 +119,10 @@ public class Podcast {
       this.feedUrl = (String) podcastJson.get("feedUrl");
 
       JSONArray genresJson = (JSONArray) podcastJson.get("genres");
+      // I want to be ordered, since probably matches order of api genre ids
       this.genres = (ArrayList<String>) FileHelpers.jsonArrayToList(genresJson);
 
+      // I want to be ordered, since probably matches order of genres
       JSONArray apiGenreIdsJson = (JSONArray) podcastJson.get("genreIds");
       this.apiGenreIds = (ArrayList<String>) FileHelpers.jsonArrayToList(apiGenreIdsJson);
       this.primaryGenre = (String) podcastJson.get("primaryGenreName");
@@ -91,8 +130,8 @@ public class Podcast {
       this.releaseDate = (String) podcastJson.get("releaseDate");
       this.explicit = (String) podcastJson.get("contentAdvisoryRating") == "Clean";
 
-      this.id = this.api + "-" + this.apiId;
       this.episodeCount = (int) podcastJson.get("trackCount");
+      // TODO persist somehow, probably with type List, and list chronologically the times that this was returned. BUt for me, don't need that info
       this.fromQuery = fromQuery;
   }
 
@@ -107,7 +146,7 @@ public class Podcast {
       // some data is faulty, so skip
       if (this.feedUrl == null || this.feedUrl == "") {
         // TODO maybe want better error handling for this
-        return "";
+        throw new IllegalArgumentException("feedUrl does not exist");
       }
 
       try {
@@ -157,16 +196,18 @@ public class Podcast {
       try {
         SyndFeedInput input = new SyndFeedInput();
         // NOTE TODO add a more robust fetching mechanism, as recommended in the github home page and described here: `https://github.com/rometools/rome/issues/276`
-        SyndFeed syndfeed = input.build(new XmlReader(new URL(this.feedUrl)));
+        this.rssFeed = input.build(new XmlReader(new URL(this.feedUrl)));
+				final Module module = this.rssFeed.getModule(AbstractITunesObject.URI);
+        this.feedInfo = (FeedInformationImpl) module;
+        // this.feedInfo = (FeedInformation) module;
 
         // TODO 
         // can now do like getDescription, getTitle, etc. 
         // if itunes, can do getImage, getCategory
         //
 
-        this.rssFeed = syndfeed;
         // TODO might not need to save the string
-        this.rssFeedStr = syndfeed.toString();
+        this.rssFeedStr = this.rssFeed.toString();
    
         return this.rssFeed;
 
@@ -216,8 +257,39 @@ public class Podcast {
 	}
 
   // might not use since we're getting from the api already. but Good to have on hand
-  public void extractPodcastInfo () {
+  // should it really be RuntimeException? not sure hwat it should be, just guessing here
+  public void updateBasedOnRss () throws Exception {
     // see here for how this would look like https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/test/java/com/rometools/modules/itunes/ITunesParserTest.java#L78
+
+    this.getRss();
+
+    this.owner = feedInfo.getOwnerName();
+    this.ownerEmail = feedInfo.getOwnerEmailAddress();
+    /* not going to use these for now; just use what itunes returned
+    // "http://a1.phobos.apple.com/Music/y2005/m06/d26/h21/mcdrrifv.jpg"
+    feedInfo.getImage().toExternalForm();
+    // category 1: something like "Comedy"
+    feedInfo.getCategories().get(0).getName());
+    // category two:         "Arts & Entertainment",
+    feedInfo.getCategories().get(1).getName());
+    // "subCategory", Something like: "Entertainment",
+    feedInfo.getCategories().get(1).getSubcategories().get(0).getName());
+    */
+    // something like "A weekly, hour-long romp through the worlds of media, politics, sports and show business, leavened with an eclectic mix of mysterious music, hosted by Harry Shearer."
+    this.summary = feedInfo.getSummary();
+    // might not work...maybe just using summary? But I see rss with description, not summary...
+    this.description = this.rssFeed.getDescription();
+    // not sure if this is what I think i tis TODO
+    this.websiteUrl = this.rssFeed.getLink();
+    // hope this works
+    this.language = this.rssFeed.getLanguage();
+    // saw it here: https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/FeedInformationImpl.java#L179
+    this.descriptionSubtitle = feedInfo.getSubtitle();
+
+    //feedInfo.getComplete(); (boolean, I'm guessing maybe for pagination?)
+
+    System.out.println("here is what we get for    " + this.name + "   "  + "with rss feed url at " + this.feedUrl);
+    // NOTE feedInfo.getNewFeedUrl() not working
   }
 
   public void getEpisodes () {
@@ -239,6 +311,56 @@ public class Podcast {
 
     // extract episodes from rss feed;
     // TODO
+  }
+
+  // TODO use the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
+  public void save () {
+    Term ts = db.getTimestamp();
+
+    Map<String, String> foundBy = new HashMap<String, String>();
+    foundBy.put("term", this.fromQuery.term);
+    foundBy.put("searchType", this.fromQuery.searchType);
+    foundBy.put("searchedAt", ts.toString());
+
+    // want to create or update if exists
+    String query = update("podcasts_by_language")
+      .setColumn("owner", literal(this.owner))
+      .setColumn("name", literal(this.name))
+      .setColumn("image_url_30", literal(this.imageUrl30))
+      .setColumn("image_url_60", literal(this.imageUrl60))
+      .setColumn("image_url_100", literal(this.imageUrl100))
+      .setColumn("image_url_600", literal(this.imageUrl600))
+      .setColumn("api", literal(this.api))
+      .setColumn("api_id", literal(this.apiId))
+      .setColumn("api_url", literal(this.apiUrl))
+      .setColumn("country", literal(this.country))
+      //.setColumn("feed_url", literal(this.feedUrl)) // don't set because updating, so can't set any in primary key
+      .setColumn("genres", literal(this.genres)) // hoping ArrayList converts to List here;
+      .setColumn("api_genre_ids", literal(this.apiGenreIds))
+      //.setColumn("primary_genre", literal(this.primaryGenre)) // can't update primary key
+      .setColumn("release_date", literal(this.releaseDate))
+      .setColumn("explicit", literal(this.explicit))
+      .setColumn("episode_count", literal(this.episodeCount))
+      //.setColumn("rss_feed", literal(this.rssFeedStr)) // don't save this for now, is really large and since I'm printing query, hard to debug
+      .append("found_by_queries", literal(foundBy))
+      .setColumn("description", literal(this.description))
+      .setColumn("summary", literal(this.summary))
+      .setColumn("description_subtitle", literal(this.descriptionSubtitle))
+      .setColumn("webmaster", literal(this.webmaster))
+      .setColumn("owner_email", literal(this.ownerEmail))
+      .setColumn("author", literal(this.author))
+      //.setColumn("language", literal(this.language))
+      .setColumn("website_url", literal(this.websiteUrl))
+      .setColumn("updated_at", ts)
+      // only update this unique record, so set by compound primary key
+      .whereColumn("language").isEqualTo(literal(this.language))
+      .whereColumn("primary_genre").isEqualTo(literal(this.primaryGenre))
+      .whereColumn("feed_url").isEqualTo(literal(this.feedUrl))
+      .asCql();
+
+      System.out.println("now executing:");
+      System.out.println(query);
+    db.execute(query);
   }
 };
 

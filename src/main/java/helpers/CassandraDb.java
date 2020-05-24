@@ -18,7 +18,7 @@ import migrations.*;
 public class CassandraDb {
   private static CqlSession session = CqlSession.builder().build();
 
-  public static void initialize () {
+  public static void initialize () throws Exception {
     // create keyspace if doesn't exist already, and initialize tables
     runMigrations();
 
@@ -31,6 +31,7 @@ public class CassandraDb {
   private static void runMigrations () throws InvalidQueryException {
     M20200513211500CreateKeyspace.run(); 
     M20200513221500CreateSearchResultsTable.run();
+    M20200524201500CreatePodcastsTable.run(); 
   }
 
 	// close session when not actively using...or just when everything is finished running?

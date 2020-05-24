@@ -22,6 +22,7 @@ import dataClasses.Podcast;
 import dataClasses.Episode;
 
 import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
+import com.datastax.oss.driver.api.core.cql.Row;
 
 public class Main {
 
@@ -33,18 +34,12 @@ public class Main {
   // if true, get new search results as well.
   static boolean podcastSearchRequested = false;
 
-  static String toProcess = "none";
+  static String toProcess = "";
   
   static PodcastSearch podcastSearch = new PodcastSearch();
 
   // which files to process
   static ArrayList<QueryResults> searchResultsToProcess = new ArrayList<QueryResults>();
-
-  // podcasts that have already been processed (or at least started to be processed, whether successful or not)
-  // TODO maybe later, will know if we want this to be files or strings. Strings are less memory presumably
-  static ArrayList<String> podcastIdsProcessed = new ArrayList<String>();
-  // keyed by podcast id
-  static HashMap<String, Podcast> podcastsProcessed = new HashMap<String, Podcast>(); 
 
   static ArrayList<Episode> episodesFound = new ArrayList<Episode>();
 
@@ -66,10 +61,15 @@ public class Main {
         toProcess = "new-search";
 
       } else if (s.equals("--process=default-query")) {
-        // if true, process a default query (mostly for testing)
+        // if true, process a default query (FOR TESTING ONLY)
         toProcess = "default-query";
+      } else if (s.equals("--process=all")) {
+        toProcess = "all";
       } else if (s.equals("--process=none")) {
         toProcess = "none";
+      } else {
+        // the default results to process
+        toProcess = "new-search";
       };
     };
   }
@@ -81,9 +81,10 @@ public class Main {
 
   private static void setSearchResultsToProcess() {
     if (toProcess.equals("default-query")) {
-      // process only the specified default file
+      // process only the specified default file (FOR TESTING ONLY)
       try {
         String defaultTerm = "artist";
+        // TODO don't use file, query db instead
         File file = new File(FileHelpers.getFilePath("podcast-data/" + defaultTerm + "_big-data.json"));
 
         // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
@@ -95,6 +96,7 @@ public class Main {
       }
 
     } else if (toProcess.equals("new-search")) {
+      // For the most part, will use this. the other ones are for testing
       System.out.println("only processing new search results");
       searchResultsToProcess.addAll(podcastSearch.results);
       // note: if didn't run search, won't do anything
@@ -102,16 +104,32 @@ public class Main {
     } else if (toProcess.equals("none")) {
       System.out.println("processing none");
 
-    } else {
+    } else if (toProcess.equals("all")) {
       // process all files, not looking at podcasts
+      // TODO paginate, don't just send all at once!
+
       // TODO maybe better to just iterate over the podcasts, some of which might already have the data (?)
       try {
+        /* if processing data from files
         List<File> files = Arrays.asList(new File(FileHelpers.getFilePath("podcast-data")).listFiles());
         for (File file : files) {
           searchResultsToProcess.add(new QueryResults(file));
         }
+        */
 
-      } catch (IOException e) { 
+        // NOTE each search can have zero or many search results
+        // NOTE is it List<Row> or List<ElementT>?
+        List<Row> allSearches = PodcastSearch.fetchAllSearches();
+        
+        for (Row dbRow : allSearches) {
+          // TODO for better performance, and less memory use, don't add them all here. Instead, just iterate over the ResultSet, and call "resultSet.one()" multiple times. 
+          // But  for now no problem, since for the most part we shouldn't even process all the records, should process the results as we get them.
+          searchResultsToProcess.add(new QueryResults(dbRow));
+        }
+
+      } catch (Exception e) { 
+        // temporarily just using a more general exception. But I'm guessing that hitting db with db.execute can throw a very specific error...
+      // } catch (IOException e) { 
         System.out.println("Failed to process default query");
         System.out.println(e);
       }
@@ -119,7 +137,7 @@ public class Main {
     }
   }
 
-  private static void getEpisodes() {
+  private static void processSearchResults() {
     System.out.println("now processing files (count): " + searchResultsToProcess.size());
 
     // iterate over search result files
@@ -127,8 +145,12 @@ public class Main {
       String filename = queryResults.filename;
 
       try {
+				// need to getPodcasts before we can call getEpisodes
+				// perhaps one day, queryResults will have a single method that gets podcasts, and then as it gets it it persists it immediately. But right now just building out our api
 				queryResults.getPodcasts();
+				queryResults.persistPodcasts();
 				queryResults.getEpisodes();
+				// queryResults.persistEpisodes();
       } catch (IOException e) {
 				System.out.println("An error occurred while retrieving podcast and episode data for :" + queryResults.filename);
 				System.out.println(e);
@@ -140,10 +162,6 @@ public class Main {
     }
   }
 
-  private static void initializeDb () throws InvalidQueryException {
-    db.initialize(); 
-  }
-
   // if we don't run this, this java package just keeps running
   private static void closeDb () {
     db.closeSession();
@@ -153,17 +171,19 @@ public class Main {
   // main
 
   // InvalidQueryException from initializing db. Make sure to not continue messing stuff up if the db isn't ready!
-  public static void main (String[] args) throws InvalidQueryException {
+  // NOTE not building the most efficient and streamlined process here. Just iteratively building out apis on important models/classes, which will be called across our app later on.
+  public static void main (String[] args) throws Exception {
     processArgs(args);
-    initializeDb();
+    db.initialize(); 
 
     if (podcastSearchRequested) {
       performSearch(args);
     } 
 
+    System.out.println("Now beginning to process search results");     
     setSearchResultsToProcess();
 
-    getEpisodes();
+    processSearchResults();
 
     // TODO note that this is still not letting process close
     closeDb();

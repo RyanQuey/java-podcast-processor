@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.lang.System;
 import java.lang.Exception;
 import java.lang.InterruptedException;
+import java.lang.IllegalArgumentException;
 import java.lang.Thread;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -43,7 +44,7 @@ import com.datastax.oss.driver.api.querybuilder.term.Term;
 public class QueryResults {
   public String filename;
 
-  // receive when put into db. uuid.
+  // receive when put into db. uuid. TODO maybe don't set or use this
   public String id;
 
   // helper based on filename
@@ -53,8 +54,12 @@ public class QueryResults {
   public String searchType;
   // file where data is written to, if exists
   public File file;
-  // to be either fetched from api or file
+  public Row dbRow;
+
+  // to be either fetched from api or file or db
+  // NOTE instead of storing in db as a Cassandra collection, just store as json string. This Is better in case the data we receive from foreign api is corrupted in one way or the other. UNLESS we want to verify on write instead of read, but that seems to be less than optimal for distributed systems like Cassandra. Would rather just dump the info in
   public String podcastJson;
+  public String constructedFrom;
 
   // TODO when add other external apis, need to set dynamically
   public String externalApi = "itunes";
@@ -63,13 +68,13 @@ public class QueryResults {
   public boolean madeApiCall;
 
   private ArrayList<Podcast> podcasts = new ArrayList<Podcast>();
-  private ArrayList<String> podcastIds = new ArrayList<String>();
   private static CassandraDb db;
   public static List<String> persistMethods = Arrays.asList("write-to-file", "db", "both");
 
   // for when initializing from just search term and search type
   public QueryResults(String term, String searchType, boolean refreshData) 
     {
+      this.constructedFrom = "term-and-type";
       this.term = term;
       this.searchType = searchType;
 
@@ -87,10 +92,11 @@ public class QueryResults {
 
   }
 
-  // for when we have already ran the search
-  // NOTE make sure to set term manually
+  // for when we have already ran the search, and retriving from file
+  // NOTE make sure to set term manually, outside of this constructor
   public QueryResults(File queryResultsFile) 
     throws FileNotFoundException {
+      this.constructedFrom = "file";
       this.file = queryResultsFile;
       this.filename = this.file.getName();
       this.relativePath = "podcast-data/" + this.filename;
@@ -112,6 +118,15 @@ public class QueryResults {
         throw new FileNotFoundException(this.filename + " did not have a term set...");
       }
   }
+  // for when we have already ran the search, and retriving from DB
+  public QueryResults(Row dbRow) 
+    // TODO figure out what to catch if the data in db is corrupted
+    {
+      this.constructedFrom = "db-record";
+      this.term = dbRow.getString("term");
+      this.searchType = dbRow.getString("search_type");
+      this.dbRow = dbRow;
+  }
 
   //////////////////////////////////////
   // some db stuff 
@@ -119,32 +134,31 @@ public class QueryResults {
 
   // TODO add some in-instance caching, for when retrieving from database more than once (?)
   // TODO be careful using this, maybe better to not do this in general, since requires a read for every write? But want to avoid hitting external api quota...
+  // TODO rename to reflect that we're not testing to see if this object exists, but that we've already gotten search results and persisted them
   public boolean exists () {
+    if (this.podcastJson != null) {
+      return true;
+    }
+
     ResultSet result = db.execute("SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 1;");
 
-    System.out.println("checking for existence by using query: " + "SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 1;");
+    System.out.println("checking for existence by using query: " + "SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 2;");
 
     // will be null if nothing found
     // NOTE that return Iterables.size(result) > 0; doesn't work, always returns 0 for some reason
     Row row = result.one();
+    if (row != null) {
+      this.dbRow = row;
+      this.getPodcastJsonFromDbRecord();
 
-    return row != null;
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public void insertIntoDb () {
     Term ts = db.getTimestamp();
-
-      /*
-    insertInto("search_results_by_term")
-      .value("id", literal(UUID.randomUUID()))
-      .value("filename", literal(this.filename))
-      .value("term", literal(this.term))
-      .value("search_type", literal(this.searchType))
-      .value("result_json", literal(this.podcastJson));
-    /*
-      .value("created_at", ts)
-      .value("updated_at", ts);
-      */
 
     String insertQuery = insertInto("search_results_by_term")
       .value("filename", literal(this.filename))
@@ -161,6 +175,7 @@ public class QueryResults {
 
 
   // persists the search results according to the persisting method
+  // TODO when stop saving to file, can get rid of this and just save to db and that's it
   public void persistSearchResult (String persistMethod) {
     if (persistMethod.equals("both") || persistMethod.equals("write-to-file")) {
      // write to a file 
@@ -186,6 +201,26 @@ public class QueryResults {
   ////////////////////////////////////////////
   //
 
+  // pulls data we need from db record, and returns as json
+  // DOES NOT hit any external apis (for that, see this.getPodcastJson)
+  private String getPodcastJsonFromDbRecord ()  {
+    if (this.podcastJson != null) {
+      return this.podcastJson;
+    }
+
+    try {
+      this.podcastJson = this.dbRow.getString("result_json");
+      return this.podcastJson;
+
+    } catch (IllegalArgumentException e) {
+			// could be different types of errors I think...though maybe all are IO? but Exception is fiene
+      System.out.println(e);
+      e.printStackTrace();
+
+      throw e;
+    }
+  }
+
   // either returns json we already have set, or reads file, pulls data we need, and returns as json
   // DOES NOT hit any external apis (for that, see this.getPodcastJson)
   private String getPodcastJsonFromFile () throws IOException {
@@ -205,8 +240,13 @@ public class QueryResults {
 
   // reads file, pulls data we need, and sets to array
   // no reason to set to variable, should only call once ever per QueryResult instance
-  private JSONArray getSearchResults () throws IOException {
-    getPodcastJsonFromFile ();
+  // currently assumes externalApi.equals("itunes")
+  private JSONArray getSearchResults () throws IllegalArgumentException, IOException {
+    if (this.constructedFrom.equals("file")) {
+      getPodcastJsonFromFile();
+    } else {
+      getPodcastJsonFromDbRecord();
+    }
 
     try {
       JSONObject contentsJson = (JSONObject) new JSONObject(this.podcastJson);
@@ -220,7 +260,7 @@ public class QueryResults {
       System.out.println(e);
       e.printStackTrace();
 
-      // so that this can only throw one type of exception:
+      // so that this can throw one less type of exception:
       throw new IOException("failed to read JSON for file " + this.filename);
     }
   };
@@ -239,6 +279,9 @@ public class QueryResults {
         Podcast podcast;
         try {
           podcast = new Podcast(podcastJson, this);
+          // not sure if I want to call this here, but it's fine for now
+          podcast.updateBasedOnRss();
+
         } catch (Exception e) {
           // normally just allow ExecutionException (which is what this ends up being), at least what I've seen so far) to throw, but for this, is really just a json issue, want to continue no matter what
           System.out.println("Error getting info for podcast " + i);
@@ -247,28 +290,35 @@ public class QueryResults {
           e.printStackTrace();
           continue;
         }
-        podcasts.add(podcast);
-        podcastIds.add(podcast.id);
+
+        this.podcasts.add(podcast);
       }
     };
 
     return podcasts;
   }
 
-  public ArrayList<String> getPodcastIds () throws IOException {
-    if (podcastIds.size() > 0) {
-      return podcastIds;
+  public void persistPodcasts () throws IOException {
+    if (podcasts.size() == 0) {
+      // have none, so just return
+      System.out.println("no this search didn't have any podcasts, so not persisting");
+      return;
 
     } else {
-      getPodcasts();
-      return podcastIds;
+      for (Podcast podcast : getPodcasts()) {
+        // get RSS for podcast, to get episode list
+        podcast.save();
+      };
 
-    }
+      System.out.println("finished getting episodes for this set of query results which is stored in: " + this.filename);
+    };
   }
 
   // retrieves either from db or file or from external api
   // One way or the other, returns the json
   public String getPodcastJson (boolean refreshData) 
+    // TODO if we ever use refreshData make sure that we do not set created_at, but only updated_at for those records
+
     throws IOException {
 
       // check if we should skip
@@ -279,8 +329,13 @@ public class QueryResults {
       } else if (!refreshData && this.exists() ) { 
         // hit db NOT files for testing if exists, Since eventually we are moving away from files
         // TODO probably faster to do this one time rather than hitting db every time for every file, for performance
+        // TODO this is pretty messy, relies on this.exists() to hit db and retrieve record for us. should find a better way and give this object (and all models) a better, cleaner api. But for now just working on learning these data engineering libs
+
         System.out.println("skipping search for" + filename);
-        this.getPodcastJsonFromFile(); 
+        // No longer getting from file
+        // this.getPodcastJsonFromFile(); 
+
+        this.getPodcastJsonFromDbRecord(); 
         return this.podcastJson;
 
       } else {
@@ -331,25 +386,18 @@ public class QueryResults {
 
         throw e;
       }
-    }
-    // gets rss data for a podcast (which includes all the episode data)
-    // TODO currently, we are not verifying whether or not we've already gotten data for this podcast. 
-    // if we do, can use following method definition or something like it:
-    // public void getEpisodes(HashMap<String, Podcast> podcastsProcessed, ArrayList<Podcast> podcastIdsProcessed, boolean refreshData){
-    public void getEpisodes() throws IOException {
-      for (Podcast podcast : getPodcasts()) {
+  }
 
-        // get RSS for podcast, to get episode list
+  // gets rss data for a podcast (which includes all the episode data)
+  // TODO currently, we are not verifying whether or not we've already gotten data for this podcast. 
+  // if we do, can use following method definition or something like it:
+  public void getEpisodes() throws IOException {
+    for (Podcast podcast : getPodcasts()) {
+      // get RSS for podcast, to get episode list
+      podcast.getEpisodes();
+    };
 
-        podcast.getEpisodes();
-
-
-        // write to file. Later TODO send to db. Or do something useful with it! 
-
-      };
-
-
-      System.out.println("finished getting episodes for this set of query results which is stored in: " + this.filename);
+    System.out.println("finished getting episodes for this set of query results which is stored in: " + this.filename);
   }
 }
 
