@@ -1,10 +1,11 @@
+migrations/M20200513211500CreateKeyspace.class
+migrations/M20200513221500CreateSearchResultsTable.class
+helpers/HttpReq.class
 dataClasses/PodcastSearch.class
+migrations/M20200524201500CreatePodcastsTable.class
 Main.class
 dataClasses/Podcast.class
 dataClasses/Episode.class
-migrations/M20200513211500CreateKeyspace.class
 helpers/CassandraDb.class
-migrations/M20200513221500CreateSearchResultsTable.class
 helpers/FileHelpers.class
-helpers/HttpReq.class
 dataClasses/QueryResults.class

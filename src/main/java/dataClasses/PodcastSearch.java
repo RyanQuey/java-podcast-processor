@@ -1,6 +1,7 @@
 package dataClasses;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.lang.InterruptedException;
 
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 // local imports
 import helpers.HttpReq;
@@ -30,7 +33,7 @@ public class PodcastSearch {
   private int byMinuteCounter = 0;
   private long start;
 
-  private String[] searchTerms = {
+  static public String[] searchTerms = {
     "data engineering",
     "big data",
     "streaming architecture",
@@ -117,6 +120,7 @@ public class PodcastSearch {
     "devops",
   };
 
+  // TODO make static
   private String[] searchTypes = {
     // empty for getting default, which I believe searches more generally (?) or maybe all terms
     "all",
@@ -125,6 +129,15 @@ public class PodcastSearch {
     "descriptionTerm",
     "artistTerm"
   };
+
+
+  // get all searches from all time
+  // https://docs.datastax.com/en/drivers/java/4.6/com/datastax/oss/driver/api/core/PagingIterable.html
+  static public List<Row> fetchAllSearches () {
+     ResultSet results = db.execute("SELECT * FROM search_results_by_term ;");
+     // NOTE in contrast with doing results.forEach, pulls all the data into memory at once. 
+     return results.all();
+  }
 
   public ArrayList<QueryResults> results = new ArrayList<QueryResults>();
 
@@ -173,7 +186,7 @@ public class PodcastSearch {
 
     start = System.currentTimeMillis();
 
-    for (String term : searchTerms) {
+    for (String term : PodcastSearch.searchTerms) {
       for (String searchType : searchTypes) {
         // don't want to throw errors for these
         QueryResults queryResult = new QueryResults(term, searchType, refreshData);
