@@ -11,12 +11,26 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.sql.Timestamp;
 
+// TODO remove...find more elegant solution for migrations, perhaps a separate jar file I can run or something
+import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
+import migrations.*;
 
 public class CassandraDb {
   private static CqlSession session = CqlSession.builder().build();
 
   public static void initialize () {
+    // create keyspace if doesn't exist already, and initialize tables
+    runMigrations();
+
     session.execute("USE podcast_analysis_tool;");
+  }
+
+  // TODO split off somehow, and only run if haven't ran yet
+  // currently not maintaining versioning for this, not really necessary
+  // since doing IF NOT EXISTS then can run all these all the time we want to migrate
+  private static void runMigrations () throws InvalidQueryException {
+    M20200513211500CreateKeyspace.run(); 
+    M20200513221500CreateSearchResultsTable.run();
   }
 
 	// close session when not actively using...or just when everything is finished running?

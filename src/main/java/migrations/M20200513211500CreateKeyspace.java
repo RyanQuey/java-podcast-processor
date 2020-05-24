@@ -9,7 +9,7 @@ public class M20200513211500CreateKeyspace {
   public static void run () throws InvalidQueryException {
     // because using the try block, automatically closes session on finish
     try {
-      db.execute("CREATE KEYSPACE IF NOT EXISTS podcast_analysis_tool WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 2 } AND DURABLE_WRITES =  false ;");
+      db.execute("CREATE KEYSPACE IF NOT EXISTS podcast_analysis_tool WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1 } AND DURABLE_WRITES =  false ;");
 
       System.out.println("ran migration CreateKeyspace");
 

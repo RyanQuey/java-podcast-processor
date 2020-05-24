@@ -21,8 +21,6 @@ import dataClasses.PodcastSearch;
 import dataClasses.Podcast;
 import dataClasses.Episode;
 
-// TODO remove...find more elegant solution
-import migrations.*;
 import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
 public class Main {
@@ -142,17 +140,8 @@ public class Main {
     }
   }
 
-  // TODO split off somehow, and only run if haven't ran yet
-  // currently not maintaining versioning for this, not really necessary
-  // since doing IF NOT EXISTS then can run all these all the time we want to migrate
-  private static void runMigrations () throws InvalidQueryException {
-    M20200513211500CreateKeyspace.run(); 
-    M20200513221500CreateSearchResultsTable.run();
-  }
-
   private static void initializeDb () throws InvalidQueryException {
     db.initialize(); 
-    runMigrations();
   }
 
   // if we don't run this, this java package just keeps running
@@ -181,5 +170,3 @@ public class Main {
     System.out.println("Finished running");     
   }
 }
-
-

@@ -22,9 +22,7 @@ import helpers.CassandraDb;
 
 public class PodcastSearch {
 
-  // if true, won't persist data corersponding to a given file to db more than one time, unless a new search is ran for that file
-  // later will probably remove so can see changes over time
-  private boolean persistEachFileOnce = true;
+  // if true, won't persist data corresponding to a given file to db more than one time, unless a new search is ran for that file
   private String persistMethod = "both"; // could also be "write-to-file" or "db"
   static private CassandraDb db;
 
@@ -153,6 +151,7 @@ public class PodcastSearch {
 
     } else if (totalCounter > 100) {
       // just a shot in the dark, but let's not hit more than 100 times per run
+      // TODO stop looping if get here
     };
   }
   // TODO refactor, separate out  and put a lot into the QueryResults class
@@ -162,6 +161,7 @@ public class PodcastSearch {
     boolean refreshData = false;
     for (String s: args) {
       if (s == "refresh-data") {
+        System.out.println("***Refreshing all searches, regardless of whether they've been performed recently or not***");
         refreshData = true;
       }
     };
@@ -181,14 +181,22 @@ public class PodcastSearch {
           queryResult.getPodcastJson(refreshData);
         } catch (IOException e) {
           System.out.println("Skipping queryResult: " + term + " for type: " + searchType + "due to error");
-          // should log already before this
+          // should log error already before this
+
+          // Stop hitting their API if we max out the quota
+          // NOTE this conditional is a little bit fragile, but works for now TODO
+          if (e.toString().equals("java.io.IOException: Server returned HTTP response code: 403 for URL: https://itunes.apple.com/search")) {
+            System.out.println("itunes doesn't want us to query anymore, taking a break");     
+            return;
+            
+          } 
           continue;
         }
 
         // right now, persisting no matter what. Even if we read from file, if persist-method is writing to file, will write again. Even if we read from db, if persist-method is reading to db, write again.
         // TODO remove that redundancy mentioned above (?);
         System.out.println("Persisting json to " + persistMethod);
-        queryResult.persistSearchResult(persistMethod, persistEachFileOnce);
+        queryResult.persistSearchResult(persistMethod);
         results.add(queryResult);
 
         if (queryResult.madeApiCall) {
