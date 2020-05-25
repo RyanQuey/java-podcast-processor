@@ -6,12 +6,14 @@ import java.util.List;
 import java.lang.System;
 import java.lang.Exception;
 import java.lang.InterruptedException;
+import java.lang.NoSuchMethodError;
 import java.io.IOException; 
 import java.util.concurrent.ExecutionException;
 import java.lang.RuntimeException;
 import java.lang.IllegalArgumentException;
 import java.lang.Thread;
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import org.json.JSONObject;
@@ -32,6 +34,14 @@ import com.rometools.modules.itunes.FeedInformation;
 
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
+
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+
+
 
 import helpers.HttpReq;
 import helpers.FileHelpers;
@@ -128,7 +138,19 @@ public class Podcast {
       this.primaryGenre = (String) podcastJson.get("primaryGenreName");
       // itunes format: "2020-05-04T15:00:00Z"
       this.releaseDate = (String) podcastJson.get("releaseDate");
-      this.explicit = (String) podcastJson.get("contentAdvisoryRating") == "Clean";
+      
+      // definitely don't want to break on this. And sometimes they set as collectionExplicitness instead I guess (?...at least, I saw one that itunes returned that way)
+      
+      String rating; 
+      if (podcastJson.has("contentAdvisoryRating")) {
+        rating = (String) podcastJson.get("contentAdvisoryRating");
+      } else if (podcastJson.has("collectionExplicitness")) {
+        rating = (String) podcastJson.get("collectionExplicitness");
+      } else {
+        rating = "UNKNOWN";
+      }
+
+      this.explicit = Arrays.asList("notExplicit", "Clean").contains(rating);
 
       this.episodeCount = (int) podcastJson.get("trackCount");
       // TODO persist somehow, probably with type List, and list chronologically the times that this was returned. BUt for me, don't need that info
@@ -192,10 +214,53 @@ public class Podcast {
 	// https://rometools.github.io/rome/Fetcher/UsingTheRomeFetcherModuleToRetrieveFeeds.html
   private SyndFeed getRssFeed () 
     throws Exception {
+      CloseableHttpResponse response;
+      CloseableHttpClient client; 
+      HttpUriRequest request; 
       try {
-        SyndFeedInput input = new SyndFeedInput();
+
+				// setup connection
+				try {
+					client = HttpClients.createMinimal(); 
+					request = new HttpGet(this.feedUrl);
+          response = client.execute(request); 
+
+        } catch (Exception e) {
+          throw e;
+        }
+
+        // set feed data to our object
+        try {
+          InputStream stream = response.getEntity().getContent();
+          SyndFeedInput input = new SyndFeedInput();
+          try {
+            this.rssFeed = input.build(new XmlReader(stream));
+          } catch (NoSuchMethodError e) {
+            // I don't know why, but sometimes this error happens here too. If so, jus t skip this podcast. Maybe one day keep a record of errored podcasts
+            // TODO find out why NoSuchMethodError's thrown here aren't caught by the parent try-catch blocks. Instead i tjust stops the program altogether
+            System.out.println(e);
+            e.printStackTrace();
+            throw new RuntimeException("Failed to read this rss xml, not sure why");
+          }
+
+          System.out.println("Reading feed for:");
+          System.out.println(this.rssFeed.getTitle());
+
+				  // TODO find out what kinds of exception
+        } catch (Exception e) {
+          System.out.println("error getting feed from url");
+          System.out.println(e);
+          e.printStackTrace();
+
+          throw e;
+        } finally {
+          // TODO not in their example, but I'm guessing I have to do this
+          // I think it's all read at this point, so can close no matter what (?)
+          response.close();
+				}
+
         // NOTE TODO add a more robust fetching mechanism, as recommended in the github home page and described here: `https://github.com/rometools/rome/issues/276`
-        this.rssFeed = input.build(new XmlReader(new URL(this.feedUrl)));
+        // this.rssFeed = input.build(new XmlReader(rssData));
 				final Module module = this.rssFeed.getModule(AbstractITunesObject.URI);
         this.feedInfo = (FeedInformationImpl) module;
         // this.feedInfo = (FeedInformation) module;
@@ -206,7 +271,14 @@ public class Podcast {
         //
 
         // TODO might not need to save the string
-        this.rssFeedStr = this.rssFeed.toString();
+        try {
+          this.rssFeedStr = this.rssFeed.toString();
+        } catch (NoSuchMethodError e) {
+          System.out.println("can't turn to string for some reason, moving on");
+          System.out.println(e);
+          e.printStackTrace();
+        }
+
         System.out.println("Got rss feed");
    
         return this.rssFeed;
@@ -216,6 +288,7 @@ public class Podcast {
         e.printStackTrace();
 
         throw e;
+
       }
   }
 
@@ -281,8 +354,8 @@ public class Podcast {
     this.description = this.rssFeed.getDescription();
     // not sure if this is what I think i tis TODO
     this.websiteUrl = this.rssFeed.getLink();
-    // hope this works
-    this.language = this.rssFeed.getLanguage();
+    // if they didn't set a language, default to "UNKNOWN" to avoid error: `InvalidQueryException: Key may not be empty`. Especially critical since we often sort by 
+    this.language = this.rssFeed.getLanguage() == null ? this.rssFeed.getLanguage() : "UNKNOWN";
     // saw it here: https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/FeedInformationImpl.java#L179
     this.descriptionSubtitle = feedInfo.getSubtitle();
 

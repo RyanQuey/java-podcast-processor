@@ -6,6 +6,13 @@
   <packaging>jar</packaging>
   <version>0.1.0</version>
   <dependencies>
+    <!-- http client, used initially so I can do this https://github.com/rometools/rome/issues/276#issuecomment-192755732 Note though that 5.0 is out--> 
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.2</version>
+    </dependency>
+
     <!-- Google core libraries for Java https://github.com/google/guava --> 
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -112,7 +119,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <mainClass>Main</mainClass>
-    <performSearch>true</performSearch>
-    <searchResultsToProcess>all</searchResultsToProcess>
+    <performSearch>false</performSearch>
+    <searchResultsToProcess>default-query</searchResultsToProcess>
 	</properties>
 </project>

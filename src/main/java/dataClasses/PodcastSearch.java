@@ -209,7 +209,10 @@ public class PodcastSearch {
         // right now, persisting no matter what. Even if we read from file, if persist-method is writing to file, will write again. Even if we read from db, if persist-method is reading to db, write again.
         // TODO remove that redundancy mentioned above (?);
         System.out.println("Persisting json to " + persistMethod);
-        queryResult.persistSearchResult(persistMethod);
+        // if want better speed, don't add this. But leave this if don't want so many duplicates
+        if (!queryResult.exists()) {
+          queryResult.persistSearchResult(persistMethod);
+        }
         results.add(queryResult);
 
         if (queryResult.madeApiCall) {
