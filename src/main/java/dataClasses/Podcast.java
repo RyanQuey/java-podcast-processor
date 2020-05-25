@@ -1,56 +1,42 @@
 package dataClasses;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.lang.System;
-import java.lang.Exception;
-import java.lang.InterruptedException;
-import java.lang.NoSuchMethodError;
-import java.io.IOException; 
-import java.util.concurrent.ExecutionException;
-import java.lang.RuntimeException;
-import java.lang.IllegalArgumentException;
-import java.lang.Thread;
-import java.io.File;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.update;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import org.json.JSONObject;
-import org.json.JSONArray;
-import org.json.JSONException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
-import java.net.URL;
-import java.io.InputStreamReader;
-import com.rometools.rome.feed.synd.SyndFeed;
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.module.Module; // TODO confirm
-import com.rometools.rome.io.SyndFeedInput;
-import com.rometools.rome.io.XmlReader;
-import com.rometools.modules.itunes.AbstractITunesObject;
-import com.rometools.modules.itunes.FeedInformation;
-import com.rometools.modules.itunes.FeedInformationImpl;
-
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
-import com.datastax.oss.driver.api.querybuilder.term.Term;
+import com.datastax.oss.driver.api.core.cql.ResultSet;
+import com.datastax.oss.driver.api.core.cql.Row;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 // DSE Mapper
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
+import com.datastax.oss.driver.api.querybuilder.term.Term;
+import com.rometools.modules.itunes.AbstractITunesObject;
+import com.rometools.modules.itunes.FeedInformationImpl;
+import com.rometools.rome.feed.module.Module; // TODO confirm
+import com.rometools.rome.feed.synd.SyndEntry;
+import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.SyndFeedInput;
+import com.rometools.rome.io.XmlReader;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-
-
-import helpers.HttpReq;
-import helpers.FileHelpers;
 import helpers.CassandraDb;
-
-import dataClasses.Episode;
+import helpers.FileHelpers;
+import helpers.HttpReq;
 
 /* 
  * For one file, gets all search results and retrieves the rss feed data
@@ -81,12 +67,6 @@ public class Podcast {
   private String releaseDate;
   boolean explicit;
   int episodeCount;
-  private SyndFeed rssFeed;
-  private String rssFeedStr;
-  // test does it this way, demo (https://rometools.github.io/rome/Modules/ITunesPodcasting.html) does it FeedInformation
-  // FeedInformationImpl implements FeedInformation though, so probably use FeedInformationImpl
-  private FeedInformationImpl feedInfo;
-  // FeedInformation feedInfo;
 
   // to get from rss, that itunes doesn't return in search
   // from description
@@ -102,13 +82,19 @@ public class Podcast {
   private String author; //not yet sure how this is distinct from owner. But airflow's podcast for example has different http://feeds.soundcloud.com/users/soundcloud:users:385054355/sounds.rss
   // from image:link
   private String websiteUrl; // TODO make all these urls of java class Url
-
+  private String updatedAt;
   // list of queries, each query giving term, searchType, api, and when search was performed
   private List<Map<String, String>> foundByQueries; 
 
   ///////
   // these are not persisted to db
-  String updatedAt;
+  
+  private SyndFeed rssFeed;
+  private String rssFeedStr;
+  // test does it this way, demo (https://rometools.github.io/rome/Modules/ITunesPodcasting.html) does it FeedInformation
+  // FeedInformationImpl implements FeedInformation though, so probably use FeedInformationImpl
+  private FeedInformationImpl feedInfo;
+  // FeedInformation feedInfo;
 
   QueryResults fromQuery; 
   Exception errorGettingRss; 
@@ -183,6 +169,7 @@ public class Podcast {
     ResultSet result = db.execute(query);
 
     Row dbRecord = result.one();
+
   }
 
 	// wrapper around getRssStr and getRss, with extra error handling, and makes sure we don't make the http request multiple times if unnecessary
@@ -449,6 +436,222 @@ public class Podcast {
       System.out.println(query);
     db.execute(query);
   }
+
+  public String getLanguage() {
+      return language;
+  }
+
+  public void setLanguage(String language) {
+      this.language = language;
+  }
+
+  public String getPrimaryGenre() {
+      return primaryGenre;
+  }
+
+  public void setPrimaryGenre(String primaryGenre) {
+      this.primaryGenre = primaryGenre;
+  }
+
+  public String getFeedUrl() {
+      return feedUrl;
+  }
+
+  public void setFeedUrl(String feedUrl) {
+      this.feedUrl = feedUrl;
+  }
+
+  public String getOwner() {
+      return owner;
+  }
+
+  public void setOwner(String owner) {
+      this.owner = owner;
+  }
+
+  public String getName() {
+      return name;
+  }
+
+  public void setName(String name) {
+      this.name = name;
+  }
+
+  public String getImageUrl30() {
+      return imageUrl30;
+  }
+
+  public void setImageUrl30(String imageUrl30) {
+      this.imageUrl30 = imageUrl30;
+  }
+
+  public String getImageUrl60() {
+      return imageUrl60;
+  }
+
+  public void setImageUrl60(String imageUrl60) {
+      this.imageUrl60 = imageUrl60;
+  }
+
+  public String getImageUrl100() {
+      return imageUrl100;
+  }
+
+  public void setImageUrl100(String imageUrl100) {
+      this.imageUrl100 = imageUrl100;
+  }
+
+  public String getImageUrl600() {
+      return imageUrl600;
+  }
+
+  public void setImageUrl600(String imageUrl600) {
+      this.imageUrl600 = imageUrl600;
+  }
+
+  public String getApi() {
+      return api;
+  }
+
+  public void setApi(String api) {
+      this.api = api;
+  }
+
+  public String getApiId() {
+      return apiId;
+  }
+
+  public void setApiId(String apiId) {
+      this.apiId = apiId;
+  }
+
+  public String getApiUrl() {
+      return apiUrl;
+  }
+
+  public void setApiUrl(String apiUrl) {
+      this.apiUrl = apiUrl;
+  }
+
+  public String getCountry() {
+      return country;
+  }
+
+  public void setCountry(String country) {
+      this.country = country;
+  }
+
+  public ArrayList<String> getGenres() {
+      return genres;
+  }
+
+  public void setGenres(ArrayList<String> genres) {
+      this.genres = genres;
+  }
+
+  public ArrayList<String> getApiGenreIds() {
+      return apiGenreIds;
+  }
+
+  public void setApiGenreIds(ArrayList<String> apiGenreIds) {
+      this.apiGenreIds = apiGenreIds;
+  }
+
+  public String getReleaseDate() {
+      return releaseDate;
+  }
+
+  public void setReleaseDate(String releaseDate) {
+      this.releaseDate = releaseDate;
+  }
+
+  public boolean isExplicit() {
+      return explicit;
+  }
+
+  public void setExplicit(boolean explicit) {
+      this.explicit = explicit;
+  }
+
+  public int getEpisodeCount() {
+      return episodeCount;
+  }
+
+  public void setEpisodeCount(int episodeCount) {
+      this.episodeCount = episodeCount;
+  }
+
+  public String getDescription() {
+      return description;
+  }
+
+  public void setDescription(String description) {
+      this.description = description;
+  }
+
+  public String getSummary() {
+      return summary;
+  }
+
+  public void setSummary(String summary) {
+      this.summary = summary;
+  }
+
+  public String getDescriptionSubtitle() {
+      return descriptionSubtitle;
+  }
+
+  public void setDescriptionSubtitle(String descriptionSubtitle) {
+      this.descriptionSubtitle = descriptionSubtitle;
+  }
+
+  public String getWebmaster() {
+      return webmaster;
+  }
+
+  public void setWebmaster(String webmaster) {
+      this.webmaster = webmaster;
+  }
+
+  public String getOwnerEmail() {
+      return ownerEmail;
+  }
+
+  public void setOwnerEmail(String ownerEmail) {
+      this.ownerEmail = ownerEmail;
+  }
+
+  public String getAuthor() {
+      return author;
+  }
+
+  public void setAuthor(String author) {
+      this.author = author;
+  }
+
+  public String getWebsiteUrl() {
+      return websiteUrl;
+  }
+
+  public void setWebsiteUrl(String websiteUrl) {
+      this.websiteUrl = websiteUrl;
+  }
+
+  public String getUpdatedAt() {
+      return updatedAt;
+  }
+
+  public void setUpdatedAt(String updatedAt) {
+      this.updatedAt = updatedAt;
+  }
+
+  public List<Map<String, String>> getFoundByQueries() {
+      return foundByQueries;
+  }
+
+  public void setFoundByQueries(List<Map<String, String>> foundByQueries) {
+      this.foundByQueries = foundByQueries;
+  }  
 };
 
 
