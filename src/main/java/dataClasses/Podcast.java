@@ -28,9 +28,8 @@ import com.rometools.rome.feed.module.Module; // TODO confirm
 import com.rometools.rome.io.SyndFeedInput;
 import com.rometools.rome.io.XmlReader;
 import com.rometools.modules.itunes.AbstractITunesObject;
-import com.rometools.modules.itunes.EntryInformation;
-import com.rometools.modules.itunes.FeedInformationImpl;
 import com.rometools.modules.itunes.FeedInformation;
+import com.rometools.modules.itunes.FeedInformationImpl;
 
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
@@ -155,6 +154,17 @@ public class Podcast {
       this.episodeCount = (int) podcastJson.get("trackCount");
       // TODO persist somehow, probably with type List, and list chronologically the times that this was returned. BUt for me, don't need that info
       this.fromQuery = fromQuery;
+  }
+
+  public Podcast(String primary_genre, String feed_url) {
+  
+  }
+
+  public Podcast fetch () {
+    String query = "SELECT * FROM podcast_analysis_tool.podcasts_by_language WHERE language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = " + this.primaryGenre + " AND feed_url = " + this.feedUrl + " LIMIT 1";
+    ResultSet result = db.execute(query);
+
+    Row dbRecord = result.one();
   }
 
 	// wrapper around getRssStr and getRss, with extra error handling, and makes sure we don't make the http request multiple times if unnecessary
@@ -295,32 +305,17 @@ public class Podcast {
 
   // TODO what do I want to do for error handling?
   // private Map<String, String> convertRssToMap () {
-  private void convertRssToMap () {
+  private void convertRssToEpisodes () {
     // inexpensive way to make sure that we have the feet already set
     try {
       this.getRss();
 
       for (SyndEntry entry : this.rssFeed.getEntries()) {
-        // sets the module to use for this feed
-        // maybe use this instead:         final Module module = syndfeed.getModule(AbstractITunesObject.URI);
-        //
-        Module entryModule = entry.getModule("http://www.itunes.com/dtds/podcast-1.0.dtd");
-        EntryInformation entryInfo = (EntryInformation) entryModule;
-        // see here; base what we do off of tests
-        // https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/test/java/com/rometools/modules/itunes/ITunesParserTest.java#L128
-        // TODO NEXT
-        // also here: https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/EntryInformation.java
-        // 
-        // https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/EntryInformationImpl.java#L37-L42
+        Episode episode = new Episode(entry);
+        episode.podcast = this;
 
-
+        this.episodes.add(episode);
       }
-      /*
-      XStream rssStream = new XStream();
-      Map<String, String> extractedMap = (Map<String, String>) rssStream.fromXML(xml);
-      assert extractedMap.get("name").equals("chris");
-      assert extractedMap.get("island").equals("faranga");
-  */
     } catch (Exception e) {
       System.out.println("Error: " + e);
       e.printStackTrace();
@@ -374,7 +369,7 @@ public class Podcast {
     // TODO will have different return value later;
     try {
       getRss();
-      convertRssToMap();
+      convertRssToEpisodes();
       
 
 
