@@ -33,6 +33,10 @@ import com.rometools.modules.itunes.FeedInformationImpl;
 
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
+// DSE Mapper
+import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -52,50 +56,58 @@ import dataClasses.Episode;
  * For one file, gets all search results and retrieves the rss feed data
  *
  */
+
+@Entity
 public class Podcast {
-  String owner; 
-  String name; 
-  String imageUrl30;  
-  String imageUrl60;  
-  String imageUrl100;  
-  String imageUrl600;  
-  String api; // name of the api TODO move this, apiId, and apiUrl to a nested map once we implement other apis
-  String apiId; // id assigned by api
-  String apiUrl; // url within api
-  String country;
-  String feedUrl; // rss feed url
-  ArrayList<String> genres;
-  ArrayList<String> apiGenreIds;
-  String primaryGenre;
-  String releaseDate;
+  @PartitionKey 
+  private String language;
+  @ClusteringColumn(1) 
+  private String primaryGenre;
+  @ClusteringColumn(2) 
+  private String feedUrl; // rss feed url
+
+  private String owner; 
+  private String name; 
+  private String imageUrl30;  
+  private String imageUrl60;  
+  private String imageUrl100;  
+  private String imageUrl600;  
+  private String api; // name of the api TODO move this, apiId, and apiUrl to a nested map once we implement other apis
+  private String apiId; // id assigned by api
+  private String apiUrl; // url within api
+  private String country;
+  private ArrayList<String> genres;
+  private ArrayList<String> apiGenreIds;
+  private String releaseDate;
   boolean explicit;
   int episodeCount;
-  SyndFeed rssFeed;
-  String rssFeedStr;
+  private SyndFeed rssFeed;
+  private String rssFeedStr;
   // test does it this way, demo (https://rometools.github.io/rome/Modules/ITunesPodcasting.html) does it FeedInformation
   // FeedInformationImpl implements FeedInformation though, so probably use FeedInformationImpl
-  FeedInformationImpl feedInfo;
+  private FeedInformationImpl feedInfo;
   // FeedInformation feedInfo;
 
   // to get from rss, that itunes doesn't return in search
   // from description
-  String description;
+  private String description;
   // not sure how it would be different from description, but rome seems to include it as part of the itunes rss api
-  String summary;
+  private String summary;
   // from itunes:subtitle
-  String descriptionSubtitle;
+  private String descriptionSubtitle;
   // from webMaster
-  String webmaster;
+  private String webmaster;
   // from itunes:owner > itunes:email
-  String ownerEmail;
-  String author; //not yet sure how this is distinct from owner. But airflow's podcast for example has different http://feeds.soundcloud.com/users/soundcloud:users:385054355/sounds.rss
-  String language;
+  private String ownerEmail;
+  private String author; //not yet sure how this is distinct from owner. But airflow's podcast for example has different http://feeds.soundcloud.com/users/soundcloud:users:385054355/sounds.rss
   // from image:link
-  String websiteUrl; // TODO make all these urls of java class Url
+  private String websiteUrl; // TODO make all these urls of java class Url
 
   // list of queries, each query giving term, searchType, api, and when search was performed
-  List<Map<String, String>> foundByQueries; 
+  private List<Map<String, String>> foundByQueries; 
 
+  ///////
+  // these are not persisted to db
   String updatedAt;
 
   QueryResults fromQuery; 
@@ -105,6 +117,12 @@ public class Podcast {
 
   // access through getters
   private ArrayList<Episode> episodes = new ArrayList<Episode>();
+
+  /////////////////////////////////////////////////
+  // constructors
+
+  // for DSE DAO
+  public Podcast() {}
 
   // TODO add some error handling, so that for every attribute, if it doesn't work, just move on, no problem. Just get as much information as we can
   public Podcast(JSONObject podcastJson, QueryResults fromQuery) 
