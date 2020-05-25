@@ -72,6 +72,7 @@ public class QueryResults {
   public static List<String> persistMethods = Arrays.asList("write-to-file", "db", "both");
 
   // for when initializing from just search term and search type
+  // TODO refreshData should eventually just force hitting the database immediately; currently does nothing
   public QueryResults(String term, String searchType, boolean refreshData) 
     {
       this.constructedFrom = "term-and-type";
@@ -118,6 +119,7 @@ public class QueryResults {
         throw new FileNotFoundException(this.filename + " did not have a term set...");
       }
   }
+
   // for when we have already ran the search, and retriving from DB
   public QueryResults(Row dbRow) 
     // TODO figure out what to catch if the data in db is corrupted
@@ -128,6 +130,12 @@ public class QueryResults {
       this.dbRow = dbRow;
   }
 
+  ////////////////////////////////
+  // display helpers
+
+  public String friendlyName () {
+    return "(" + this.term + ", " + this.searchType + ")";
+  };
   //////////////////////////////////////
   // some db stuff 
   // TODO add into something all models can borrow from
@@ -157,6 +165,24 @@ public class QueryResults {
     }
   }
 
+  // untested and not used currently
+  public void save () {
+    Term ts = db.getTimestamp();
+
+    String updateQuery = update("search_results_by_term")
+      .setColumn("filename", literal(this.filename))
+      .setColumn("result_json", literal(this.podcastJson))
+      .setColumn("external_api", literal(this.externalApi))
+      .setColumn("created_at", ts)
+      .setColumn("updated_at", ts)
+      .whereColumn("term").isEqualTo(literal(this.term))
+      .whereColumn("search_type").isEqualTo(literal(this.searchType))
+      .asCql();
+
+    db.execute(updateQuery);
+  }
+
+  // for now will generate lots of duplicates, but can handle that later
   public void insertIntoDb () {
     Term ts = db.getTimestamp();
 
@@ -266,12 +292,12 @@ public class QueryResults {
   };
 
   public ArrayList<Podcast> getPodcasts () throws IOException {
-    System.out.println("*********GETTING PODCASTS (" + this.term + ", " + this.searchType + ")*************");
     if (podcasts.size() > 0) {
       // already got them, so just return
       return podcasts;
 
     } else {
+      System.out.println("*********GETTING PODCASTS " + this.friendlyName() + " *************");
       JSONArray resultsJson = getSearchResults();
 
       for (int i = 0; i < resultsJson.length(); i++) {
@@ -285,10 +311,11 @@ public class QueryResults {
 
         } catch (Exception e) {
           // normally just allow ExecutionException (which is what this ends up being), at least what I've seen so far) to throw, but for this, is really just a json issue, want to continue no matter what
-          System.out.println("Error getting info for podcast " + i);
-          System.out.println("moving to next");
+          System.out.println("Error getting info for podcast with json:: " + podcastJson);
+          System.out.println("  \n  ");
           System.out.println(e);
           e.printStackTrace();
+          System.out.println("moving to next");
           continue;
         }
 
@@ -401,7 +428,8 @@ public class QueryResults {
       podcast.getEpisodes();
     };
 
-    System.out.println("finished getting episodes for this set of query results which is stored in: " + this.filename);
+    System.out.println("finished getting episodes for this set of query results" + this.filename);
+    System.out.println("--");
   }
 }
 
