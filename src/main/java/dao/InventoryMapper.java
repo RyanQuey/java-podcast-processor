@@ -12,6 +12,11 @@ import com.datastax.oss.driver.api.mapper.annotations.Mapper;
  *  InventoryMapper inventoryMapper = InventoryMapper.builder(session).build();
  *  PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool", "podcasts_by_language");
  *  dao.findById("this-is-the-podcast-id");
+ *  
+ *  OR 
+ *
+ *  dao.save(new Product(UUID.randomUUID(), "Mechanical keyboard"));
+ *
  *
  *
  * Note that "The mapper maintains an interface cache. Calling a factory method with the same arguments will yield the same DAO instance"
