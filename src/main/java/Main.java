@@ -52,10 +52,14 @@ public class Main {
     for (String s: args) {
       System.out.println(s);     
 
+      ////////////////////
+      // perform search or not?
       if (s.equals("--perform-search=true")) {
         podcastSearchRequested = true;
       };
 
+      ////////////////////
+      // what searches to process?
       if (s.equals("--process=new")) {
         // if true, only process the search results we just received (not all)
         toProcess = "new-search";
@@ -63,13 +67,15 @@ public class Main {
       } else if (s.equals("--process=default-query")) {
         // if true, process a default query (FOR TESTING ONLY)
         toProcess = "default-query";
+        System.out.println(toProcess);     
       } else if (s.equals("--process=all")) {
         toProcess = "all";
       } else if (s.equals("--process=none")) {
         toProcess = "none";
-      } else {
-        // the default results to process
+      } else if (toProcess.equals("")) {
+        // the default results to process. NOTE that other flags will also hit this conditional, so don't just do `} else {...`
         toProcess = "new-search";
+        System.out.println(toProcess);     
       };
     };
   }
@@ -82,21 +88,21 @@ public class Main {
   private static void setSearchResultsToProcess() {
     if (toProcess.equals("default-query")) {
       // process only the specified default file (FOR TESTING ONLY)
-      try {
-        String defaultTerm = "artist";
-        // TODO don't use file, query db instead
-        File file = new File(FileHelpers.getFilePath("podcast-data/" + defaultTerm + "_big-data.json"));
+      // make sure to copy the QueryResults constructor when term and searchType are passed in. Keep this in sync with that (that is going to be more up to date than this)
+      String searchType = "all";
+      String term = "big data";
+      System.out.println("Only going to process the default query: (" + term + ", " + searchType + ")");
+      // TODO don't use file, query db instead
 
-        // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
+      // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
 
-        searchResultsToProcess.add(new QueryResults(file));
-      } catch (IOException e) { 
-        System.out.println("Failed to process default query");
-        System.out.println(e);
-      }
+      QueryResults qr = new QueryResults(term, searchType, false);
+      System.out.println(qr.term);
+      searchResultsToProcess.add(qr);
 
     } else if (toProcess.equals("new-search")) {
       // For the most part, will use this. the other ones are for testing
+      // NOTE Even if we had already persisted the search results previously, if the search was done, we are processing currently. Maybe Want to change his behavior later, depending on how we do the searches.
       System.out.println("only processing new search results");
       searchResultsToProcess.addAll(podcastSearch.results);
       // note: if didn't run search, won't do anything
@@ -147,8 +153,14 @@ public class Main {
       try {
 				// need to getPodcasts before we can call getEpisodes
 				// perhaps one day, queryResults will have a single method that gets podcasts, and then as it gets it it persists it immediately. But right now just building out our api
+
+				// most often unnecessary, but if so it will only do a quick boolean check
+				queryResults.getPodcastJson(false);
+				// hits the feedUrls for each podcast and pulls out data from that xml to get data about the podcasts 
 				queryResults.getPodcasts();
+				// persists data we just got
 				queryResults.persistPodcasts();
+        // get episodes for each of those podcasts
 				queryResults.getEpisodes();
 				// queryResults.persistEpisodes();
       } catch (IOException e) {
@@ -167,6 +179,27 @@ public class Main {
     db.closeSession();
   }
 
+
+  ///////////////////////////////////////
+  // Some top level methods we could call as "Main"
+  private static void runSearchesAndProcess (String[] args) {
+    if (podcastSearchRequested) {
+      performSearch(args);
+    } 
+
+    System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");     
+    System.out.println("Now beginning to process search results");     
+    setSearchResultsToProcess();
+
+    processSearchResults();
+  }
+
+  // TODO finish adding this helper
+  private static void processOneSearch () {
+    String term = "big data";
+    String searchType = "all";
+  }
+
   //////////////////////////////////
   // main
 
@@ -176,17 +209,14 @@ public class Main {
     processArgs(args);
     db.initialize(); 
 
-    if (podcastSearchRequested) {
-      performSearch(args);
-    } 
-
-    System.out.println("Now beginning to process search results");     
-    setSearchResultsToProcess();
-
-    processSearchResults();
+    runSearchesAndProcess(args);
 
     // TODO note that this is still not letting process close
     closeDb();
     System.out.println("Finished running");     
+    
+    // closes the process...not sure why necessary TODO
+    // https://stackoverflow.com/a/7416103/6952495
+    Runtime.getRuntime().exit(0);
   }
 }

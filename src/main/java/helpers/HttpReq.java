@@ -12,6 +12,13 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
+import java.io.InputStream;
+
+// TODO in the future just use this (?): <dependency>
+//   <groupId>org.apache.httpcomponents</groupId>
+//     <artifactId>httpclient</artifactId>
+//       <version>4.5.2</version>
+//       </dependency>
 
 public class HttpReq {
 // add what will be returned
@@ -20,17 +27,8 @@ public class HttpReq {
     throws IOException {
       // set limit to 200, let's just get all of it (default: 50)
       // contents = urllib.request.urlopen(f"?media=podcast&term={term}&limit=200&version=2&lang=en_us&country=US").read()
-      URL url;
+      URL url = stringToUrl(urlStr);
       String contentStr;
-
-      try {
-        url = new URL(urlStr);
-
-      } catch (MalformedURLException e) {
-        System.out.println(e);
-
-        throw e;
-      }
 
       try {
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -52,9 +50,10 @@ public class HttpReq {
           out.flush();
           out.close();
         }
+        int status = con.getResponseCode();
 
         // begin reading (sends the http request itself...I think)
-        int status = con.getResponseCode();
+        
         BufferedReader in = new BufferedReader(
           new InputStreamReader(con.getInputStream())
         );
@@ -65,6 +64,7 @@ public class HttpReq {
           content.append(inputLine);
         }
         in.close();
+
         con.disconnect();
 
         String contentString;
@@ -99,6 +99,20 @@ public class HttpReq {
       return resultString.length() > 0
         ? resultString.substring(0, resultString.length() - 1)
         : resultString;
+  }
+
+  private static URL stringToUrl(String urlStr) 
+    throws MalformedURLException {
+      try {
+        URL url = new URL(urlStr);
+        return url;
+
+      } catch (MalformedURLException e) {
+        System.out.println(e);
+
+        throw e;
+      }
+  
   }
 }
 
