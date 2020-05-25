@@ -111,7 +111,7 @@ public class Main {
       System.out.println("processing none");
 
     } else if (toProcess.equals("all")) {
-      // process all files, not looking at podcasts
+      // process all searches. Hits db to fetch all searches whether we have them in memory already or not
       // TODO paginate, don't just send all at once!
 
       // TODO maybe better to just iterate over the podcasts, some of which might already have the data (?)
@@ -151,7 +151,7 @@ public class Main {
       String filename = queryResults.filename;
 
       try {
-				// need to getPodcasts before we can call getEpisodes
+				// DON'T need to getPodcasts before we can call getEpisodes, but makes more readable 
 				// perhaps one day, queryResults will have a single method that gets podcasts, and then as it gets it it persists it immediately. But right now just building out our api
 
 				// most often unnecessary, but if so it will only do a quick boolean check
@@ -161,6 +161,7 @@ public class Main {
 				// persists data we just got
 				queryResults.persistPodcasts();
         // get episodes for each of those podcasts
+
 				queryResults.getEpisodes();
 				// queryResults.persistEpisodes();
       } catch (IOException e) {
@@ -198,6 +199,11 @@ public class Main {
   private static void processOneSearch () {
     String term = "big data";
     String searchType = "all";
+  }
+
+  // TODO finish adding this helper
+  private static void processOnePodcast () {
+    String language
   }
 
   //////////////////////////////////

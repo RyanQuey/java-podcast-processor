@@ -120,6 +120,6 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <mainClass>Main</mainClass>
     <performSearch>false</performSearch>
-    <searchResultsToProcess>default-query</searchResultsToProcess>
+    <searchResultsToProcess>all</searchResultsToProcess>
 	</properties>
 </project>
