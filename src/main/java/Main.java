@@ -91,13 +91,13 @@ public class Main {
       // make sure to copy the QueryResults constructor when term and searchType are passed in. Keep this in sync with that (that is going to be more up to date than this)
       String searchType = "all";
       String term = "big data";
-      System.out.println("Only going to process the default query: (" + term + ", " + searchType + ")");
       // TODO don't use file, query db instead
 
       // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
 
       QueryResults qr = new QueryResults(term, searchType, false);
-      System.out.println(qr.term);
+      System.out.println("Only going to process the default query: " + qr.friendlyName());
+      System.out.println(qr.friendlyName());
       searchResultsToProcess.add(qr);
 
     } else if (toProcess.equals("new-search")) {

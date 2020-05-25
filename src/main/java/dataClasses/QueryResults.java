@@ -130,6 +130,12 @@ public class QueryResults {
       this.dbRow = dbRow;
   }
 
+  ////////////////////////////////
+  // display helpers
+
+  public String friendlyName () {
+    return "(" + this.term + ", " + this.searchType + ")";
+  };
   //////////////////////////////////////
   // some db stuff 
   // TODO add into something all models can borrow from
@@ -291,7 +297,7 @@ public class QueryResults {
       return podcasts;
 
     } else {
-      System.out.println("*********GETTING PODCASTS (" + this.term + ", " + this.searchType + ")*************");
+      System.out.println("*********GETTING PODCASTS " + this.friendlyName() + " *************");
       JSONArray resultsJson = getSearchResults();
 
       for (int i = 0; i < resultsJson.length(); i++) {
@@ -422,7 +428,8 @@ public class QueryResults {
       podcast.getEpisodes();
     };
 
-    System.out.println("finished getting episodes for this set of query results which is stored in: " + this.filename);
+    System.out.println("finished getting episodes for this set of query results" + this.filename);
+    System.out.println("--");
   }
 }
 
