@@ -67,7 +67,7 @@ public class Episode {
 
 
     // from rss
-    this.closedCaptioned = entryInfo.getClosedCaptioned()
+    this.closedCaptioned = entryInfo.getClosedCaptioned();
     this.summary = entryInfo.getSummary();
     // may be will have to pass in the entry instead and do this.websiteUrl = entry.getLink();
     this.websiteUrl = entryInfo.getLink();

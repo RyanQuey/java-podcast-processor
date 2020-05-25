@@ -18,6 +18,11 @@ import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
+import com.datastax.oss.driver.api.mapper.annotations.Dao;
+import com.datastax.oss.driver.api.mapper.annotations.Delete;
+import com.datastax.oss.driver.api.mapper.annotations.Insert;
+import com.datastax.oss.driver.api.mapper.annotations.Select;
+
 import com.rometools.modules.itunes.AbstractITunesObject;
 import com.rometools.modules.itunes.FeedInformationImpl;
 import com.rometools.rome.feed.module.Module; // TODO confirm
@@ -44,12 +49,13 @@ import helpers.HttpReq;
  */
 
 @Entity
+@CqlName("podcasts_by_language")
 public class Podcast {
   @PartitionKey 
   private String language;
-  @ClusteringColumn(1) 
+  @ClusteringColumn(0) // or maybe 1?
   private String primaryGenre;
-  @ClusteringColumn(2) 
+  @ClusteringColumn(1) // or maybe 2?
   private String feedUrl; // rss feed url
 
   private String owner; 
@@ -164,6 +170,7 @@ public class Podcast {
   
   }
 
+  /*
   public Podcast fetch () {
     String query = "SELECT * FROM podcast_analysis_tool.podcasts_by_language WHERE language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = " + this.primaryGenre + " AND feed_url = " + this.feedUrl + " LIMIT 1";
     ResultSet result = db.execute(query);
@@ -171,6 +178,7 @@ public class Podcast {
     Row dbRecord = result.one();
 
   }
+  */
 
 	// wrapper around getRssStr and getRss, with extra error handling, and makes sure we don't make the http request multiple times if unnecessary
 	// TODO once we are sure with this can return, specify String or whatever rssFeed is 
