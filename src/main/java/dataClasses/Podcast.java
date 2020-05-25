@@ -378,6 +378,7 @@ public class Podcast {
     // NOTE feedInfo.getNewFeedUrl() not working
   }
 
+  // TODO rename, not a getter. This can call http requests under the hood
   public void getEpisodes () {
     if (this.episodes.size() != 0) {
       // TODO return episodes
