@@ -24,6 +24,8 @@ import dataClasses.Episode;
 import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.core.cql.Row;
 
+import dao.InventoryMapper;
+
 public class Main {
 
   /////////////////////////////////////
@@ -203,7 +205,17 @@ public class Main {
 
   // TODO finish adding this helper
   private static void processOnePodcast () {
-    String language
+    String language = "en";
+    String primaryGenre = "Technology";
+    String feedUrl = "https://datastaxdds.libsyn.com/rss";
+
+    // TODO try to set this as a static var or method on the Podcast class  
+    InventoryMapper inventoryMapper = InventoryMapper.builder(session).build();
+    PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool", "podcasts_by_language");
+    Podcast podcast = dao.findOne(language, primaryGenre, feedUrl);
+
+    System.out.println("I think I got a podcast");
+    System.out.println(podcast);
   }
 
   //////////////////////////////////
@@ -215,7 +227,9 @@ public class Main {
     processArgs(args);
     db.initialize(); 
 
-    runSearchesAndProcess(args);
+    // runSearchesAndProcess(args);
+    processOnePodcast();
+
 
     // TODO note that this is still not letting process close
     closeDb();
