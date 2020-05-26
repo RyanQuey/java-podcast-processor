@@ -69,4 +69,13 @@ public class CassandraDb {
   public static String getTimestampStr() {
     return LocalDateTime.now().toString();
   }
+
+  // TODO move to separate time helpers file
+  // convert string to instant (which Cassandra codec accepts to be sent to cql for columns of type TIMESTAMP)
+  public static Instant stringToInstant(String str) {
+    return Instant.parse(str);
+    /*
+    return LocalDateTime.parse(str, DateTimeFormatter.ofPattern( "hh:mm a, EEE M/d/uuuu").toInstant();
+    */
+  }
 }

@@ -46,7 +46,7 @@ public class Episode {
   boolean explicit;
 
   private String rssFeedData;
-  private Podcast podcast;
+  public Podcast podcast;
 
   // stuff we can get from rss
   boolean closedCaptioned;

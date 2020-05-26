@@ -10,12 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.time.Instant;
 
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 // DSE Mapper
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
+import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
@@ -25,7 +27,7 @@ import com.datastax.oss.driver.api.mapper.annotations.Select;
 
 import com.rometools.modules.itunes.AbstractITunesObject;
 import com.rometools.modules.itunes.FeedInformationImpl;
-import com.rometools.rome.feed.module.Module; // TODO confirm
+import com.rometools.rome.feed.module.Module;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
@@ -53,9 +55,9 @@ import helpers.HttpReq;
 public class Podcast {
   @PartitionKey 
   private String language;
-  @ClusteringColumn(0) // or maybe 1?
+  @ClusteringColumn(1) // or maybe 1?
   private String primaryGenre;
-  @ClusteringColumn(1) // or maybe 2?
+  @ClusteringColumn(2) // or maybe 2?
   private String feedUrl; // rss feed url
 
   private String owner; 
@@ -70,7 +72,7 @@ public class Podcast {
   private String country;
   private ArrayList<String> genres;
   private ArrayList<String> apiGenreIds;
-  private String releaseDate;
+  private Instant releaseDate;
   boolean explicit;
   int episodeCount;
 
@@ -88,7 +90,7 @@ public class Podcast {
   private String author; //not yet sure how this is distinct from owner. But airflow's podcast for example has different http://feeds.soundcloud.com/users/soundcloud:users:385054355/sounds.rss
   // from image:link
   private String websiteUrl; // TODO make all these urls of java class Url
-  private String updatedAt;
+  private Instant updatedAt;
   // list of queries, each query giving term, searchType, api, and when search was performed
   private List<Map<String, String>> foundByQueries; 
 
@@ -146,7 +148,8 @@ public class Podcast {
       this.apiGenreIds = (ArrayList<String>) FileHelpers.jsonArrayToList(apiGenreIdsJson);
       this.primaryGenre = (String) podcastJson.get("primaryGenreName");
       // itunes format: "2020-05-04T15:00:00Z"
-      this.releaseDate = (String) podcastJson.get("releaseDate");
+      String rdStr = (String) podcastJson.get("releaseDate");
+      this.releaseDate = db.stringToInstant(rdStr);
       
       // definitely don't want to break on this. And sometimes they set as collectionExplicitness instead I guess (?...at least, I saw one that itunes returned that way)
       
@@ -395,7 +398,7 @@ public class Podcast {
     // TODO
   }
 
-  // TODO use the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
+  // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
   public void save () {
     Term ts = db.getTimestamp();
 
@@ -409,10 +412,10 @@ public class Podcast {
     String query = update("podcasts_by_language")
       .setColumn("owner", literal(this.owner))
       .setColumn("name", literal(this.name))
-      .setColumn("image_url_30", literal(this.imageUrl30))
-      .setColumn("image_url_60", literal(this.imageUrl60))
-      .setColumn("image_url_100", literal(this.imageUrl100))
-      .setColumn("image_url_600", literal(this.imageUrl600))
+      .setColumn("image_url30", literal(this.imageUrl30))
+      .setColumn("image_url60", literal(this.imageUrl60))
+      .setColumn("image_url100", literal(this.imageUrl100))
+      .setColumn("image_url600", literal(this.imageUrl600))
       .setColumn("api", literal(this.api))
       .setColumn("api_id", literal(this.apiId))
       .setColumn("api_url", literal(this.apiUrl))
@@ -566,11 +569,11 @@ public class Podcast {
       this.apiGenreIds = apiGenreIds;
   }
 
-  public String getReleaseDate() {
+  public Instant getReleaseDate() {
       return releaseDate;
   }
 
-  public void setReleaseDate(String releaseDate) {
+  public void setReleaseDate(Instant releaseDate) {
       this.releaseDate = releaseDate;
   }
 
@@ -646,11 +649,11 @@ public class Podcast {
       this.websiteUrl = websiteUrl;
   }
 
-  public String getUpdatedAt() {
+  public Instant getUpdatedAt() {
       return updatedAt;
   }
 
-  public void setUpdatedAt(String updatedAt) {
+  public void setUpdatedAt(Instant updatedAt) {
       this.updatedAt = updatedAt;
   }
 
