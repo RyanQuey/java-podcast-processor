@@ -25,6 +25,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.core.cql.Row;
 
 import dao.InventoryMapper;
+import dao.PodcastDao;
 
 public class Main {
 
@@ -210,8 +211,8 @@ public class Main {
     String feedUrl = "https://datastaxdds.libsyn.com/rss";
 
     // TODO try to set this as a static var or method on the Podcast class  
-    InventoryMapper inventoryMapper = InventoryMapper.builder(session).build();
-    PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool", "podcasts_by_language");
+    InventoryMapper inventoryMapper = InventoryMapper.builder(db.session).build();
+    PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool"); //, "podcasts_by_language");
     Podcast podcast = dao.findOne(language, primaryGenre, feedUrl);
 
     System.out.println("I think I got a podcast");
