@@ -27,29 +27,27 @@ import com.rometools.modules.itunes.AbstractITunesObject;
 public class Episode {
   // TODO figure out what is different from the track info, and store here
   // the rest, get rid of and just reference via the track
-  String summary;
+  private String summary;
   // may be will have to pass in the entry instead and do String websiteUrl;
-  String websiteUrl;
-  String duration;
-  String guid;
-  String subtitle;
-  String description;
-  int order;
-  String imageUrl;
+  private String websiteUrl;
+  private String duration;
+  private String subtitle;
+  private Integer order;
+  private String imageUrl;
 
-  String episodeType;
-  String episodeNum;
-  String seasonNum;
-  String title;
-  String author;
-  String keywords;
-  boolean explicit;
+  private String episodeType;
+  private Integer episodeNum;
+  private Integer seasonNum;
+  private String title;
+  private String author;
+  private String[] keywords;
+  private boolean explicit;
 
   private String rssFeedData;
   public Podcast podcast;
 
   // stuff we can get from rss
-  boolean closedCaptioned;
+  private boolean closedCaptioned;
 
 
   // see here; base what we do off of tests
@@ -60,32 +58,35 @@ public class Episode {
   // 
   // https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/EntryInformationImpl.java#L37-L42
   // TODO make a flag to signal initialization from our db rather than from rss
-  public Episode(SyndEntry entry) {
+  public Episode(SyndEntry entry, Podcast podcast) {
     Module entryModule = entry.getModule(AbstractITunesObject.URI);
     // probably same as before, use EntryInformationImpl rather than EntryInformation
     EntryInformationImpl entryInfo = (EntryInformationImpl) entryModule;
 
 
     // from rss
-    this.closedCaptioned = entryInfo.getClosedCaptioned();
     this.summary = entryInfo.getSummary();
-    // may be will have to pass in the entry instead and do this.websiteUrl = entry.getLink();
-    this.websiteUrl = entryInfo.getLink();
     // from rome rss docs: An encapsulation of the duration of a podcast. This will serialize (via .toString()) to HH:MM:SS format, and can parse [H]*H:[M]*M:[S]*S or [M]*M:[S]*S.
     this.duration = entryInfo.getDuration().toString();
-    this.guid = entryInfo.getGuid();
     this.subtitle = entryInfo.getSubtitle();
-    this.description = entryInfo.getDescription();
-    this.order = entryInfo.getOrder();
-    this.imageUrl = entryInfo.getImage().toString();
     this.explicit = entryInfo.getExplicit();
+    this.author = entryInfo.getAuthor();
+
+    // may be will have to pass in the entry instead and do this.websiteUrl = entry.getLink();
+    this.closedCaptioned = entryInfo.getClosedCaptioned();
+    this.order = entryInfo.getOrder();
+    // getImage returns a url
+    this.imageUrl = entryInfo.getImage().toString();
 
     this.episodeType = entryInfo.getEpisodeType();
+    this.title = entryInfo.getTitle();
+
+    this.keywords = entryInfo.getKeywords();
     this.episodeNum = entryInfo.getEpisode();
     this.seasonNum = entryInfo.getSeason();
-    this.title = entryInfo.getTitle();
-    this.author = entryInfo.getAuthor();
-    this.keywords = entryInfo.getKeywords();
+
+    this.podcast = podcast;
+    this.websiteUrl = podcast.getWebsiteUrl();
   }
 
   public String getSummary() {
@@ -112,28 +113,12 @@ public class Episode {
       this.duration = duration;
   }
 
-  public String getGuid() {
-      return guid;
-  }
-
-  public void setGuid(String guid) {
-      this.guid = guid;
-  }
-
   public String getSubtitle() {
       return subtitle;
   }
 
   public void setSubtitle(String subtitle) {
       this.subtitle = subtitle;
-  }
-
-  public String getDescription() {
-      return description;
-  }
-
-  public void setDescription(String description) {
-      this.description = description;
   }
 
   public int getOrder() {
@@ -160,19 +145,19 @@ public class Episode {
       this.episodeType = episodeType;
   }
 
-  public String getEpisodeNum() {
+  public Integer getEpisodeNum() {
       return episodeNum;
   }
 
-  public void setEpisodeNum(String episodeNum) {
+  public void setEpisodeNum(Integer episodeNum) {
       this.episodeNum = episodeNum;
   }
 
-  public String getSeasonNum() {
+  public Integer getSeasonNum() {
       return seasonNum;
   }
 
-  public void setSeasonNum(String seasonNum) {
+  public void setSeasonNum(Integer seasonNum) {
       this.seasonNum = seasonNum;
   }
 
@@ -192,11 +177,11 @@ public class Episode {
       this.author = author;
   }
 
-  public String getKeywords() {
+  public String[] getKeywords() {
       return keywords;
   }
 
-  public void setKeywords(String keywords) {
+  public void setKeywords(String[] keywords) {
       this.keywords = keywords;
   }
 

@@ -69,7 +69,7 @@
 		<dependency>
 			<groupId>com.rometools</groupId>
 			<artifactId>rome-modules</artifactId>
-			<version>1.5.0</version>
+      <version>1.12.2</version>
 		</dependency>
     <!-- datastax/cassandra stuff -->
 		<dependency>

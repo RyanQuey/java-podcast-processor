@@ -256,6 +256,7 @@ public class Podcast {
 
 				// setup connection
 				try {
+          System.out.println("try setting up connection");
 					client = HttpClients.createMinimal(); 
 					request = new HttpGet(this.feedUrl);
           response = client.execute(request); 
@@ -266,10 +267,12 @@ public class Podcast {
 
         // set feed data to our object
         try {
+          System.out.println("trying to set feed data to our object");
           InputStream stream = response.getEntity().getContent();
           SyndFeedInput input = new SyndFeedInput();
           try {
             this.rssFeed = input.build(new XmlReader(stream));
+            System.out.println("set the feed");
           } catch (NoSuchMethodError e) {
             // I don't know why, but sometimes this error happens here too. If so, jus t skip this podcast. Maybe one day keep a record of errored podcasts
             // TODO find out why NoSuchMethodError's thrown here aren't caught by the parent try-catch blocks. Instead i tjust stops the program altogether
@@ -286,8 +289,8 @@ public class Podcast {
           System.out.println("error getting feed from url");
           System.out.println(e);
           e.printStackTrace();
-
           throw e;
+
         } finally {
           // TODO not in their example, but I'm guessing I have to do this
           // I think it's all read at this point, so can close no matter what (?)
@@ -336,8 +339,7 @@ public class Podcast {
       this.getRss();
 
       for (SyndEntry entry : this.rssFeed.getEntries()) {
-        Episode episode = new Episode(entry);
-        episode.podcast = this;
+        Episode episode = new Episode(entry, this);
 
         this.episodes.add(episode);
       }

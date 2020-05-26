@@ -240,7 +240,6 @@ public class QueryResults {
     if (podcasts.size() == 0) {
       // have none, so just return
       System.out.println("no this search didn't have any podcasts, so not persisting");
-      return;
 
     } else {
       for (Podcast podcast : getPodcasts()) {
@@ -250,6 +249,7 @@ public class QueryResults {
 
       System.out.println("finished getting episodes for this set of query results: " + this.friendlyName());
     };
+
     System.out.println("*********PERSISTED PODCASTS*************");
   }
 
@@ -329,7 +329,7 @@ public class QueryResults {
   // gets rss data for a podcast (which includes all the episode data)
   // TODO currently, we are not verifying whether or not we've already gotten data for this podcast. 
   // if we do, can use following method definition or something like it:
-  public void getEpisodes() throws IOException {
+  public void getEpisodes() throws Exception {
     System.out.println("about to get episodes query results" + this.friendlyName());
     for (Podcast podcast : getPodcasts()) {
       // get RSS for podcast, to get episode list
