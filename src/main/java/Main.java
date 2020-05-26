@@ -32,7 +32,7 @@ public class Main {
   
   static PodcastSearch podcastSearch = new PodcastSearch();
 
-  // which files to process
+  // which results to process
   static ArrayList<QueryResults> searchResultsToProcess = new ArrayList<QueryResults>();
 
   static ArrayList<Episode> episodesFound = new ArrayList<Episode>();
@@ -81,11 +81,10 @@ public class Main {
 
   private static void setSearchResultsToProcess() {
     if (toProcess.equals("default-query")) {
-      // process only the specified default file (FOR TESTING ONLY)
+      // process only the specified default query (FOR TESTING ONLY)
       // make sure to copy the QueryResults constructor when term and searchType are passed in. Keep this in sync with that (that is going to be more up to date than this)
       String searchType = "all";
       String term = "big data";
-      // TODO don't use file, query db instead
 
       // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
 
@@ -110,12 +109,6 @@ public class Main {
 
       // TODO maybe better to just iterate over the podcasts, some of which might already have the data (?)
       try {
-        /* if processing data from files
-        List<File> files = Arrays.asList(new File(FileHelpers.getFilePath("podcast-data")).listFiles());
-        for (File file : files) {
-          searchResultsToProcess.add(new QueryResults(file));
-        }
-        */
 
         // NOTE each search can have zero or many search results
         // NOTE is it List<Row> or List<ElementT>?
@@ -144,7 +137,7 @@ public class Main {
     int count = 0;
     int total = searchResultsToProcess.size();
 
-    // iterate over search result files
+    // iterate over search results
     for (QueryResults queryResults : searchResultsToProcess) {
       count ++;
       System.out.println("starting number: " + count + " out of " + total);
