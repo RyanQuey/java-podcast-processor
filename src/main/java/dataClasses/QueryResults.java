@@ -127,10 +127,10 @@ public class QueryResults {
 
     String updateQuery = update("search_results_by_term")
       .setColumn("result_json", literal(this.podcastJson))
-      .setColumn("external_api", literal(this.externalApi))
       .setColumn("updated_at", ts)
       .whereColumn("term").isEqualTo(literal(this.term))
       .whereColumn("search_type").isEqualTo(literal(this.searchType))
+      .whereColumn("external_api").isEqualTo(literal(this.externalApi))
       .asCql();
 
     db.execute(updateQuery);
