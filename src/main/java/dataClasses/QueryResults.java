@@ -61,6 +61,7 @@ public class QueryResults {
 
   private ArrayList<Podcast> podcasts = new ArrayList<Podcast>();
   private static CassandraDb db;
+  public Instant updatedAt;
 
   // for when initializing from just search term and search type
   // TODO refreshData should eventually just force hitting the database immediately; currently does nothing
@@ -123,11 +124,9 @@ public class QueryResults {
 
   // untested and not used currently
   public void save () {
-    Term ts = db.getTimestamp();
-
     String updateQuery = update("search_results_by_term")
       .setColumn("result_json", literal(this.podcastJson))
-      .setColumn("updated_at", ts)
+      .setColumn("updated_at", literal(this.updatedAt))
       .whereColumn("term").isEqualTo(literal(this.term))
       .whereColumn("search_type").isEqualTo(literal(this.searchType))
       .whereColumn("external_api").isEqualTo(literal(this.externalApi))
@@ -147,7 +146,6 @@ public class QueryResults {
       .value("search_type", literal(this.searchType))
       .value("result_json", literal(this.podcastJson))
       .value("external_api", literal(this.externalApi))
-      .value("created_at", ts)
       .value("updated_at", ts)
       .asCql();
 
@@ -260,7 +258,8 @@ public class QueryResults {
   public String getPodcastJson (boolean refreshData) 
     // TODO if we ever use refreshData make sure that we do not set created_at, but only updated_at for those records
 
-    throws IOException {
+    // TODO which type of exception?
+    throws Exception {
 
       // check if we should skip
       if (this.podcastJson != null) {
@@ -313,6 +312,7 @@ public class QueryResults {
         // begin reading
         this.madeApiCall = true;  // set whether or not we suceeed in api call here
         String result = HttpReq.get(urlStr, queryParams);
+        this.updatedAt = Instant.now();
 
         System.out.println(result);
 
@@ -330,6 +330,7 @@ public class QueryResults {
   // TODO currently, we are not verifying whether or not we've already gotten data for this podcast. 
   // if we do, can use following method definition or something like it:
   public void getEpisodes() throws IOException {
+    System.out.println("about to get episodes query results" + this.friendlyName());
     for (Podcast podcast : getPodcasts()) {
       // get RSS for podcast, to get episode list
       podcast.getEpisodes();

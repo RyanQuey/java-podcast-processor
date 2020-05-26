@@ -91,6 +91,11 @@ public class Podcast {
   // from image:link
   private String websiteUrl; // TODO make all these urls of java class Url
   private Instant updatedAt;
+
+  // these should match the queryresult
+  private String term;
+  private String searchType;
+  private Instant searchedAt; 
   // list of queries, each query giving term, searchType, api, and when search was performed
   private List<Map<String, String>> foundByQueries; 
 
@@ -167,8 +172,12 @@ public class Podcast {
       this.episodeCount = (int) podcastJson.get("trackCount");
       // TODO persist somehow, probably with type List, and list chronologically the times that this was returned. BUt for me, don't need that info
       this.fromQuery = fromQuery;
+      this.term = this.fromQuery.term;
+      this.searchType = this.fromQuery.searchType;
+      this.searchedAt = this.fromQuery.updatedAt;
   }
 
+  // TODO 
   public Podcast(String primary_genre, String feed_url) {
   
   }
@@ -377,20 +386,21 @@ public class Podcast {
   }
 
   // TODO rename, not a getter. This can call http requests under the hood
-  public void getEpisodes () {
+  public ArrayList<Episode> getEpisodes () {
+    // TODO find better way to see if there's any episodes...though in general, most podcasts should have at least one (?)
     if (this.episodes.size() != 0) {
       // TODO return episodes
-      return ;// this.episodes;
+      return this.episodes;
     }
 
     // TODO will have different return value later;
     try {
       getRss();
       convertRssToEpisodes();
-      
-
+      return this.episodes;
 
     } catch (Exception e) {
+      System.out.println("Error getting episodes");
       this.errorGettingRss = e;
     }
 
@@ -399,13 +409,11 @@ public class Podcast {
   }
 
   // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
+  // TODO deprecated; use DAO instead
   public void save () {
     Term ts = db.getTimestamp();
 
     Map<String, String> foundBy = new HashMap<String, String>();
-    foundBy.put("term", this.fromQuery.term);
-    foundBy.put("searchType", this.fromQuery.searchType);
-    foundBy.put("searchedAt", db.getTimestampStr());
     List<Map<String, String>> foundByList = Arrays.asList(foundBy);
 
     // want to create or update if exists

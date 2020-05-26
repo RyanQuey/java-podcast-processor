@@ -140,7 +140,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <mainClass>Main</mainClass>
-    <performSearch>true</performSearch>
+    <performSearch>false</performSearch>
     <searchResultsToProcess>all</searchResultsToProcess>
 		<java-driver.version>4.6.1</java-driver.version>
 	</properties>

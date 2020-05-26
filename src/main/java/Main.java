@@ -124,7 +124,9 @@ public class Main {
         for (Row dbRow : allSearches) {
           // TODO for better performance, and less memory use, don't add them all here. Instead, just iterate over the ResultSet, and call "resultSet.one()" multiple times. 
           // But  for now no problem, since for the most part we shouldn't even process all the records, should process the results as we get them.
-          searchResultsToProcess.add(new QueryResults(dbRow));
+          QueryResults qr = new QueryResults(dbRow);
+          System.out.println("adding " + qr.friendlyName());
+          searchResultsToProcess.add(qr);
         }
 
       } catch (Exception e) { 
@@ -137,11 +139,15 @@ public class Main {
     }
   }
 
-  private static void processSearchResults() {
-    System.out.println("now processing files (count): " + searchResultsToProcess.size());
+  private static void processSearchResults() throws Exception {
+    System.out.println("start");
+    int count = 0;
+    int total = searchResultsToProcess.size();
 
     // iterate over search result files
     for (QueryResults queryResults : searchResultsToProcess) {
+      count ++;
+      System.out.println("starting number: " + count.toString() + " out of " + total);
 
       try {
 				// DON'T need to getPodcasts before we can call getEpisodes, but makes more readable 
@@ -157,8 +163,8 @@ public class Main {
 
 				queryResults.getEpisodes();
 				// queryResults.persistEpisodes();
-      } catch (IOException e) {
-				System.out.println("An error occurred while retrieving podcast and episode data for :" + queryResults.filename);
+      } catch (Exception e) {
+				System.out.println("An error occurred while retrieving podcast and episode data for :" + queryResults.friendlyName());
 				System.out.println(e);
 				e.printStackTrace();
 				System.out.println("continuing...");
@@ -182,9 +188,10 @@ public class Main {
     } 
 
     System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");     
-    System.out.println("Now beginning to process search results");     
+    System.out.println("Now beginning to process search results: Setting");     
     setSearchResultsToProcess();
 
+    System.out.println("Now beginning to process search results: Processing");
     processSearchResults();
   }
 
