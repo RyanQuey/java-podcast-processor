@@ -386,7 +386,7 @@ public class Podcast {
   }
 
   // TODO rename, not a getter. This can call http requests under the hood
-  public ArrayList<Episode> getEpisodes () {
+  public ArrayList<Episode> getEpisodes () throws Exception {
     // TODO find better way to see if there's any episodes...though in general, most podcasts should have at least one (?)
     if (this.episodes.size() != 0) {
       // TODO return episodes
@@ -400,8 +400,11 @@ public class Podcast {
       return this.episodes;
 
     } catch (Exception e) {
+      // TODO determine what type of exception this would throw 
       System.out.println("Error getting episodes");
       this.errorGettingRss = e;
+
+      throw e;
     }
 
     // extract episodes from rss feed;

@@ -147,7 +147,7 @@ public class Main {
     // iterate over search result files
     for (QueryResults queryResults : searchResultsToProcess) {
       count ++;
-      System.out.println("starting number: " + count.toString() + " out of " + total);
+      System.out.println("starting number: " + count + " out of " + total);
 
       try {
 				// DON'T need to getPodcasts before we can call getEpisodes, but makes more readable 
