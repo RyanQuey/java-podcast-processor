@@ -1,6 +1,8 @@
 package dao;
 
+import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.mapper.annotations.DaoFactory;
+import com.datastax.oss.driver.api.mapper.annotations.DaoTable;
 import com.datastax.oss.driver.api.mapper.annotations.DaoKeyspace;
 import com.datastax.oss.driver.api.mapper.annotations.Mapper;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
@@ -29,7 +31,8 @@ import com.datastax.oss.driver.api.mapper.MapperBuilder;
 @Mapper
 public interface InventoryMapper {
   @DaoFactory
-  PodcastDao podcastDao(@DaoKeyspace CqlIdentifier keyspace);
+  // TODO can set default keyspace somewhere, but low priority
+  PodcastDao podcastDao(@DaoKeyspace String keyspace, @DaoTable String table);
 
   // helper so can use the inventoryMapper more easily.
   // https://github.com/datastax/java-driver/tree/4.x/manual/mapper/mapper#mapper-builder

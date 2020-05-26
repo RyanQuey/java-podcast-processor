@@ -1,19 +1,10 @@
-import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Arrays;
 import java.lang.System;
 import java.lang.Exception;
-import java.lang.Thread;
-import java.lang.InterruptedException;
 import java.io.IOException; 
-import java.io.FileNotFoundException;
-import java.io.File;
-import org.json.JSONObject;
 
 // local imports
-import helpers.HttpReq;
-import helpers.FileHelpers;
 import helpers.CassandraDb;
 
 import dataClasses.QueryResults;
@@ -151,7 +142,6 @@ public class Main {
 
     // iterate over search result files
     for (QueryResults queryResults : searchResultsToProcess) {
-      String filename = queryResults.filename;
 
       try {
 				// DON'T need to getPodcasts before we can call getEpisodes, but makes more readable 
@@ -186,7 +176,7 @@ public class Main {
 
   ///////////////////////////////////////
   // Some top level methods we could call as "Main"
-  private static void runSearchesAndProcess (String[] args) {
+  private static void runSearchesAndProcess (String[] args) throws Exception {
     if (podcastSearchRequested) {
       performSearch(args);
     } 
@@ -204,15 +194,16 @@ public class Main {
     String searchType = "all";
   }
 
-  // TODO finish adding this helper
   private static void processOnePodcast () {
+    // set these according to whichever podcast we want
     String language = "en";
     String primaryGenre = "Technology";
     String feedUrl = "https://datastaxdds.libsyn.com/rss";
 
     // TODO try to set this as a static var or method on the Podcast class  
+    System.out.println("initiate the DAO instance");
     InventoryMapper inventoryMapper = InventoryMapper.builder(db.session).build();
-    PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool"); //, "podcasts_by_language");
+    PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool", "podcasts_by_language");
     Podcast podcast = dao.findOne(language, primaryGenre, feedUrl);
 
     System.out.println("I think I got a podcast");
@@ -225,19 +216,28 @@ public class Main {
   // InvalidQueryException from initializing db. Make sure to not continue messing stuff up if the db isn't ready!
   // NOTE not building the most efficient and streamlined process here. Just iteratively building out apis on important models/classes, which will be called across our app later on.
   public static void main (String[] args) throws Exception {
-    processArgs(args);
-    db.initialize(); 
+    try {
+      processArgs(args);
+      db.initialize(); 
 
-    // runSearchesAndProcess(args);
-    processOnePodcast();
+      System.out.println("*************************");
+      runSearchesAndProcess(args);
+      // processOnePodcast();
 
 
-    // TODO note that this is still not letting process close
-    closeDb();
-    System.out.println("Finished running");     
-    
-    // closes the process...not sure why necessary TODO
-    // https://stackoverflow.com/a/7416103/6952495
-    Runtime.getRuntime().exit(0);
+      // TODO note that this is still not letting process close
+      closeDb();
+      System.out.println("Finished running");     
+      
+      // closes the process...not sure why necessary TODO
+      // https://stackoverflow.com/a/7416103/6952495
+
+    } catch (Exception e) {
+      System.out.println("Error in Main:");
+		  e.printStackTrace();
+
+    } finally {
+      Runtime.getRuntime().exit(0);
+    }
   }
 }

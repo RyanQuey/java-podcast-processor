@@ -19,10 +19,10 @@ public class M20200524201500CreatePodcastsTable {
       String query = "CREATE TABLE IF NOT EXISTS podcast_analysis_tool.podcasts_by_language (" + 
           "owner TEXT, " + 
           "name TEXT, " +
-          "image_url_30 TEXT," +
-          "image_url_60 TEXT," + 
-          "image_url_100 TEXT," +
-          "image_url_600 TEXT, " +
+          "image_url30 TEXT," +
+          "image_url60 TEXT," + 
+          "image_url100 TEXT," +
+          "image_url600 TEXT, " +
           "api TEXT, " +
           "api_id TEXT, " +
           "api_url TEXT, " +
@@ -45,7 +45,9 @@ public class M20200524201500CreatePodcastsTable {
           "language TEXT," +
           "website_url TEXT," +
           "updated_at TIMESTAMP, " +
-          "PRIMARY KEY ((language), primary_genre, feed_url));";
+          "PRIMARY KEY ((language), primary_genre, feed_url)) " +
+          "WITH CLUSTERING ORDER BY(primary_genre ASC, feed_url ASC);";
+
       System.out.println(query);
       db.execute(query);
 

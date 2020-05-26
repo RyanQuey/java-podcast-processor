@@ -1,10 +1,9 @@
 package dao;
 
-import com.datastax.oss.driver.api.core.PagingIterable;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
-import com.datastax.oss.driver.api.mapper.annotations.QueryProvider;
 import com.datastax.oss.driver.api.mapper.annotations.Select;
 import com.datastax.oss.driver.api.mapper.annotations.Update;
+import com.datastax.oss.driver.api.mapper.annotations.Insert;
 import com.datastax.oss.driver.api.mapper.entity.saving.NullSavingStrategy;
 import java.util.UUID;
 
@@ -14,6 +13,7 @@ import dataClasses.Podcast;
 public interface PodcastDao {
 
   /** Simple selection by full primary key. */
+  // TODO add something like @Select(customWhereClause = "language in ('en', 'en-US', 'UNKNOWN')")
   @Select
   Podcast findOne(String language, String primaryGenre, String feedUrl);
 
@@ -55,7 +55,9 @@ public interface PodcastDao {
    *
    * For more on how to do customWhereClause and other options, see here: https://github.com/datastax/java-driver/tree/4.x/manual/mapper/daos/update#parameters
    * For our use case allowing three languages so can do e.g., dao.update(podcast, en, en-US, and UNKNOWN);
+   *
+   * TODO maybe have to pass in primary_genre and feed_url also, and work those into the customWhereClause also
    */
-  @Update(customWhereClause = "language IN (:language1, :language2, :language3)", nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)
-  void update(Podcast podcast, String language1, String language2);
+  @Update(customWhereClause = "language IN ('en', 'en-US', 'UNKNOWN') AND primary_genre = ':primaryGenre' AND feed_url = ':feedUrl'", nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)
+  void update(Podcast podcast, String primaryGenre, String feedUrl);
 }
