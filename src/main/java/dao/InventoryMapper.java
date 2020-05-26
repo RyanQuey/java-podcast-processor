@@ -3,6 +3,8 @@ package dao;
 import com.datastax.oss.driver.api.mapper.annotations.DaoFactory;
 import com.datastax.oss.driver.api.mapper.annotations.DaoKeyspace;
 import com.datastax.oss.driver.api.mapper.annotations.Mapper;
+import com.datastax.oss.driver.api.core.CqlIdentifier;
+import com.datastax.oss.driver.api.mapper.MapperBuilder;
 
 /*
  *
@@ -31,7 +33,7 @@ public interface InventoryMapper {
 
   // helper so can use the inventoryMapper more easily.
   // https://github.com/datastax/java-driver/tree/4.x/manual/mapper/mapper#mapper-builder
-  static MapperBuilder<InventoryMapper> builder(CqlSession session) {
+  static MapperBuilder<InventoryMapper> builder(final CqlSession session) {
     return new InventoryMapperBuilder(session);
   }
 
