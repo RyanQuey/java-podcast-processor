@@ -130,7 +130,7 @@ public class PodcastSearch {
 
   // get all searches from all time
   // https://docs.datastax.com/en/drivers/java/4.6/com/datastax/oss/driver/api/core/PagingIterable.html
-  static public List<Row> fetchAllSearches () {
+  static public List<Row> fetchAllSearches () throws Exception {
      ResultSet results = db.execute("SELECT * FROM search_results_by_term ;");
      // NOTE in contrast with doing results.forEach, pulls all the data into memory at once. 
      return results.all();
