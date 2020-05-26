@@ -16,7 +16,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import migrations.*;
 
 public class CassandraDb {
-  private static CqlSession session = CqlSession.builder().build();
+  public static CqlSession session = CqlSession.builder().build();
 
   public static void initialize () throws Exception {
     // create keyspace if doesn't exist already, and initialize tables
@@ -39,9 +39,9 @@ public class CassandraDb {
     session.close();
 	}
 
-	public static ResultSet execute (String cql) {
-	  return session.execute(cql);
-	}
+    public static ResultSet execute (String cql) {
+        return session.execute(cql);
+    }
 
   public static void getReleaseVersion () {
     ResultSet rs = session.execute("select release_version from system.local"); 
