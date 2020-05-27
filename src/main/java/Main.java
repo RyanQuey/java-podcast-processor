@@ -155,7 +155,8 @@ public class Main {
         // get episodes for each of those podcasts
 
 				queryResults.getEpisodes();
-				// queryResults.persistEpisodes();
+				queryResults.persistEpisodes();
+
       } catch (Exception e) {
 				System.out.println("An error occurred while retrieving podcast and episode data for :" + queryResults.friendlyName());
 				System.out.println(e);

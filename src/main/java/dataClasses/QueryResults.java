@@ -330,13 +330,26 @@ public class QueryResults {
   // TODO currently, we are not verifying whether or not we've already gotten data for this podcast. 
   // if we do, can use following method definition or something like it:
   public void getEpisodes() throws Exception {
-    System.out.println("about to get episodes query results" + this.friendlyName());
+    System.out.println("*********EXTRACTING EPISODES*************");
+    System.out.println("about to get episodes for query" + this.friendlyName());
     for (Podcast podcast : getPodcasts()) {
       // get RSS for podcast, to get episode list
       podcast.getEpisodes();
     };
 
     System.out.println("finished getting episodes for this set of query results" + this.friendlyName());
+    System.out.println("--");
+  }
+
+  public void persistEpisodes() throws Exception {
+    System.out.println("*********PERSISTING EPISODES*************");
+    System.out.println("about to persist episodes for query" + this.friendlyName());
+    for (Podcast podcast : getPodcasts()) {
+      // get RSS for podcast, to get episode list
+      podcast.getEpisodes();
+    };
+
+    System.out.println("finished persisting episodes for this set of query results" + this.friendlyName());
     System.out.println("--");
   }
 }
