@@ -38,7 +38,7 @@ public class M20200524201500CreatePodcastsTable {
           "found_by_queries List<frozen<Map<Text, Text>>>, " +
           "description TEXT," +
           "summary TEXT," +
-          "description_subtitle TEXT," +
+          "subtitle TEXT," +
           "webmaster TEXT," +
           "owner_email TEXT," +
           "author TEXT," +

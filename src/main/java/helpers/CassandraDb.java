@@ -4,6 +4,7 @@ import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodecs;
+import com.datastax.oss.driver.api.core.data.CqlDuration;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 
@@ -11,7 +12,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.sql.Timestamp;
 
-// TODO remove...find more elegant solution for migrations, perhaps a separate jar file I can run or something
 import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import migrations.*;
 
@@ -25,7 +25,7 @@ public class CassandraDb {
     session.execute("USE podcast_analysis_tool;");
   }
 
-  // TODO split off somehow, and only run if haven't ran yet
+  // TODO remove...find more elegant solution for running migrations so can run independently of connecting to db, perhaps a separate jar file I can run or something
   // currently not maintaining versioning for this, not really necessary
   // since doing IF NOT EXISTS then can run all these all the time we want to migrate
   private static void runMigrations () throws InvalidQueryException {
@@ -77,5 +77,28 @@ public class CassandraDb {
     /*
     return LocalDateTime.parse(str, DateTimeFormatter.ofPattern( "hh:mm a, EEE M/d/uuuu").toInstant();
     */
+  }
+
+  // NOTE untested, and currently not in use I don't think
+  // CqlDuration already has a constructor taking a string. But this takes format 00:00:00  (HH:MM:SS) or 00:00 (MM:SS) instead of 
+  public static CqlDuration stringToCqlDuration(String str) {
+    String[] split = str.split(":");
+    String hours;
+    String minutes;
+    String seconds;
+
+    if (split.length == 3) {
+      hours = split[0];
+      minutes = split[1];
+      seconds = split[2];
+    } else {
+      // assume other format supported by Rome RSS, MM:SS
+      hours = "00";
+      minutes = split[0];
+      seconds = split[1];
+    }
+
+    // p for period, T for time. Alternative ISO 8601 format
+    return CqlDuration.from(String.format("PT%s:%s:%s", hours, minutes, seconds));
   }
 }

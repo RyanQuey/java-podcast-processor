@@ -55,9 +55,9 @@ import helpers.HttpReq;
 public class Podcast {
   @PartitionKey 
   private String language;
-  @ClusteringColumn(1) // or maybe 1?
+  @ClusteringColumn(0)
   private String primaryGenre;
-  @ClusteringColumn(2) // or maybe 2?
+  @ClusteringColumn(1) 
   private String feedUrl; // rss feed url
 
   private String owner; 
@@ -82,7 +82,7 @@ public class Podcast {
   // not sure how it would be different from description, but rome seems to include it as part of the itunes rss api
   private String summary;
   // from itunes:subtitle
-  private String descriptionSubtitle;
+  private String subtitle;
   // from webMaster
   private String webmaster;
   // from itunes:owner > itunes:email
@@ -137,7 +137,7 @@ public class Podcast {
       this.imageUrl60 = (String) podcastJson.get("artworkUrl60");  
       this.imageUrl100 = (String) podcastJson.get("artworkUrl100");  
       this.imageUrl600 = (String) podcastJson.get("artworkUrl600");  
-      // TODO find way to dynamically get this from the file. Perhaps bake it into the filename or get from apiUrl 
+      // TODO find way to dynamically get this from the result. Perhaps bake it into the filename or get from apiUrl 
       this.api = "itunes"; 
       this.apiId = (String) String.valueOf(podcastJson.get("collectionId"));
       this.apiUrl = (String) podcastJson.get("collectionViewUrl");
@@ -175,6 +175,7 @@ public class Podcast {
       this.term = this.fromQuery.term;
       this.searchType = this.fromQuery.searchType;
       this.searchedAt = this.fromQuery.updatedAt;
+      this.updatedAt = Instant.now();
   }
 
   // TODO 
@@ -245,8 +246,6 @@ public class Podcast {
   }
 
   // gets RSS and just outputs as a Rome RSS `SyndFeed` obj
-	// TODO consider using this which has some sort of caching system built-in:
-	// https://rometools.github.io/rome/Fetcher/UsingTheRomeFetcherModuleToRetrieveFeeds.html
   private SyndFeed getRssFeed () 
     throws Exception {
       CloseableHttpResponse response;
@@ -256,7 +255,6 @@ public class Podcast {
 
 				// setup connection
 				try {
-          System.out.println("try setting up connection");
 					client = HttpClients.createMinimal(); 
 					request = new HttpGet(this.feedUrl);
           response = client.execute(request); 
@@ -267,12 +265,10 @@ public class Podcast {
 
         // set feed data to our object
         try {
-          System.out.println("trying to set feed data to our object");
           InputStream stream = response.getEntity().getContent();
           SyndFeedInput input = new SyndFeedInput();
           try {
             this.rssFeed = input.build(new XmlReader(stream));
-            System.out.println("set the feed");
           } catch (NoSuchMethodError e) {
             // I don't know why, but sometimes this error happens here too. If so, jus t skip this podcast. Maybe one day keep a record of errored podcasts
             // TODO find out why NoSuchMethodError's thrown here aren't caught by the parent try-catch blocks. Instead i tjust stops the program altogether
@@ -292,7 +288,6 @@ public class Podcast {
           throw e;
 
         } finally {
-          // TODO not in their example, but I'm guessing I have to do this
           // I think it's all read at this point, so can close no matter what (?)
           response.close();
 				}
@@ -308,7 +303,7 @@ public class Podcast {
         // if itunes, can do getImage, getCategory
         //
 
-        // TODO might not need to save the string
+        // TODO might not need to save the string. If so, just remove this
         try {
           this.rssFeedStr = this.rssFeed.toString();
         } catch (NoSuchMethodError e) {
@@ -317,8 +312,6 @@ public class Podcast {
           e.printStackTrace();
         }
 
-        System.out.println("Got rss feed");
-   
         return this.rssFeed;
 
       } catch (Exception e) {
@@ -332,7 +325,6 @@ public class Podcast {
 
 
   // TODO what do I want to do for error handling?
-  // private Map<String, String> convertRssToMap () {
   private void convertRssToEpisodes () {
     // inexpensive way to make sure that we have the feet already set
     try {
@@ -379,7 +371,7 @@ public class Podcast {
     // if they didn't set a language, default to "UNKNOWN" to avoid error: `InvalidQueryException: Key may not be empty`. Especially critical since we often sort by 
     this.language = this.rssFeed.getLanguage() == null ? this.rssFeed.getLanguage() : "UNKNOWN";
     // saw it here: https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/FeedInformationImpl.java#L179
-    this.descriptionSubtitle = feedInfo.getSubtitle();
+    this.subtitle = feedInfo.getSubtitle();
 
     //feedInfo.getComplete(); (boolean, I'm guessing maybe for pagination?)
 
@@ -388,14 +380,12 @@ public class Podcast {
   }
 
   // TODO rename, not a getter. This can call http requests under the hood
-  public ArrayList<Episode> getEpisodes () throws Exception {
+  public ArrayList<Episode> extractEpisodes () throws Exception {
     // TODO find better way to see if there's any episodes...though in general, most podcasts should have at least one (?)
     if (this.episodes.size() != 0) {
-      // TODO return episodes
       return this.episodes;
     }
 
-    // TODO will have different return value later;
     try {
       getRss();
       convertRssToEpisodes();
@@ -411,6 +401,14 @@ public class Podcast {
 
     // extract episodes from rss feed;
     // TODO
+  }
+
+  // TODO in its current implementation, it would make sense to do this in bulk, a bulk add or something perhaps. 
+  // But keep in mind, want to first implement as more or less a stream, one at a time as they come in
+  public void persistEpisodes() throws Exception {
+    for (Episode episode : getEpisodes()) {
+      episode.save();
+    };
   }
 
   // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
@@ -444,7 +442,7 @@ public class Podcast {
       .append("found_by_queries", literal(foundByList))
       .setColumn("description", literal(this.description))
       .setColumn("summary", literal(this.summary))
-      .setColumn("description_subtitle", literal(this.descriptionSubtitle))
+      .setColumn("subtitle", literal(this.subtitle))
       .setColumn("webmaster", literal(this.webmaster))
       .setColumn("owner_email", literal(this.ownerEmail))
       .setColumn("author", literal(this.author))
@@ -459,7 +457,8 @@ public class Podcast {
 
       System.out.println("now executing:");
       System.out.println(query);
-    db.execute(query);
+
+      db.execute(query);
   }
 
   public String getLanguage() {
@@ -622,12 +621,12 @@ public class Podcast {
       this.summary = summary;
   }
 
-  public String getDescriptionSubtitle() {
-      return descriptionSubtitle;
+  public String getSubtitle() {
+      return subtitle;
   }
 
-  public void setDescriptionSubtitle(String descriptionSubtitle) {
-      this.descriptionSubtitle = descriptionSubtitle;
+  public void setSubtitle(String subtitle) {
+      this.subtitle = subtitle;
   }
 
   public String getWebmaster() {
@@ -676,6 +675,14 @@ public class Podcast {
 
   public void setFoundByQueries(List<Map<String, String>> foundByQueries) {
       this.foundByQueries = foundByQueries;
+  }  
+
+  public ArrayList<Episode> getEpisodes() {
+      return this.episodes;
+  }
+
+  public void setEpisodes(ArrayList<Episode> episode) {
+      this.episodes = episodes;
   }  
 };
 
