@@ -24,8 +24,6 @@ public class CassandraDb {
 
   public static void initialize () throws Exception {
     // create keyspace if doesn't exist already, and initialize tables
-    System.out.println("can we run?");
-
     runMigrations();
     // TODO they don't recommend changing keyspace during a run. Not sure when you're supposed to set it htough
     session.execute("USE podcast_analysis_tool;");
@@ -35,15 +33,11 @@ public class CassandraDb {
   // currently not maintaining versioning for this, not really necessary
   // since doing IF NOT EXISTS then can run all these all the time we want to migrate
   private static void runMigrations () throws Exception {
-    System.out.println("running migration 1");
     M20200513211500CreateKeyspace.run(); 
-    System.out.println("running migration 2");
     M20200513221500CreateSearchResultsTable.run();
-    System.out.println("running migration 3");
     M20200524201500CreatePodcastsTable.run(); 
-    // silently fails, even with error handling, just by uncommenting...need to find out why!
-    System.out.println("running migration 4");
     M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable.run();
+    System.out.println("***finished writing migrations***");
   }
 
 	// close session when not actively using...or just when everything is finished running?
