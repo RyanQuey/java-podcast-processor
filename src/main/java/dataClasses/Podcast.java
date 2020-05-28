@@ -1,29 +1,29 @@
 package dataClasses;
 
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.update;
+// import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
+// import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.update;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+// import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
+// import java.util.concurrent.ExecutionException;
 import java.time.Instant;
 
-import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.cql.Row;
+// import com.datastax.oss.driver.api.core.cql.ResultSet;
+// import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 // DSE Mapper
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import com.datastax.oss.driver.api.querybuilder.term.Term;
-import com.datastax.oss.driver.api.mapper.annotations.Dao;
-import com.datastax.oss.driver.api.mapper.annotations.Delete;
-import com.datastax.oss.driver.api.mapper.annotations.Insert;
-import com.datastax.oss.driver.api.mapper.annotations.Select;
+// import com.datastax.oss.driver.api.querybuilder.term.Term;
+// import com.datastax.oss.driver.api.mapper.annotations.Dao;
+// import com.datastax.oss.driver.api.mapper.annotations.Delete;
+// import com.datastax.oss.driver.api.mapper.annotations.Insert;
+// import com.datastax.oss.driver.api.mapper.annotations.Select;
 
 import com.rometools.modules.itunes.AbstractITunesObject;
 import com.rometools.modules.itunes.FeedInformationImpl;
@@ -43,8 +43,8 @@ import org.json.JSONObject;
 
 import cassandraHelpers.CassandraDb;
 import cassandraHelpers.PodcastDao;
-import helpers.FileHelpers;
-import helpers.HttpReq;
+import helpers.JsonHelpers;
+// import helpers.HttpReq;
 
 /* 
  * For one file, gets all search results and retrieves the rss feed data
@@ -125,12 +125,13 @@ public class Podcast {
 
   // TODO add some error handling, so that for every attribute, if it doesn't work, just move on, no problem. Just get as much information as we can
   public Podcast(JSONObject podcastJson, QueryResults fromQuery) 
-    throws ExecutionException {
+    throws Exception {
       // really is an `org.apache.commons.exec.ExecuteException`, but that inherits from IOException
       // sometimes it is `org.json.JSONException` which causes teh ExecuteException 
 
       //  assuming Itunes as API...:
 
+      System.out.println("okay were in");
       this.owner = (String) podcastJson.get("artistName"); 
       this.name = (String) podcastJson.get("collectionName"); 
       this.imageUrl30 = (String) podcastJson.get("artworkUrl30");  
@@ -146,11 +147,11 @@ public class Podcast {
 
       JSONArray genresJson = (JSONArray) podcastJson.get("genres");
       // I want to be ordered, since probably matches order of api genre ids
-      this.genres = (ArrayList<String>) FileHelpers.jsonArrayToList(genresJson);
+      this.genres = (ArrayList<String>) JsonHelpers.jsonArrayToList(genresJson);
 
       // I want to be ordered, since probably matches order of genres
       JSONArray apiGenreIdsJson = (JSONArray) podcastJson.get("genreIds");
-      this.apiGenreIds = (ArrayList<String>) FileHelpers.jsonArrayToList(apiGenreIdsJson);
+      this.apiGenreIds = (ArrayList<String>) JsonHelpers.jsonArrayToList(apiGenreIdsJson);
       this.primaryGenre = (String) podcastJson.get("primaryGenreName");
       // itunes format: "2020-05-04T15:00:00Z"
       String rdStr = (String) podcastJson.get("releaseDate");
@@ -415,7 +416,7 @@ public class Podcast {
       Episode.dao.save(episode);
     };
 
-    this.dao.save(this);
+    Podcast.dao.save(this);
   }
 
   // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
@@ -690,7 +691,7 @@ public class Podcast {
       return this.episodes;
   }
 
-  public void setEpisodes(ArrayList<Episode> episode) {
+  public void setEpisodes(ArrayList<Episode> episodes) {
       this.episodes = episodes;
   }  
 };
