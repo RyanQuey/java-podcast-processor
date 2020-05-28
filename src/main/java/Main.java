@@ -5,7 +5,7 @@ import java.lang.Exception;
 // import java.io.IOException; 
 
 // local imports
-import helpers.CassandraDb;
+import cassandraHelpers.CassandraDb;
 
 import dataClasses.QueryResults;
 import dataClasses.PodcastSearch;
@@ -15,8 +15,6 @@ import dataClasses.Episode;
 // import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.core.cql.Row;
 
-import dao.InventoryMapper;
-import dao.PodcastDao;
 
 public class Main {
 
@@ -203,9 +201,7 @@ public class Main {
 
     // TODO try to set this as a static var or method on the Podcast class  
     System.out.println("initiate the DAO instance");
-    InventoryMapper inventoryMapper = InventoryMapper.builder(CassandraDb.session).build();
-    PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool", "podcasts_by_language");
-    Podcast podcast = dao.findOne(language, primaryGenre, feedUrl);
+    Podcast podcast = Podcast.dao.findOneByParams(language, primaryGenre, feedUrl);
 
     System.out.println("I think I got a podcast");
     System.out.println(podcast);

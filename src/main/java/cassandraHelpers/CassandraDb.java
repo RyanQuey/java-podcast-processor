@@ -1,4 +1,4 @@
-package helpers;
+package cassandraHelpers;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -21,6 +21,10 @@ import migrations.M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable;
 
 public class CassandraDb {
   public static CqlSession session = CqlSession.builder().build();
+  public static InventoryMapper inventoryMapper = InventoryMapper
+    .builder(CassandraDb.session)
+    .withDefaultKeyspace("podcast_analysis_tool")
+    .build();
 
   public static void initialize () throws Exception {
     // create keyspace if doesn't exist already, and initialize tables

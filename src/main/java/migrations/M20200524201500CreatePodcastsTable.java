@@ -1,10 +1,9 @@
 package migrations;
 
-import helpers.CassandraDb;
+import cassandraHelpers.CassandraDb;
 import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
 public class M20200524201500CreatePodcastsTable {
-  static CassandraDb db;
 
   public static void run () throws InvalidQueryException {
     // because using the try block, automatically closes session on finish
@@ -49,7 +48,7 @@ public class M20200524201500CreatePodcastsTable {
           "WITH CLUSTERING ORDER BY(primary_genre ASC, feed_url ASC);";
 
       System.out.println(query);
-      db.execute(query);
+      CassandraDb.execute(query);
 
       // TODO add everything from model that we'll get from rss
 

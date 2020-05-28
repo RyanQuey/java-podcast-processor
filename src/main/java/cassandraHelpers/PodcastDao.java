@@ -1,23 +1,32 @@
-package dao;
+package cassandraHelpers;
 
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Select;
 import com.datastax.oss.driver.api.mapper.annotations.Update;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
 import com.datastax.oss.driver.api.mapper.entity.saving.NullSavingStrategy;
+import com.datastax.oss.driver.api.mapper.annotations.DefaultNullSavingStrategy;
 import java.util.UUID;
 
-import dataClasses.Episode;
+import dataClasses.Podcast;
 
 @Dao
-public interface EpisodeDao {
+// NOTE this means that in order to erase a field, cannot set it to null
+@DefaultNullSavingStrategy(NullSavingStrategy.DO_NOT_SET)
+public interface PodcastDao {
 
   /** Simple selection by full primary key. */
+  // TODO add something like 
   @Select
-  Episode findOne(String podcastApi, String podcastApiId, int order);
+  Podcast findOneByParams(String language, String primaryGenre, String feedUrl);
 
-  @Select
-  Episode findAllByPodcast(String podcastApi, String podcastApiId);
+  /*
+  @Select(customWhereClause = "language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = :primaryGenre AND feed_url = :feedUrl") 
+  Podcast findByGenreAndUrl(String language, String primaryGenre, String feedUrl);
+  */
+
+
+
   /**
    * Selection by partial primary key, this will return multiple rows.
    *
@@ -26,9 +35,9 @@ public interface EpisodeDao {
    */
 	/*
   @Select
-  PagingIterable<EpisodeByLanguage> getByLanguage(String language);
+  PagingIterable<PodcastByLanguage> getByLanguage(String language);
   @Select
-  PagingIterable<EpisodeByPrimaryGenre> getByLanguage(String language, String primaryGenre);
+  PagingIterable<PodcastByPrimaryGenre> getByLanguage(String language, String primaryGenre);
 	*/
 
   /**
@@ -41,12 +50,12 @@ public interface EpisodeDao {
   // not doing for now, only doing one table
   /*
   @QueryProvider(
-      providerClass = CreateEpisodeQueryProvider.class,
-      entityHelpers = {Episode.class, UserEpisode.class, LatestEpisode.class, EpisodeByTag.class})
-  void create(Episode video);
+      providerClass = CreatePodcastQueryProvider.class,
+      entityHelpers = {Podcast.class, UserPodcast.class, LatestPodcast.class, PodcastByTag.class})
+  void create(Podcast video);
   */
   @Insert
-  void create(Episode episode);
+  void create(Podcast podcast);
 
   /**
    * Update using a template: the template must have its full primary key set; beyond that, any
@@ -55,14 +64,11 @@ public interface EpisodeDao {
    * <p>Note that we specify the null saving strategy for emphasis, but this is the default.
    *
    * For more on how to do customWhereClause and other options, see here: https://github.com/datastax/java-driver/tree/4.x/manual/mapper/daos/update#parameters
-   * For our use case allowing three languages so can do e.g., dao.update(episode, en, en-US, and UNKNOWN);
+   * For our use case allowing three languages so can do e.g., dao.update(podcast, en, en-US, and UNKNOWN);
    *
-   * TODO maybe have to pass in primary_genre and feed_url also, and work those into the customWhereClause also
+   * perhaps want to set uniqueness by api and api_id instead, since those are probably more certain. 
+   * might just end up making those part of the primary key in the end.
    */
-  @Update(nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)
-  void update(Episode episode);
-
-  // TODO find a way t ojust make this an alias of update
-  @Update(nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)
-  void save(Episode episode);
+  @Update
+  void save(Podcast podcast);
 }

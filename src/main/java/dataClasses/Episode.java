@@ -12,11 +12,15 @@ import com.rometools.modules.itunes.AbstractITunesObject;
 import com.datastax.oss.driver.api.mapper.annotations.Entity;
 import com.datastax.oss.driver.api.mapper.annotations.CqlName;
 import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
+import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Delete;
 import com.datastax.oss.driver.api.mapper.annotations.Insert;
 import com.datastax.oss.driver.api.mapper.annotations.Select;
+
+import cassandraHelpers.CassandraDb;
+import cassandraHelpers.EpisodeDao;
 
 /* 
  * For one file, gets all search results and retrieves the rss feed data
@@ -28,9 +32,9 @@ import com.datastax.oss.driver.api.mapper.annotations.Select;
 @CqlName("episodes_by_order_in_podcast")
 public class Episode {
   private Podcast podcast;
-  @PartitionKey 
+  @PartitionKey(0)
   private String podcastApi;
-  @PartitionKey 
+  @PartitionKey(1)
   private String podcastApiId;
   private String podcastWebsiteUrl;
 
@@ -57,6 +61,7 @@ public class Episode {
   // stuff we can get from rss
   private boolean closedCaptioned;
 
+  static public EpisodeDao dao = CassandraDb.inventoryMapper.episodeDao("episodes_by_order_in_podcast");
 
   // for DAO
   public Episode() {}
@@ -84,7 +89,7 @@ public class Episode {
 
     // may be will have to pass in the entry instead and do this.podcastWebsiteUrl = entry.getLink();
     this.closedCaptioned = entryInfo.getClosedCaptioned();
-    this.orderNum = entryInfo.getOrderNum();
+    this.orderNum = entryInfo.getOrder();
     // getImage returns a url
     this.imageUrl = entryInfo.getImage().toString();
 
