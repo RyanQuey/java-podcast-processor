@@ -56,7 +56,9 @@ public class Episode {
   // stuff we can get from rss
   private boolean closedCaptioned;
 
-  static public EpisodeDao dao = CassandraDb.inventoryMapper.episodeDao("episodes_by_order_in_podcast");
+  static public EpisodeDao getDao () {
+    return CassandraDb.inventoryMapper.episodeDao("episodes_by_order_in_podcast");
+  }
 
   // for DAO
   public Episode() {}

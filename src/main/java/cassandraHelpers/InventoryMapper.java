@@ -28,6 +28,8 @@ import com.datastax.oss.driver.api.mapper.MapperBuilder;
  *
  *
  */
+
+// TODO setup something like this to have good default methods for DAO https://github.com/datastax/java-driver/tree/4.x/manual/mapper/daos#inheritance
 @Mapper
 public interface InventoryMapper {
   // TODO will this work? maybe looks for table "podcasts"?

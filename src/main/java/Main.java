@@ -201,7 +201,7 @@ public class Main {
 
     // TODO try to set this as a static var or method on the Podcast class  
     System.out.println("initiate the DAO instance");
-    Podcast podcast = Podcast.dao.findOneByParams(language, primaryGenre, feedUrl);
+    Podcast podcast = Podcast.getDao().findOneByParams(language, primaryGenre, feedUrl);
 
     System.out.println("I think I got a podcast");
     System.out.println(podcast);
@@ -219,8 +219,8 @@ public class Main {
 
       System.out.println("*************************");
       System.out.println("starting search:");
-      runSearchesAndProcess(args);
-      // processOnePodcast();
+      //runSearchesAndProcess(args);
+      processOnePodcast();
 
 
       // TODO note that this is still not letting process close
