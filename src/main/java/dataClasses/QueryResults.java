@@ -159,7 +159,7 @@ public class QueryResults {
 
   // pulls data we need from db record, and returns as json
   // DOES NOT hit any external apis (for that, see this.getPodcastJson)
-  private String getPodcastJsonFromDbRecord ()  {
+  private String getPodcastJsonFromDbRecord () throws IllegalArgumentException {
     if (this.podcastJson != null) {
       return this.podcastJson;
     }

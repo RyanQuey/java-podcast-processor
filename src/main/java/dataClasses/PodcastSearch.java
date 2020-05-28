@@ -191,7 +191,7 @@ public class PodcastSearch {
         QueryResults queryResult = new QueryResults(term, searchType, refreshData);
         try {
           queryResult.getPodcastJson(refreshData);
-        } catch (IOException e) {
+        } catch (Exception e) {
           System.out.println("Skipping queryResult: " + term + " for type: " + searchType + "due to error");
           // should log error already before this
 

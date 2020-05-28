@@ -24,9 +24,13 @@ import com.datastax.oss.driver.api.mapper.annotations.Select;
  * for now, just nesting within the parent podcast
  *
  */
+@Entity
+@CqlName("episodes_by_order_in_podcast")
 public class Episode {
   private Podcast podcast;
+  @PartitionKey 
   private String podcastApi;
+  @PartitionKey 
   private String podcastApiId;
   private String podcastWebsiteUrl;
 
@@ -36,7 +40,8 @@ public class Episode {
   // just based on the podcast, not specific to the episode
   private String duration; // maybe do different java type, like CqlDuration or something more vanilla java
   private String subtitle;
-  private Integer order;
+  @ClusteringColumn(0)
+  private Integer orderNum;
   private String imageUrl;
 
   private String episodeType;
@@ -79,7 +84,7 @@ public class Episode {
 
     // may be will have to pass in the entry instead and do this.podcastWebsiteUrl = entry.getLink();
     this.closedCaptioned = entryInfo.getClosedCaptioned();
-    this.order = entryInfo.getOrder();
+    this.orderNum = entryInfo.getOrderNum();
     // getImage returns a url
     this.imageUrl = entryInfo.getImage().toString();
 
@@ -125,12 +130,12 @@ public class Episode {
       this.subtitle = subtitle;
   }
 
-  public int getOrder() {
-      return order;
+  public int getOrderNum() {
+      return orderNum;
   }
 
-  public void setOrder(int order) {
-      this.order = order;
+  public void setOrderNum(int orderNum) {
+      this.orderNum = orderNum;
   }
 
   public String getImageUrl() {
@@ -205,8 +210,8 @@ public class Episode {
     this.podcastApiId = podcastApiId;
   }
 
-  public void setOrder(Integer order) {
-    this.order = order;
+  public void setOrderNum(Integer orderNum) {
+    this.orderNum = orderNum;
   }
 
   public Set<String> getKeywords() {

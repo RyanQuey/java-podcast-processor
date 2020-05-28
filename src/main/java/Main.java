@@ -2,7 +2,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.lang.System;
 import java.lang.Exception;
-import java.io.IOException; 
+// import java.io.IOException; 
 
 // local imports
 import helpers.CassandraDb;
@@ -12,7 +12,7 @@ import dataClasses.PodcastSearch;
 import dataClasses.Podcast;
 import dataClasses.Episode;
 
-import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
+// import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.core.cql.Row;
 
 import dao.InventoryMapper;
@@ -22,8 +22,6 @@ public class Main {
 
   /////////////////////////////////////
   // static vars
-
-  static CassandraDb db;
 
   // if true, get new search results as well.
   static boolean podcastSearchRequested = false;
@@ -170,7 +168,7 @@ public class Main {
 
   // if we don't run this, this java package just keeps running
   private static void closeDb () {
-    db.closeSession();
+    CassandraDb.closeSession();
   }
 
 
@@ -190,10 +188,12 @@ public class Main {
   }
 
   // TODO finish adding this helper
+  /*
   private static void processOneSearch () {
     String term = "big data";
     String searchType = "all";
   }
+  */
 
   private static void processOnePodcast () {
     // set these according to whichever podcast we want
@@ -203,7 +203,7 @@ public class Main {
 
     // TODO try to set this as a static var or method on the Podcast class  
     System.out.println("initiate the DAO instance");
-    InventoryMapper inventoryMapper = InventoryMapper.builder(db.session).build();
+    InventoryMapper inventoryMapper = InventoryMapper.builder(CassandraDb.session).build();
     PodcastDao dao = inventoryMapper.podcastDao("podcast_analysis_tool", "podcasts_by_language");
     Podcast podcast = dao.findOne(language, primaryGenre, feedUrl);
 
@@ -219,7 +219,7 @@ public class Main {
   public static void main (String[] args) throws Exception {
     try {
       processArgs(args);
-      db.initialize(); 
+      CassandraDb.initialize(); 
 
       System.out.println("*************************");
       runSearchesAndProcess(args);
@@ -236,8 +236,12 @@ public class Main {
     } catch (Exception e) {
       System.out.println("Error in Main:");
 		  e.printStackTrace();
+		  throw e;
 
     } finally {
+      // NOTE this will look like it build successfully even if we errored out. 
+      // TODO only do this if we did not catch and throw the error.
+      // then find out what error code to use (ie, not 0) for errors and throw that for errors
       Runtime.getRuntime().exit(0);
     }
   }

@@ -13,10 +13,11 @@ import dataClasses.Episode;
 public interface EpisodeDao {
 
   /** Simple selection by full primary key. */
-  // TODO add something like @Select(customWhereClause = "language in ('en', 'en-US', 'UNKNOWN')")
   @Select
-  Episode findOne(String language, String primaryGenre, String feedUrl);
+  Episode findOne(String podcastApi, String podcastApiId, int order);
 
+  @Select
+  Episode findAllByPodcast(String podcastApi, String podcastApiId);
   /**
    * Selection by partial primary key, this will return multiple rows.
    *
@@ -60,4 +61,8 @@ public interface EpisodeDao {
    */
   @Update(nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)
   void update(Episode episode);
+
+  // TODO find a way t ojust make this an alias of update
+  @Update(nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)
+  void save(Episode episode);
 }

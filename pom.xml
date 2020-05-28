@@ -59,6 +59,15 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.30</version>
 		</dependency>
+    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
+    <!-- when didn't use this one, would silently fail if we forgot to start our db before running package -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.30</version>
+      <!-- <scope>test</scope> -->
+    </dependency>
+
 
     <dependency>          
       <groupId>com.rometools</groupId>         
@@ -140,7 +149,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
     <mainClass>Main</mainClass>
-    <performSearch>false</performSearch>
+    <performSearch>true</performSearch>
     <searchResultsToProcess>all</searchResultsToProcess>
 		<java-driver.version>4.6.1</java-driver.version>
 	</properties>
