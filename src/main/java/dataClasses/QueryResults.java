@@ -229,6 +229,8 @@ public class QueryResults {
           System.out.println("updating based on RSS");
           podcast.updateBasedOnRss();
 
+          this.podcasts.add(podcast);
+
         } catch (Exception e) {
           // normally just allow ExecutionException (which is what this ends up being), at least what I've seen so far) to throw, but for this, is really just a json issue, want to continue no matter what
           System.out.println("Error getting info for podcast with json:: " + podcastJson);
@@ -240,7 +242,6 @@ public class QueryResults {
         }
 
         System.out.println("adding podcast to result list");
-        this.podcasts.add(podcast);
       }
     };
 
@@ -257,7 +258,7 @@ public class QueryResults {
     } else {
       for (Podcast podcast : getPodcasts()) {
         // get RSS for podcast, to get episode list
-        Podcast.dao.save(podcast);
+        Podcast.getDao().save(podcast);
       };
 
       System.out.println("finished getting episodes for this set of query results: " + this.friendlyName());

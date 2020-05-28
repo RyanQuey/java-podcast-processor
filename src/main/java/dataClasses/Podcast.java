@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 // import java.util.concurrent.ExecutionException;
 import java.time.Instant;
+import java.lang.Exception;
 
 // import com.datastax.oss.driver.api.core.cql.ResultSet;
 // import com.datastax.oss.driver.api.core.cql.Row;
@@ -110,12 +111,19 @@ public class Podcast {
   private FeedInformationImpl feedInfo;
   // FeedInformation feedInfo;
 
+  // the query that we got this podcast from
   QueryResults fromQuery; 
+
+  // in case we wanted to persist this error
   Exception errorGettingRss;
 
   /////////////////////////////////////////////////
   // Static methods
-  static public PodcastDao dao = CassandraDb.inventoryMapper.podcastDao("podcasts_by_language");
+  // NOTE never set this as a static var, in case it is set incorrectly. (5/29/20)
+  // Does not seem to throw a helpful error if a var, but if a static method, will give helpful feedback
+  static public PodcastDao getDao () {
+    return CassandraDb.inventoryMapper.podcastDao("podcasts_by_language");
+  }
 
   /////////////////////////////////////////////////
   // constructors
@@ -178,9 +186,11 @@ public class Podcast {
   }
 
   // TODO 
+  /*
   public Podcast(String primary_genre, String feed_url) {
   
   }
+  */
 
   /*
   public Podcast fetch () {
@@ -413,10 +423,10 @@ public class Podcast {
   public void persistEpisodes() throws Exception {
     for (Episode episode : getEpisodes()) {
       System.out.println("Saving episode " + episode.getTitle());
-      Episode.dao.save(episode);
+      Episode.getDao().save(episode);
     };
 
-    Podcast.dao.save(this);
+    Podcast.getDao().save(this);
   }
 
   // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface

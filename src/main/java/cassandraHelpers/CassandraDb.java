@@ -8,6 +8,8 @@ import com.datastax.oss.driver.api.core.data.CqlDuration;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 
+import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 // import java.sql.Timestamp;
@@ -61,6 +63,11 @@ public class CassandraDb {
     System.out.println(row.getString("release_version"));
   };
 
+  public static void addUDTCodecs () {
+    TypeCodec<Address> addressCodec = mappingManager.udtCodec(Address.class);
+    OptionalCodec<Address> optionalAddressCodec = new OptionalCodec(addressCodec);
+    codecRegistry.register(optionalAddressCodec);
+  }
 
   ////////////////////////////////////
   // some helpers for building queries

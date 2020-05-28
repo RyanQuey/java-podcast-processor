@@ -7,12 +7,12 @@ import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import java.lang.Exception;
+// import java.lang.Exception;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URLEncoder;
 import java.io.UnsupportedEncodingException;
-import java.io.InputStream;
+// import java.io.InputStream;
 
 // TODO in the future just use this (?): <dependency>
 //   <groupId>org.apache.httpcomponents</groupId>
@@ -22,7 +22,7 @@ import java.io.InputStream;
 
 public class HttpReq {
 // add what will be returned
-  public static String get(String urlStr, Map queryParams) 
+  public static String get(String urlStr, Map<String, String> queryParams) 
     // TODO just declare multiple throws
     throws IOException {
       // set limit to 200, let's just get all of it (default: 50)
