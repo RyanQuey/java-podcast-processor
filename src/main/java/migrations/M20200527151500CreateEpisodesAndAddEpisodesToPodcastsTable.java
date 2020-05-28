@@ -27,14 +27,14 @@ public class M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable {
           "api_url TEXT, " +
           "country TEXT," +
           "feed_url TEXT, " +
-          "genres <LIST<TEXT>>, " + // all collections in a type must be frozen
-          "api_genre_ids <LIST<TEXT>>," +
+          "genres LIST<TEXT>, " + // all collections in a type must be frozen
+          "api_genre_ids LIST<TEXT>," +
           "primary_genre TEXT," +
           "release_date TIMESTAMP," +
           "explicit BOOLEAN," +
           "episode_count INT," +
           "rss_feed TEXT," +
-          "found_by_queries <List<frozen<Map<Text, Text>>>>, " +
+          "found_by_queries List<frozen<Map<Text, Text>>>, " +
           "description TEXT," +
           "summary TEXT," +
           "description_subtitle TEXT," +
@@ -43,7 +43,7 @@ public class M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable {
           "author TEXT," +
           "language TEXT," +
           "website_url TEXT," +
-          "updated_at TIMESTAMP, " +
+          "updated_at TIMESTAMP" +
           //"episodes LIST<frozen<episode>> " + // can't do this yet...and don't need it. Can add later (I think...not sure if you can add these to types). Might want if nest podcasts under search results and want to just grab everything for a search result all at once
           ");";
 
@@ -125,7 +125,7 @@ public class M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable {
 
       // TODO add everything from model that we'll get from rss
 
-      System.out.println("ran migration CreatePodcastsTable");
+      System.out.println("ran migration CreateEpisodesAndAddEpisodesToPodcastsTable");
 
     } catch (InvalidQueryException e) {
       System.out.println("unsuccessful");
@@ -136,6 +136,7 @@ public class M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable {
       CassandraDb.execute("DROP TYPE podcast_analysis_tool.podcast;");
       CassandraDb.execute("DROP TYPE podcast_analysis_tool.episode;");
       CassandraDb.execute("DROP TABLE podcast_analysis_tool.episodes_by_order_in_podcast;");
+      */
 
       throw e;
     }

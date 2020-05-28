@@ -222,6 +222,7 @@ public class Main {
       CassandraDb.initialize(); 
 
       System.out.println("*************************");
+      System.out.println("starting search:");
       runSearchesAndProcess(args);
       // processOnePodcast();
 
