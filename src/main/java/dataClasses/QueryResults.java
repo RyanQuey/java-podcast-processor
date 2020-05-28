@@ -161,6 +161,7 @@ public class QueryResults {
 
   // pulls data we need from db record, and returns as json
   // DOES NOT hit any external apis (for that, see this.getPodcastJson)
+  // TODO rename, sounds like it hits db
   private String getPodcastJsonFromDbRecord () throws IllegalArgumentException {
     if (this.podcastJson != null) {
       // can save a hop to the db
@@ -182,8 +183,11 @@ public class QueryResults {
 
   // no reason to set to variable, should only call once ever per QueryResult instance
   // currently assumes externalApi.equals("itunes")
+  // TODO rename to fetchPodcastJson or something
   private JSONArray getSearchResults () throws IllegalArgumentException, IOException {
+    System.out.println("extracting");
     getPodcastJsonFromDbRecord();
+    System.out.println("extracted");
 
     try {
       JSONObject contentsJson = (JSONObject) new JSONObject(this.podcastJson);
@@ -191,6 +195,7 @@ public class QueryResults {
       // currently not using
       //int resultsCount = (int) contentsJson.get("resultCount");
 
+      System.out.println("got results");
       return resultsJson;
 
     } catch (JSONException e) {
@@ -208,16 +213,20 @@ public class QueryResults {
       return podcasts;
 
     } else {
-      System.out.println("*********GETTING PODCASTS " + this.friendlyName() + " *************");
+      System.out.println("*********GETTING PODCASTS FOR SEARCH " + this.friendlyName() + " *************");
       JSONArray resultsJson = getSearchResults();
 
       for (int i = 0; i < resultsJson.length(); i++) {
+
         JSONObject podcastJson = resultsJson.getJSONObject(i);
 
         Podcast podcast;
         try {
+          System.out.println("extracting from json");
+          System.out.println(podcastJson);
           podcast = new Podcast(podcastJson, this);
           // not sure if I want to call this here, but it's fine for now
+          System.out.println("updating based on RSS");
           podcast.updateBasedOnRss();
 
         } catch (Exception e) {
@@ -230,6 +239,7 @@ public class QueryResults {
           continue;
         }
 
+        System.out.println("adding podcast to result list");
         this.podcasts.add(podcast);
       }
     };

@@ -13,8 +13,6 @@ import java.nio.file.Paths;
 import java.nio.file.FileSystems;
 import org.apache.commons.io.IOUtils;
 
-import org.json.JSONObject;
-import org.json.JSONArray;
 import java.net.URL;
 
 import java.io.IOException; 
@@ -106,19 +104,5 @@ public class FileHelpers {
   public static String getResourceFilePath(String filename) {
     return getResourcesDir() + "/" + filename;
   }
-
-	// DOES NOT work for nested json
-	// converts ints to Strings
-	public static ArrayList<String> jsonArrayToList (JSONArray jsonArray) {
-		ArrayList<String> list = new ArrayList<String>();     
-		if (jsonArray != null) { 
-   		int len = jsonArray.length();
-   		for (int i=0;i<len;i++){ 
-    		list.add(jsonArray.get(i).toString());
-   		}
-		}
-
-		return list;
-  } 
 
 }
