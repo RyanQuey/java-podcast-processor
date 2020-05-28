@@ -407,7 +407,7 @@ public class Podcast {
   // But keep in mind, want to first implement as more or less a stream, one at a time as they come in
   public void persistEpisodes() throws Exception {
     for (Episode episode : getEpisodes()) {
-      episode.save();
+      episode.update();
     };
   }
 

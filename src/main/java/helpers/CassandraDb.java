@@ -3,35 +3,47 @@ package helpers;
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.core.cql.ResultSet;
-import com.datastax.oss.driver.api.core.type.codec.TypeCodecs;
+// import com.datastax.oss.driver.api.core.type.codec.TypeCodecs;
 import com.datastax.oss.driver.api.core.data.CqlDuration;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.sql.Timestamp;
+// import java.sql.Timestamp;
 
-import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
-import migrations.*;
+// import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
+// import migrations.*;
+import migrations.M20200513211500CreateKeyspace;
+import migrations.M20200524201500CreatePodcastsTable;
+import migrations.M20200513221500CreateSearchResultsTable;
+import migrations.M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable;
 
 public class CassandraDb {
   public static CqlSession session = CqlSession.builder().build();
 
   public static void initialize () throws Exception {
     // create keyspace if doesn't exist already, and initialize tables
-    runMigrations();
+    System.out.println("can we run?");
 
+    runMigrations();
+    // TODO they don't recommend changing keyspace during a run. Not sure when you're supposed to set it htough
     session.execute("USE podcast_analysis_tool;");
   }
 
   // TODO remove...find more elegant solution for running migrations so can run independently of connecting to db, perhaps a separate jar file I can run or something
   // currently not maintaining versioning for this, not really necessary
   // since doing IF NOT EXISTS then can run all these all the time we want to migrate
-  private static void runMigrations () throws InvalidQueryException {
+  private static void runMigrations () throws Exception {
+    System.out.println("running migration 1");
     M20200513211500CreateKeyspace.run(); 
+    System.out.println("running migration 2");
     M20200513221500CreateSearchResultsTable.run();
+    System.out.println("running migration 3");
     M20200524201500CreatePodcastsTable.run(); 
+    // silently fails, even with error handling, just by uncommenting...need to find out why!
+    System.out.println("running migration 4");
+    M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable.run();
   }
 
 	// close session when not actively using...or just when everything is finished running?
@@ -39,9 +51,9 @@ public class CassandraDb {
     session.close();
 	}
 
-    public static ResultSet execute (String cql) {
-        return session.execute(cql);
-    }
+  public static ResultSet execute (String cql) {
+    return session.execute(cql);
+  }
 
   public static void getReleaseVersion () {
     ResultSet rs = session.execute("select release_version from system.local"); 
