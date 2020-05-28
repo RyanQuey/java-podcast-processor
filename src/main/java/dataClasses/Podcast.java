@@ -41,7 +41,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import helpers.CassandraDb;
+import cassandraHelpers.CassandraDb;
+import cassandraHelpers.PodcastDao;
 import helpers.FileHelpers;
 import helpers.HttpReq;
 
@@ -93,29 +94,28 @@ public class Podcast {
   private Instant updatedAt;
 
   // these should match the queryresult
-  private String term;
-  private String searchType;
-  private Instant searchedAt; 
   // list of queries, each query giving term, searchType, api, and when search was performed
   private List<Map<String, String>> foundByQueries; 
 
-  ///////
+  // access through getters
+  private ArrayList<Episode> episodes = new ArrayList<Episode>();
+
+  /////////////////////
   // these are not persisted to db
   
   private SyndFeed rssFeed;
-  private String rssFeedStr;
+  //private String rssFeedStr;
   // test does it this way, demo (https://rometools.github.io/rome/Modules/ITunesPodcasting.html) does it FeedInformation
   // FeedInformationImpl implements FeedInformation though, so probably use FeedInformationImpl
   private FeedInformationImpl feedInfo;
   // FeedInformation feedInfo;
 
   QueryResults fromQuery; 
-  Exception errorGettingRss; 
+  Exception errorGettingRss;
 
-  private static CassandraDb db;
-
-  // access through getters
-  private ArrayList<Episode> episodes = new ArrayList<Episode>();
+  /////////////////////////////////////////////////
+  // Static methods
+  static public PodcastDao dao = CassandraDb.inventoryMapper.podcastDao("podcasts_by_language");
 
   /////////////////////////////////////////////////
   // constructors
@@ -154,7 +154,7 @@ public class Podcast {
       this.primaryGenre = (String) podcastJson.get("primaryGenreName");
       // itunes format: "2020-05-04T15:00:00Z"
       String rdStr = (String) podcastJson.get("releaseDate");
-      this.releaseDate = db.stringToInstant(rdStr);
+      this.releaseDate = CassandraDb.stringToInstant(rdStr);
       
       // definitely don't want to break on this. And sometimes they set as collectionExplicitness instead I guess (?...at least, I saw one that itunes returned that way)
       
@@ -167,14 +167,12 @@ public class Podcast {
         rating = "UNKNOWN";
       }
 
-      this.explicit = Arrays.asList("notExplicit", "Clean").contains(rating);
+      // have seen all of these returned, not sure what the difference is
+      this.explicit = Arrays.asList("notExplicit", "Clean", "cleaned").contains(rating);
 
       this.episodeCount = (int) podcastJson.get("trackCount");
       // TODO persist somehow, probably with type List, and list chronologically the times that this was returned. BUt for me, don't need that info
       this.fromQuery = fromQuery;
-      this.term = this.fromQuery.term;
-      this.searchType = this.fromQuery.searchType;
-      this.searchedAt = this.fromQuery.updatedAt;
       this.updatedAt = Instant.now();
   }
 
@@ -186,9 +184,9 @@ public class Podcast {
   /*
   public Podcast fetch () {
     String query = "SELECT * FROM podcast_analysis_tool.podcasts_by_language WHERE language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = " + this.primaryGenre + " AND feed_url = " + this.feedUrl + " LIMIT 1";
-    ResultSet result = db.execute(query);
+    ResultSet result = CassandraDb.execute(query);
 
-    Row dbRecord = result.one();
+    Row CassandraDb.ecord = result.one();
 
   }
   */
@@ -226,6 +224,7 @@ public class Podcast {
   // gets RSS and just outputs as string.
 	// not using as much now; using rss lib instead
 	// DEPRECATED; just use getRssFeed. Also returns string
+  /*
   private String getRssStr () 
     throws Exception {
       try {
@@ -244,6 +243,7 @@ public class Podcast {
         throw e;
       }
   }
+  */
 
   // gets RSS and just outputs as a Rome RSS `SyndFeed` obj
   private SyndFeed getRssFeed () 
@@ -304,6 +304,7 @@ public class Podcast {
         //
 
         // TODO might not need to save the string. If so, just remove this
+        /*
         try {
           this.rssFeedStr = this.rssFeed.toString();
         } catch (NoSuchMethodError e) {
@@ -311,6 +312,7 @@ public class Podcast {
           System.out.println(e);
           e.printStackTrace();
         }
+        */
 
         return this.rssFeed;
 
@@ -325,6 +327,7 @@ public class Podcast {
 
 
   // TODO what do I want to do for error handling?
+  // NOTE don't call this directly I don't think...mostly just call extractEpisodes
   private void convertRssToEpisodes () {
     // inexpensive way to make sure that we have the feet already set
     try {
@@ -405,16 +408,21 @@ public class Podcast {
 
   // TODO in its current implementation, it would make sense to do this in bulk, a bulk add or something perhaps. 
   // But keep in mind, want to first implement as more or less a stream, one at a time as they come in
+  // Currently also persists podcast so that it stores the episodes on its own record too
   public void persistEpisodes() throws Exception {
     for (Episode episode : getEpisodes()) {
-      episode.update();
+      System.out.println("Saving episode " + episode.getTitle());
+      Episode.dao.save(episode);
     };
+
+    this.dao.save(this);
   }
 
   // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
-  // TODO deprecated; use DAO instead
+  // TODO This works, but deprecated; trying to just use DAO instead
+  /*
   public void save () {
-    Term ts = db.getTimestamp();
+    Term ts = CassandraDb.getTimestamp();
 
     Map<String, String> foundBy = new HashMap<String, String>();
     List<Map<String, String>> foundByList = Arrays.asList(foundBy);
@@ -458,8 +466,9 @@ public class Podcast {
       System.out.println("now executing:");
       System.out.println(query);
 
-      db.execute(query);
+      CassandraDb.execute(query);
   }
+  */
 
   public String getLanguage() {
       return language;

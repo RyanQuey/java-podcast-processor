@@ -1,6 +1,6 @@
 package migrations;
 
-import helpers.CassandraDb;
+import cassandraHelpers.CassandraDb;
 import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
 public class M20200513211500CreateKeyspace {

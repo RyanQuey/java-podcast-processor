@@ -19,7 +19,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 
 // local imports
 import helpers.HttpReq;
-import helpers.CassandraDb;
+import cassandraHelpers.CassandraDb;
 
 public class PodcastSearch {
 

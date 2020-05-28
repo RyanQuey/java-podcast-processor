@@ -22,7 +22,7 @@ import org.json.JSONArray;
 import com.google.common.collect.Iterables;
 
 import helpers.HttpReq;
-import helpers.CassandraDb;
+import cassandraHelpers.CassandraDb;
 
 import dataClasses.Podcast;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
@@ -96,6 +96,7 @@ public class QueryResults {
   // some db stuff 
   // TODO add some of these methods into something all models can borrow from
 
+  // checks if this search query is persisted
   // TODO for performance, if known batch job, do a single query to grab all records for this partition once and check that instead? 
   // TODO be careful using this, maybe better to not do this in general, since requires a read for every write? But want to avoid hitting external api quota...
   public boolean getPersisted () {
@@ -122,6 +123,7 @@ public class QueryResults {
     }
   }
 
+  // TODO implement DAO for query_results
   // untested and not used currently
   public void save () {
     String updateQuery = update("search_results_by_term")
@@ -161,6 +163,7 @@ public class QueryResults {
   // DOES NOT hit any external apis (for that, see this.getPodcastJson)
   private String getPodcastJsonFromDbRecord () throws IllegalArgumentException {
     if (this.podcastJson != null) {
+      // can save a hop to the db
       return this.podcastJson;
     }
 
@@ -244,7 +247,7 @@ public class QueryResults {
     } else {
       for (Podcast podcast : getPodcasts()) {
         // get RSS for podcast, to get episode list
-        podcast.save();
+        Podcast.dao.save(podcast);
       };
 
       System.out.println("finished getting episodes for this set of query results: " + this.friendlyName());
@@ -270,7 +273,7 @@ public class QueryResults {
         // hit db 
         // TODO this is pretty messy, relies on this.getPersisted() to hit db and retrieve record for us. should find a better way and give this object (and all models) a better, cleaner api. But for now just working on learning these data engineering libs
 
-        System.out.println("skipping search for" + this.friendlyName());
+        System.out.println("Already have this record; skipping search for" + this.friendlyName());
 
         this.getPodcastJsonFromDbRecord(); 
         return this.podcastJson;
@@ -334,19 +337,20 @@ public class QueryResults {
     System.out.println("about to get episodes for query" + this.friendlyName());
     for (Podcast podcast : getPodcasts()) {
       // get RSS for podcast, to get episode list
-      podcast.getEpisodes();
+      podcast.extractEpisodes();
     };
 
     System.out.println("finished getting episodes for this set of query results" + this.friendlyName());
     System.out.println("--");
   }
 
+  // note that this could be ran maybe as much as once a week, and get new results, since each podcast's rss feed could be updated within that time with a new podcast
   public void persistEpisodes() throws Exception {
     System.out.println("*********PERSISTING EPISODES*************");
     System.out.println("about to persist episodes for query" + this.friendlyName());
     for (Podcast podcast : getPodcasts()) {
       // get RSS for podcast, to get episode list
-      podcast.getEpisodes();
+      podcast.persistEpisodes();
     };
 
     System.out.println("finished persisting episodes for this set of query results" + this.friendlyName());

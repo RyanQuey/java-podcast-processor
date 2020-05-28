@@ -1,4 +1,4 @@
-package dao;
+package cassandraHelpers;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.datastax.oss.driver.api.mapper.annotations.DaoFactory;
@@ -30,9 +30,16 @@ import com.datastax.oss.driver.api.mapper.MapperBuilder;
  */
 @Mapper
 public interface InventoryMapper {
+  // TODO will this work? maybe looks for table "podcasts"?
   @DaoFactory
-  // TODO can set default keyspace somewhere, but low priority
-  PodcastDao podcastDao(@DaoKeyspace String keyspace, @DaoTable String table);
+  PodcastDao podcastDao();
+
+  // for setting alternate podcast tables
+  @DaoFactory
+  PodcastDao podcastDao(@DaoTable String table);
+
+  @DaoFactory
+  EpisodeDao episodeDao(@DaoTable String table);
 
   // helper so can use the inventoryMapper more easily.
   // https://github.com/datastax/java-driver/tree/4.x/manual/mapper/mapper#mapper-builder
