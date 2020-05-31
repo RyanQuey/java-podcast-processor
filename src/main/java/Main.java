@@ -61,6 +61,7 @@ public class Main {
         toProcess = "default-query";
         System.out.println(toProcess);     
       } else if (s.equals("--process=all")) {
+        // only do this if need to get the db back from nothing or something
         toProcess = "all";
       } else if (s.equals("--process=none")) {
         toProcess = "none";
@@ -242,8 +243,9 @@ public class Main {
 
       System.out.println("*************************");
       System.out.println("starting search:");
-      //runSearchesAndProcess(args);
-      processOnePodcast();
+      runSearchesAndProcess(args);
+      // TODO only call this when settings via cmd line args are sent in
+      //processOnePodcast();
 
 
       // TODO note that this is still not letting process close

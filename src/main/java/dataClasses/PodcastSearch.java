@@ -100,6 +100,7 @@ public class PodcastSearch {
     "confluent",
 
     "machine learning",
+    "artificial intelligence",
     "data science",
     "tensorflow",
 
@@ -116,6 +117,10 @@ public class PodcastSearch {
     "software engineering",
     "backend engineering",
     "devops",
+
+    "prosthetics machine learning",
+    "prosthetics artificial intelligence",
+    "prosthetics",
   };
 
   // TODO make static
