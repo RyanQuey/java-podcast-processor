@@ -11,14 +11,14 @@ import java.util.UUID;
 @Dao
 // NOTE this means that in order to erase a field, cannot set it to null
 @DefaultNullSavingStrategy(NullSavingStrategy.DO_NOT_SET)
-public interface EpisodeByPodcastOrderDao {
+public interface EpisodeByPodcastDao {
 
   /** Simple selection by full primary key. */
   @Select
-  EpisodeByPodcastOrderRecord findOne(String podcastApi, String podcastApiId, int order);
+  EpisodeByPodcastRecord findOne(String podcastApi, String podcastApiId, String episodeGuid);
 
   @Select(customWhereClause = "podcast_api = ':podcastApi' AND podcast_api_id = ':podcastApiId'")
-  EpisodeByPodcastOrderRecord findAllByPodcast(String podcastApi, String podcastApiId);
+  EpisodeByPodcastRecord findAllByPodcast(String podcastApi, String podcastApiId);
   /**
    * Selection by partial primary key, this will return multiple rows.
    *
@@ -47,7 +47,7 @@ public interface EpisodeByPodcastOrderDao {
   void create(Episode video);
   */
   @Insert
-  void create(EpisodeByPodcastOrderRecord episode);
+  void create(EpisodeByPodcastRecord episode);
 
   /**
    * Update using a template: the template must have its full primary key set; beyond that, any
@@ -56,12 +56,11 @@ public interface EpisodeByPodcastOrderDao {
    * <p>Note that we specify the null saving strategy for emphasis, but this is the default.
    *
    * For more on how to do customWhereClause and other options, see here: https://github.com/datastax/java-driver/tree/4.x/manual/mapper/daos/update#parameters
-   * For our use case allowing three languages so can do e.g., dao.update(episode, en, en-US, and UNKNOWN);
    *
    * TODO maybe have to pass in primary_genre and feed_url also, and work those into the customWhereClause also
    */
   @Update
-  void save(EpisodeByPodcastOrderRecord episode);
+  void save(EpisodeByPodcastRecord episode);
 
   // TODO find a way t ojust make this an alias of update
   // @Update(nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)

@@ -130,7 +130,7 @@ public class Podcast extends PodcastBase {
   }
 
   // should have one of these for each record Class, and can determine which record Class by what their partition keys and clustering keys are
-  static public Podcast findOneByParams(String language, String primaryGenre, String feedUrl) {
+  static public Podcast findOneByParams(String language, String primaryGenre, String feedUrl) throws Exception {
     PodcastByLanguageRecord p =  PodcastByLanguageRecord.getDao().findOneByParams(language, primaryGenre, feedUrl);
 
     if (p == null) {
@@ -219,6 +219,7 @@ public class Podcast extends PodcastBase {
   // gets RSS and just outputs as a Rome RSS `SyndFeed` obj
   private SyndFeed getRssFeed () 
     throws Exception {
+      System.out.println("initializing connection..." + Instant.now().toString());
       CloseableHttpResponse response;
       CloseableHttpClient client; 
       HttpUriRequest request; 
@@ -228,6 +229,7 @@ public class Podcast extends PodcastBase {
 				try {
 					client = HttpClients.createMinimal(); 
 					request = new HttpGet(this.getFeedUrl());
+          System.out.println("now starting to execute request..." + Instant.now().toString());
           response = client.execute(request); 
 
         } catch (Exception e) {
@@ -236,6 +238,7 @@ public class Podcast extends PodcastBase {
 
         // set feed data to our object
         try {
+          System.out.println("starting to get content..." + Instant.now().toString());
           InputStream stream = response.getEntity().getContent();
           SyndFeedInput input = new SyndFeedInput();
           try {

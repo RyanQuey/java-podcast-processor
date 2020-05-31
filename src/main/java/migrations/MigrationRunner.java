@@ -8,7 +8,9 @@ public class MigrationRunner {
     M20200513211500CreateKeyspace.run(); 
     M20200513221500CreateSearchResultsTable.run();
     M20200524201500CreatePodcastsTable.run(); 
-    M20200529151500CreateEpisodesByPodcastOrderTable.run();
+    //TODO remove file and string
+    //M20200529151500CreateEpisodesByPodcastOrderTable.run();
+    M20200529151500CreateEpisodesByPodcastTable.run();
     // Not doing for now
     // M20200530151500AddEpisodesToPodcastsTable.run();
 

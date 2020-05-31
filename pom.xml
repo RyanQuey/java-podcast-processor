@@ -52,6 +52,13 @@
       <version>1.4.11.1</version>
     </dependency>
 -->
+    <!-- https://github.com/datastax/java-driver/tree/4.x/manual/core/logging#setup. 
+      when didn't use this one, would silently fail if we forgot to start our db before running package -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+      <version>1.7.28</version>
+    </dependency>
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
     <!-- for use with Rome. Need to implement or they give a warning when run our package -->
 		<dependency>
@@ -59,14 +66,6 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>1.7.30</version>
 		</dependency>
-    <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-simple -->
-    <!-- when didn't use this one, would silently fail if we forgot to start our db before running package -->
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-simple</artifactId>
-      <version>1.7.30</version>
-      <!-- <scope>test</scope> -->
-    </dependency>
 
 
     <dependency>          

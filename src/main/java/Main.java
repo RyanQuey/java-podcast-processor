@@ -11,6 +11,8 @@ import dataClasses.PodcastSearch;
 import dataClasses.searchQuery.SearchQuery;
 import dataClasses.podcast.Podcast;
 import dataClasses.episode.Episode;
+import dataClasses.episode.EpisodeByPodcastRecord;
+import dataClasses.episode.EpisodeByPodcastDao;
 
 // import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -195,16 +197,36 @@ public class Main {
 
   private static void processOnePodcast () {
     // set these according to whichever podcast we want
+    /*
+    // forgot which one this was
     String language = "en";
     String primaryGenre = "Technology";
     String feedUrl = "https://datastaxdds.libsyn.com/rss";
+    */
+
+    // Making Data Simple 
+    String language = "UNKNOWN";
+    String primaryGenre = "Entrepreneurship";
+    String feedUrl = "https://feeds.buzzsprout.com/214745.rss";
 
     // TODO try to set this as a static var or method on the Podcast class  
-    System.out.println("initiate the DAO instance");
-    Podcast podcast = Podcast.findOneByParams(language, primaryGenre, feedUrl);
+    System.out.println("finding by dao");
 
-    System.out.println("I think I got a podcast");
-    System.out.println(podcast);
+    try {
+      System.out.println("searching");
+      Podcast podcast = Podcast.findOneByParams(language, primaryGenre, feedUrl);
+
+      System.out.println("Found podcast:");
+      System.out.println(podcast.getName());
+
+      System.out.println("extracting episodes");
+      podcast.extractEpisodes();
+      podcast.persistEpisodes();
+
+    } catch (Exception e) {
+		  e.printStackTrace();
+    }
+
   }
 
   //////////////////////////////////
@@ -216,11 +238,12 @@ public class Main {
     try {
       processArgs(args);
       CassandraDb.initialize(); 
+      EpisodeByPodcastDao dao = EpisodeByPodcastRecord.getDao();
 
       System.out.println("*************************");
       System.out.println("starting search:");
-      runSearchesAndProcess(args);
-      // processOnePodcast();
+      //runSearchesAndProcess(args);
+      processOnePodcast();
 
 
       // TODO note that this is still not letting process close

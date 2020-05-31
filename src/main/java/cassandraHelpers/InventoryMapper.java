@@ -8,7 +8,7 @@ import com.datastax.oss.driver.api.mapper.annotations.Mapper;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.mapper.MapperBuilder;
 
-import dataClasses.episode.EpisodeByPodcastOrderDao;
+import dataClasses.episode.EpisodeByPodcastDao;
 import dataClasses.podcast.PodcastByLanguageDao;
 /*
  *
@@ -39,7 +39,7 @@ public interface InventoryMapper {
   PodcastByLanguageDao podcastByLanguageDao(@DaoTable String table);
 
   @DaoFactory
-  EpisodeByPodcastOrderDao episodeByPodcastOrderDao(@DaoTable String table);
+  EpisodeByPodcastDao episodeByPodcastDao(@DaoTable String table);
 
   // helper so can use the inventoryMapper more easily.
   // https://github.com/datastax/java-driver/tree/4.x/manual/mapper/mapper#mapper-builder
