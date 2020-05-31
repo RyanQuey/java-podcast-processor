@@ -1,4 +1,4 @@
-package cassandraHelpers;
+package dataClasses.podcast;
 
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Select;
@@ -8,17 +8,17 @@ import com.datastax.oss.driver.api.mapper.entity.saving.NullSavingStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.DefaultNullSavingStrategy;
 import java.util.UUID;
 
-import dataClasses.Podcast;
+import dataClasses.podcast.PodcastByLanguageRecord;
 
 @Dao
 // NOTE this means that in order to erase a field, cannot set it to null
 @DefaultNullSavingStrategy(NullSavingStrategy.DO_NOT_SET)
-public interface PodcastDao {
+public interface PodcastByLanguageDao {
 
   /** Simple selection by full primary key. */
   // TODO add something like 
   @Select
-  Podcast findOneByParams(String language, String primaryGenre, String feedUrl);
+  PodcastByLanguageRecord findOneByParams(String language, String primaryGenre, String feedUrl);
 
   /*
   @Select(customWhereClause = "language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = :primaryGenre AND feed_url = :feedUrl") 
@@ -55,7 +55,7 @@ public interface PodcastDao {
   void create(Podcast video);
   */
   @Insert
-  void create(Podcast podcast);
+  void create(PodcastByLanguageRecord podcast);
 
   /**
    * Update using a template: the template must have its full primary key set; beyond that, any
@@ -70,5 +70,5 @@ public interface PodcastDao {
    * might just end up making those part of the primary key in the end.
    */
   @Update
-  void save(Podcast podcast);
+  void save(PodcastByLanguageRecord podcast);
 }

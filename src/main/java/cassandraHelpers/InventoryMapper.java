@@ -8,6 +8,8 @@ import com.datastax.oss.driver.api.mapper.annotations.Mapper;
 import com.datastax.oss.driver.api.core.CqlIdentifier;
 import com.datastax.oss.driver.api.mapper.MapperBuilder;
 
+import dataClasses.episode.EpisodeByPodcastOrderDao;
+import dataClasses.podcast.PodcastByLanguageDao;
 /*
  *
  * https://github.com/datastax/java-driver/tree/4.x/manual/mapper
@@ -32,16 +34,12 @@ import com.datastax.oss.driver.api.mapper.MapperBuilder;
 // TODO setup something like this to have good default methods for DAO https://github.com/datastax/java-driver/tree/4.x/manual/mapper/daos#inheritance
 @Mapper
 public interface InventoryMapper {
-  // TODO will this work? maybe looks for table "podcasts"?
-  @DaoFactory
-  PodcastDao podcastDao();
-
   // for setting alternate podcast tables
   @DaoFactory
-  PodcastDao podcastDao(@DaoTable String table);
+  PodcastByLanguageDao podcastByLanguageDao(@DaoTable String table);
 
   @DaoFactory
-  EpisodeDao episodeDao(@DaoTable String table);
+  EpisodeByPodcastOrderDao episodeByPodcastOrderDao(@DaoTable String table);
 
   // helper so can use the inventoryMapper more easily.
   // https://github.com/datastax/java-driver/tree/4.x/manual/mapper/mapper#mapper-builder

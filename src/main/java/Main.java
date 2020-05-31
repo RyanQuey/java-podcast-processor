@@ -7,10 +7,10 @@ import java.lang.Exception;
 // local imports
 import cassandraHelpers.CassandraDb;
 
-import dataClasses.QueryResults;
 import dataClasses.PodcastSearch;
-import dataClasses.Podcast;
-import dataClasses.Episode;
+import dataClasses.searchQuery.SearchQuery;
+import dataClasses.podcast.Podcast;
+import dataClasses.episode.Episode;
 
 // import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -29,7 +29,7 @@ public class Main {
   static PodcastSearch podcastSearch = new PodcastSearch();
 
   // which results to process
-  static ArrayList<QueryResults> searchResultsToProcess = new ArrayList<QueryResults>();
+  static ArrayList<SearchQuery> searchResultsToProcess = new ArrayList<SearchQuery>();
 
   static ArrayList<Episode> episodesFound = new ArrayList<Episode>();
 
@@ -78,13 +78,13 @@ public class Main {
   private static void setSearchResultsToProcess() {
     if (toProcess.equals("default-query")) {
       // process only the specified default query (FOR TESTING ONLY)
-      // make sure to copy the QueryResults constructor when term and searchType are passed in. Keep this in sync with that (that is going to be more up to date than this)
+      // make sure to copy the SearchQuery constructor when term and searchType are passed in. Keep this in sync with that (that is going to be more up to date than this)
       String searchType = "all";
       String term = "big data";
 
       // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
 
-      QueryResults qr = new QueryResults(term, searchType, false);
+      SearchQuery qr = new SearchQuery(term, searchType, false);
       System.out.println("Only going to process the default query: " + qr.friendlyName());
       System.out.println(qr.friendlyName());
       searchResultsToProcess.add(qr);
@@ -93,7 +93,7 @@ public class Main {
       // For the most part, will use this. the other ones are for testing
       // NOTE Even if we had already persisted the search results previously, if the search was done, we are processing currently. Maybe Want to change his behavior later, depending on how we do the searches.
       System.out.println("only processing new search results");
-      searchResultsToProcess.addAll(podcastSearch.results);
+      searchResultsToProcess.addAll(podcastSearch.searchQueries);
       // note: if didn't run search, won't do anything
 
     } else if (toProcess.equals("none")) {
@@ -113,7 +113,7 @@ public class Main {
         for (Row dbRow : allSearches) {
           // TODO for better performance, and less memory use, don't add them all here. Instead, just iterate over the ResultSet, and call "resultSet.one()" multiple times. 
           // But  for now no problem, since for the most part we shouldn't even process all the records, should process the results as we get them.
-          QueryResults qr = new QueryResults(dbRow);
+          SearchQuery qr = new SearchQuery(dbRow);
           System.out.println("adding " + qr.friendlyName());
           searchResultsToProcess.add(qr);
         }
@@ -134,27 +134,27 @@ public class Main {
     int total = searchResultsToProcess.size();
 
     // iterate over search results
-    for (QueryResults queryResults : searchResultsToProcess) {
+    for (SearchQuery searchQuery : searchResultsToProcess) {
       count ++;
       System.out.println("starting number: " + count + " out of " + total);
 
       try {
 				// DON'T need to getPodcasts before we can call getEpisodes, but makes more readable 
-				// perhaps one day, queryResults will have a single method that gets podcasts, and then as it gets it it persists it immediately. But right now just building out our api
+				// perhaps one day, searchQuery will have a single method that gets podcasts, and then as it gets it it persists it immediately. But right now just building out our api
 
 				// most often unnecessary, but if so it will only do a quick boolean check
-				queryResults.getPodcastJson(false);
+				searchQuery.getPodcastJson(false);
 				// hits the feedUrls for each podcast and pulls out data from that xml to get data about the podcasts 
-				queryResults.getPodcasts();
+				searchQuery.getPodcasts();
 				// persists data we just got
-				queryResults.persistPodcasts();
+				searchQuery.persistPodcasts();
         // get episodes for each of those podcasts
 
-				queryResults.getEpisodes();
-				queryResults.persistEpisodes();
+				searchQuery.getEpisodes();
+				searchQuery.persistEpisodes();
 
       } catch (Exception e) {
-				System.out.println("An error occurred while retrieving podcast and episode data for :" + queryResults.friendlyName());
+				System.out.println("An error occurred while retrieving podcast and episode data for :" + searchQuery.friendlyName());
 				System.out.println(e);
 				e.printStackTrace();
 				System.out.println("continuing...");
@@ -201,7 +201,7 @@ public class Main {
 
     // TODO try to set this as a static var or method on the Podcast class  
     System.out.println("initiate the DAO instance");
-    Podcast podcast = Podcast.getDao().findOneByParams(language, primaryGenre, feedUrl);
+    Podcast podcast = Podcast.findOneByParams(language, primaryGenre, feedUrl);
 
     System.out.println("I think I got a podcast");
     System.out.println(podcast);

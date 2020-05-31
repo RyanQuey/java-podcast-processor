@@ -5,7 +5,7 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import cassandraHelpers.CassandraDb;
 // import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
-public class M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable {
+public class M20200530151500AddEpisodesToPodcastsTable {
   public static void run () throws Exception {
     // because using the try block, automatically closes session on finish
     try {
@@ -77,33 +77,6 @@ public class M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable {
 			String addEpisodesToPodcastTable = "ALTER TABLE podcast_analysis_tool.podcasts_by_language " + 
           "ADD episodes LIST<frozen<episode>>;";
 
-      String episodeTable = "CREATE TABLE IF NOT EXISTS podcast_analysis_tool.episodes_by_order_in_podcast (" + 
-          "podcast_api TEXT, " + 
-          "podcast_api_id TEXT, " + 
-          "order_num INT," +
-
-          "podcast frozen<podcast>, " + 
-          "podcast_website_url TEXT, " + 
-
-          "summary TEXT," +
-          "duration DURATION," +
-          "subtitle TEXT," +
-          "image_url TEXT," +
-
-          "episode_type TEXT," +
-          "episode_num INT," +
-          "season_num INT," +
-
-          "title TEXT, " +
-          "author TEXT," +
-          "keywords SET<TEXT>, " +
-          "explicit BOOLEAN," +
-          "updated_at TIMESTAMP, " +
-          "closed_captioned BOOLEAN," +
-
-          "PRIMARY KEY ((podcast_api, podcast_api_id), order_num)) " +
-          "WITH CLUSTERING ORDER BY(order_num ASC);";
-
       System.out.println(podcastType);
       CassandraDb.execute(podcastType);
       System.out.println(episodeType);
@@ -120,12 +93,7 @@ public class M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable {
         }
       }
 
-      System.out.println(episodeTable);
-      CassandraDb.execute(episodeTable);
-
-      // TODO add everything from model that we'll get from rss
-
-      System.out.println("ran migration CreateEpisodesAndAddEpisodesToPodcastsTable");
+      System.out.println("ran migration M20200530151500AddEpisodesToPodcastsTable");
 
     } catch (InvalidQueryException e) {
       System.out.println("unsuccessful");

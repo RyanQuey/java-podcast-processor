@@ -14,12 +14,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 // import java.sql.Timestamp;
 
+import migrations.MigrationRunner;
 // import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
-// import migrations.*;
-import migrations.M20200513211500CreateKeyspace;
-import migrations.M20200524201500CreatePodcastsTable;
-import migrations.M20200513221500CreateSearchResultsTable;
-import migrations.M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable;
 
 public class CassandraDb {
   public static CqlSession session = CqlSession.builder().build();
@@ -30,20 +26,9 @@ public class CassandraDb {
 
   public static void initialize () throws Exception {
     // create keyspace if doesn't exist already, and initialize tables
-    runMigrations();
+    MigrationRunner.runMigrations();
     // TODO they don't recommend changing keyspace during a run. Not sure when you're supposed to set it htough
     session.execute("USE podcast_analysis_tool;");
-  }
-
-  // TODO remove...find more elegant solution for running migrations so can run independently of connecting to db, perhaps a separate jar file I can run or something
-  // currently not maintaining versioning for this, not really necessary
-  // since doing IF NOT EXISTS then can run all these all the time we want to migrate
-  private static void runMigrations () throws Exception {
-    M20200513211500CreateKeyspace.run(); 
-    M20200513221500CreateSearchResultsTable.run();
-    M20200524201500CreatePodcastsTable.run(); 
-    M20200527151500CreateEpisodesAndAddEpisodesToPodcastsTable.run();
-    System.out.println("***finished writing migrations***");
   }
 
 	// close session when not actively using...or just when everything is finished running?
@@ -62,12 +47,6 @@ public class CassandraDb {
     System.out.println("release version:");
     System.out.println(row.getString("release_version"));
   };
-
-  public static void addUDTCodecs () {
-    TypeCodec<Address> addressCodec = mappingManager.udtCodec(Address.class);
-    OptionalCodec<Address> optionalAddressCodec = new OptionalCodec(addressCodec);
-    codecRegistry.register(optionalAddressCodec);
-  }
 
   ////////////////////////////////////
   // some helpers for building queries
