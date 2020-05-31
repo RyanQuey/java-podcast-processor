@@ -48,7 +48,9 @@ public class Episode extends EpisodeBase {
     this.setClosedCaptioned(entryInfo.getClosedCaptioned());
     this.setOrderNum(entryInfo.getOrder());
     // getImage returns a url
-    this.setImageUrl(entryInfo.getImage().toString());
+    if (entryInfo.getImage() != null) {
+      this.setImageUrl(entryInfo.getImage().toString());
+    }
 
     this.setEpisodeType(entryInfo.getEpisodeType());
     this.setTitle(entryInfo.getTitle());

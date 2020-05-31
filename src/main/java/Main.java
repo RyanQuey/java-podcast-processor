@@ -219,8 +219,8 @@ public class Main {
 
       System.out.println("*************************");
       System.out.println("starting search:");
-      //runSearchesAndProcess(args);
-      processOnePodcast();
+      runSearchesAndProcess(args);
+      // processOnePodcast();
 
 
       // TODO note that this is still not letting process close
