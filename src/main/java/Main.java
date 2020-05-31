@@ -95,7 +95,7 @@ public class Main {
     } else if (toProcess.equals("new-search")) {
       // For the most part, will use this. the other ones are for testing
       // NOTE Even if we had already persisted the search results previously, if the search was done, we are processing currently. Maybe Want to change his behavior later, depending on how we do the searches.
-      System.out.println("only processing new search results");
+      System.out.println("only processing new search results: " + String.valueOf(podcastSearch.searchQueries.size()));
       searchResultsToProcess.addAll(podcastSearch.searchQueries);
       // note: if didn't run search, won't do anything
 
@@ -111,6 +111,7 @@ public class Main {
 
         // NOTE each search can have zero or many search results
         // NOTE is it List<Row> or List<ElementT>?
+        System.out.println("processing ALL we've ever gotten");
         List<Row> allSearches = PodcastSearch.fetchAllSearches();
         
         for (Row dbRow : allSearches) {

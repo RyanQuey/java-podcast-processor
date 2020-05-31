@@ -211,10 +211,9 @@ public class PodcastSearch {
           continue;
         }
 
-        searchQuery.save();
-        searchQueries.add(searchQuery);
-
         if (searchQuery.madeApiCall) {
+          searchQuery.save();
+          searchQueries.add(searchQuery);
           incrementApiHitCounter(); 
         }
 
