@@ -269,6 +269,7 @@ public class SearchQuery {
 
   // retrieves from db or from external api
   // One way or the other, returns the json
+  // TODO rename since it isn't just a getter
   public String getPodcastJson (boolean refreshData) 
     // TODO if we ever use refreshData make sure that we do not set created_at, but only updated_at for those records
 
