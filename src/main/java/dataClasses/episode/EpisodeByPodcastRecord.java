@@ -24,23 +24,23 @@ import helpers.DataClassesHelpers;
  *
  */
 @Entity
-@CqlName("episodes_by_order_in_podcast")
-public class EpisodeByPodcastOrderRecord extends EpisodeBase {
+@CqlName("episodes_by_podcast")
+public class EpisodeByPodcastRecord extends EpisodeBase {
   @PartitionKey(0)
   private String podcastApi;
   @PartitionKey(1)
   private String podcastApiId;
   @ClusteringColumn(0)
-  private Integer orderNum;
+  private String episodeGuid;
 
-  static public EpisodeByPodcastOrderDao getDao () {
-    return CassandraDb.inventoryMapper.episodeByPodcastOrderDao("episodes_by_order_in_podcast");
+  static public EpisodeByPodcastDao getDao () {
+    return CassandraDb.inventoryMapper.episodeByPodcastDao("episodes_by_podcast");
   }
 
   // for DAO
-  public EpisodeByPodcastOrderRecord () {}
+  public EpisodeByPodcastRecord () {}
 
-  public EpisodeByPodcastOrderRecord (Episode episode) {
+  public EpisodeByPodcastRecord (Episode episode) {
     DataClassesHelpers.copyMatchingFields(episode, this);
   }
 };

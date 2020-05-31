@@ -2,7 +2,12 @@ package dataClasses.episode;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
+import java.util.Date;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+
+import com.datastax.oss.driver.api.core.data.CqlDuration;
 
 
 /* 
@@ -16,11 +21,28 @@ public class EpisodeBase {
   private String podcastApiId;
   private String podcastWebsiteUrl;
 
+  private String episodeGuid;
+
+  // entry.getLink();
+  private String episodeUrl;
+  // entry.getUri();
+  // https://stackoverflow.com/a/36450507/6952495
+
+  private String description;
+  private String content;
+  private String comments;
+  // Rome rss returns a date, so saving as date
+  private LocalDate episodeUpdatedDate;
+  private LocalDate publishedDate;
+
+
+
+
   // TODO figure out what is different from the track info, and store here
   // the rest, get rid of and just reference via the track
   private String summary;
   // just based on the podcast, not specific to the episode
-  private String duration; // maybe do different java type, like CqlDuration or something more vanilla java
+  private CqlDuration duration; // maybe do different java type, like CqlDuration or something more vanilla java
   private String subtitle;
   private Integer orderNum;
   private String imageUrl;
@@ -54,11 +76,15 @@ public class EpisodeBase {
       this.podcastWebsiteUrl = podcastWebsiteUrl;
   }
 
-  public String getDuration() {
+  public CqlDuration getDuration() {
       return duration;
   }
 
   public void setDuration(String duration) {
+      this.duration = CqlDuration.from(duration);
+  }
+
+  public void setDuration(CqlDuration duration) {
       this.duration = duration;
   }
 
@@ -70,11 +96,11 @@ public class EpisodeBase {
       this.subtitle = subtitle;
   }
 
-  public int getOrderNum() {
+  public Integer getOrderNum() {
       return orderNum;
   }
 
-  public void setOrderNum(int orderNum) {
+  public void setOrderNum(Integer orderNum) {
       this.orderNum = orderNum;
   }
 
@@ -142,10 +168,6 @@ public class EpisodeBase {
     this.podcastApiId = podcastApiId;
   }
 
-  public void setOrderNum(Integer orderNum) {
-    this.orderNum = orderNum;
-  }
-
   public Set<String> getKeywords() {
     return keywords;
   }
@@ -177,6 +199,80 @@ public class EpisodeBase {
   public void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
   }
+
+  public String getEpisodeGuid() {
+    return episodeGuid;
+  }
+
+  public void setEpisodeGuid(String episodeGuid) {
+    this.episodeGuid = episodeGuid;
+  }
+
+  public String getEpisodeUrl() {
+    return episodeUrl;
+  }
+
+  public void setEpisodeUrl(String episodeUrl) {
+    this.episodeUrl = episodeUrl;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getContent() {
+    return content;
+  }
+
+  public void setContent(String content) {
+    this.content = content;
+  }
+
+  public String getComments() {
+    return comments;
+  }
+
+  public void setComments(String comments) {
+    this.comments = comments;
+  }
+
+  public LocalDate getEpisodeUpdatedDate() {
+    return episodeUpdatedDate;
+  }
+
+  public void setEpisodeUpdatedDate(LocalDate episodeUpdatedDate) {
+    this.episodeUpdatedDate = episodeUpdatedDate;
+  }
+
+  // NOTE actually probably inaccurate because it does not set the local time zone, but whatever, it's close enough and we are not bothering to find what their time zone was anyway.
+  public void setEpisodeUpdatedDate(Date episodeUpdatedDate) {
+    if (episodeUpdatedDate != null) {
+      this.episodeUpdatedDate = episodeUpdatedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    } else {
+      this.episodeUpdatedDate = null;
+    }
+  }
+
+  public LocalDate getPublishedDate() {
+    return publishedDate;
+  }
+
+  public void setPublishedDate(LocalDate publishedDate) {
+    this.publishedDate = publishedDate;
+  }
+
+  public void setPublishedDate(Date publishedDate) {
+    if (publishedDate != null) {
+      this.publishedDate = publishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    } else {
+      this.publishedDate = null;
+    }
+  }
+
 };
 
 
