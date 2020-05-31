@@ -1,4 +1,4 @@
-package cassandraHelpers;
+package dataClasses.episode;
 
 import com.datastax.oss.driver.api.mapper.annotations.Dao;
 import com.datastax.oss.driver.api.mapper.annotations.Select;
@@ -8,19 +8,17 @@ import com.datastax.oss.driver.api.mapper.entity.saving.NullSavingStrategy;
 import com.datastax.oss.driver.api.mapper.annotations.DefaultNullSavingStrategy;
 import java.util.UUID;
 
-import dataClasses.Episode;
-
 @Dao
 // NOTE this means that in order to erase a field, cannot set it to null
 @DefaultNullSavingStrategy(NullSavingStrategy.DO_NOT_SET)
-public interface EpisodeDao {
+public interface EpisodeByPodcastOrderDao {
 
   /** Simple selection by full primary key. */
   @Select
-  Episode findOne(String podcastApi, String podcastApiId, int order);
+  EpisodeByPodcastOrderRecord findOne(String podcastApi, String podcastApiId, int order);
 
   @Select(customWhereClause = "podcast_api = ':podcastApi' AND podcast_api_id = ':podcastApiId'")
-  Episode findAllByPodcast(String podcastApi, String podcastApiId);
+  EpisodeByPodcastOrderRecord findAllByPodcast(String podcastApi, String podcastApiId);
   /**
    * Selection by partial primary key, this will return multiple rows.
    *
@@ -49,7 +47,7 @@ public interface EpisodeDao {
   void create(Episode video);
   */
   @Insert
-  void create(Episode episode);
+  void create(EpisodeByPodcastOrderRecord episode);
 
   /**
    * Update using a template: the template must have its full primary key set; beyond that, any
@@ -63,7 +61,7 @@ public interface EpisodeDao {
    * TODO maybe have to pass in primary_genre and feed_url also, and work those into the customWhereClause also
    */
   @Update
-  void save(Episode episode);
+  void save(EpisodeByPodcastOrderRecord episode);
 
   // TODO find a way t ojust make this an alias of update
   // @Update(nullSavingStrategy = NullSavingStrategy.DO_NOT_SET)

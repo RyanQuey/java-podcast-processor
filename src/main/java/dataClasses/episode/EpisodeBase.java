@@ -1,21 +1,9 @@
-package dataClasses;
+package dataClasses.episode;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.time.Instant;
 
-import com.rometools.rome.feed.synd.SyndEntry;
-import com.rometools.rome.feed.module.Module; 
-import com.rometools.modules.itunes.EntryInformationImpl;
-import com.rometools.modules.itunes.AbstractITunesObject;
-
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
-
-import cassandraHelpers.CassandraDb;
-import cassandraHelpers.EpisodeDao;
 
 /* 
  * For one file, gets all search results and retrieves the rss feed data
@@ -23,13 +11,8 @@ import cassandraHelpers.EpisodeDao;
  * for now, just nesting within the parent podcast
  *
  */
-@Entity
-@CqlName("episodes_by_order_in_podcast")
-public class Episode {
-  private Podcast podcast;
-  @PartitionKey(0)
+public class EpisodeBase {
   private String podcastApi;
-  @PartitionKey(1)
   private String podcastApiId;
   private String podcastWebsiteUrl;
 
@@ -39,7 +22,6 @@ public class Episode {
   // just based on the podcast, not specific to the episode
   private String duration; // maybe do different java type, like CqlDuration or something more vanilla java
   private String subtitle;
-  @ClusteringColumn(0)
   private Integer orderNum;
   private String imageUrl;
 
@@ -55,50 +37,6 @@ public class Episode {
 
   // stuff we can get from rss
   private boolean closedCaptioned;
-
-  static public EpisodeDao getDao () {
-    return CassandraDb.inventoryMapper.episodeDao("episodes_by_order_in_podcast");
-  }
-
-  // for DAO
-  public Episode() {}
-
-  public Episode(SyndEntry entry, Podcast podcast) {
-    Module entryModule = entry.getModule(AbstractITunesObject.URI);
-    // probably same as before, use EntryInformationImpl rather than EntryInformation
-    EntryInformationImpl entryInfo = (EntryInformationImpl) entryModule;
-
-    // directly from podcast
-    this.podcast = podcast;
-    this.podcastApi = podcast.getApi();
-    this.podcastApiId = podcast.getApiId();
-    this.podcastWebsiteUrl = podcast.getWebsiteUrl();
-
-    // from rss
-    this.summary = entryInfo.getSummary();
-    // from rome rss docs: An encapsulation of the duration of a podcast. This will serialize (via .toString()) to HH:MM:SS format, and can parse [H]*H:[M]*M:[S]*S or [M]*M:[S]*S.
-    // want to convert to: Alternative ISO 8601 format
-    // easy to read but also CQL compatible (https://docs.datastax.com/en/dse/5.1/cql/cql/cql_reference/upsertDates.html#ISO8601format)
-    this.duration = "PT" + entryInfo.getDuration().toString();
-    this.subtitle = entryInfo.getSubtitle();
-    this.explicit = entryInfo.getExplicit();
-    this.author = entryInfo.getAuthor();
-
-    // may be will have to pass in the entry instead and do this.podcastWebsiteUrl = entry.getLink();
-    this.closedCaptioned = entryInfo.getClosedCaptioned();
-    this.orderNum = entryInfo.getOrder();
-    // getImage returns a url
-    this.imageUrl = entryInfo.getImage().toString();
-
-    this.episodeType = entryInfo.getEpisodeType();
-    this.title = entryInfo.getTitle();
-
-    this.keywords = new HashSet<String>(Arrays.asList(entryInfo.getKeywords()));
-    this.episodeNum = entryInfo.getEpisode();
-    this.seasonNum = entryInfo.getSeason();
-    this.updatedAt = Instant.now();
-
-  }
 
   public String getSummary() {
       return summary;
@@ -186,14 +124,6 @@ public class Episode {
 
   public void setAuthor(String author) {
       this.author = author;
-  }
-
-  public Podcast getPodcast() {
-    return podcast;
-  }
-
-  public void setPodcast(Podcast podcast) {
-    this.podcast = podcast;
   }
 
   public String getPodcastApi() {

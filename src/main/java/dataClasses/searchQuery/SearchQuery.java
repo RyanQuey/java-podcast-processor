@@ -1,4 +1,4 @@
-package dataClasses;
+package dataClasses.searchQuery;
 
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +24,7 @@ import com.google.common.collect.Iterables;
 import helpers.HttpReq;
 import cassandraHelpers.CassandraDb;
 
-import dataClasses.Podcast;
+import dataClasses.podcast.Podcast;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.core.cql.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
@@ -37,7 +37,7 @@ import com.datastax.oss.driver.api.querybuilder.term.Term;
  * as opposed to PodcastSearch, this is just one query
  */
 
-public class QueryResults {
+public class SearchQuery {
 
   // receive when put into db. uuid. TODO maybe don't set or use this
   public String id;
@@ -65,7 +65,7 @@ public class QueryResults {
 
   // for when initializing from just search term and search type
   // TODO refreshData should eventually just force hitting the database immediately; currently does nothing
-  public QueryResults(String term, String searchType, boolean refreshData) 
+  public SearchQuery(String term, String searchType, boolean refreshData) 
     {
       this.constructedFrom = "term-and-type";
       this.term = term;
@@ -75,7 +75,7 @@ public class QueryResults {
   }
 
   // for when we have already ran the search, and retriving from DB
-  public QueryResults(Row dbRow) 
+  public SearchQuery(Row dbRow) 
     // TODO figure out what to catch if the data in db is corrupted
     {
       this.constructedFrom = "db-record";
@@ -249,7 +249,7 @@ public class QueryResults {
     return podcasts;
   }
 
-  public void persistPodcasts () throws IOException {
+  public void persistPodcasts () throws Exception {
     System.out.println("*********PERSISTING PODCASTS*************");
     if (podcasts.size() == 0) {
       // have none, so just return
@@ -258,7 +258,7 @@ public class QueryResults {
     } else {
       for (Podcast podcast : getPodcasts()) {
         // get RSS for podcast, to get episode list
-        Podcast.getDao().save(podcast);
+        podcast.persist();
       };
 
       System.out.println("finished getting episodes for this set of query results: " + this.friendlyName());

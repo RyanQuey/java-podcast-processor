@@ -1,4 +1,4 @@
-package dataClasses;
+package dataClasses.podcast;
 
 // import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.literal;
 // import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.update;
@@ -15,16 +15,6 @@ import java.lang.Exception;
 
 // import com.datastax.oss.driver.api.core.cql.ResultSet;
 // import com.datastax.oss.driver.api.core.cql.Row;
-import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
-// DSE Mapper
-import com.datastax.oss.driver.api.mapper.annotations.Entity;
-import com.datastax.oss.driver.api.mapper.annotations.CqlName;
-import com.datastax.oss.driver.api.mapper.annotations.PartitionKey;
-// import com.datastax.oss.driver.api.querybuilder.term.Term;
-// import com.datastax.oss.driver.api.mapper.annotations.Dao;
-// import com.datastax.oss.driver.api.mapper.annotations.Delete;
-// import com.datastax.oss.driver.api.mapper.annotations.Insert;
-// import com.datastax.oss.driver.api.mapper.annotations.Select;
 
 import com.rometools.modules.itunes.AbstractITunesObject;
 import com.rometools.modules.itunes.FeedInformationImpl;
@@ -43,60 +33,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import cassandraHelpers.CassandraDb;
-import cassandraHelpers.PodcastDao;
 import helpers.JsonHelpers;
+import helpers.DataClassesHelpers;
+
+import dataClasses.episode.Episode;
+import dataClasses.searchQuery.SearchQuery;
 // import helpers.HttpReq;
 
 /* 
- * For one file, gets all search results and retrieves the rss feed data
+ * this is what we will use for the most part after having retrieved a database record, or just when interacting with the data within the app
+ * - any field that we do not want persisted to the database should be here, since Cassandra Java driver does not seem to allow fields that do not have corresponding columns in db
  *
  */
 
-@Entity
-@CqlName("podcasts_by_language")
-public class Podcast {
-  @PartitionKey 
-  private String language;
-  @ClusteringColumn(0)
-  private String primaryGenre;
-  @ClusteringColumn(1) 
-  private String feedUrl; // rss feed url
-
-  private String owner; 
-  private String name; 
-  private String imageUrl30;  
-  private String imageUrl60;  
-  private String imageUrl100;  
-  private String imageUrl600;  
-  private String api; // name of the api TODO move this, apiId, and apiUrl to a nested map once we implement other apis
-  private String apiId; // id assigned by api
-  private String apiUrl; // url within api
-  private String country;
-  private ArrayList<String> genres;
-  private ArrayList<String> apiGenreIds;
-  private Instant releaseDate;
-  boolean explicit;
-  int episodeCount;
-
-  // to get from rss, that itunes doesn't return in search
-  // from description
-  private String description;
-  // not sure how it would be different from description, but rome seems to include it as part of the itunes rss api
-  private String summary;
-  // from itunes:subtitle
-  private String subtitle;
-  // from webMaster
-  private String webmaster;
-  // from itunes:owner > itunes:email
-  private String ownerEmail;
-  private String author; //not yet sure how this is distinct from owner. But airflow's podcast for example has different http://feeds.soundcloud.com/users/soundcloud:users:385054355/sounds.rss
-  // from image:link
-  private String websiteUrl; // TODO make all these urls of java class Url
-  private Instant updatedAt;
-
-  // these should match the queryresult
-  // list of queries, each query giving term, searchType, api, and when search was performed
-  private List<Map<String, String>> foundByQueries; 
+public class Podcast extends PodcastBase {
 
   // access through getters
   private ArrayList<Episode> episodes = new ArrayList<Episode>();
@@ -112,58 +62,52 @@ public class Podcast {
   // FeedInformation feedInfo;
 
   // the query that we got this podcast from
-  QueryResults fromQuery; 
+  // TODO remove and just set to foundByQueries directly
+  SearchQuery fromQuery; 
 
   // in case we wanted to persist this error
   Exception errorGettingRss;
 
-  /////////////////////////////////////////////////
-  // Static methods
-  // NOTE never set this as a static var, in case it is set incorrectly. (5/29/20)
-  // Does not seem to throw a helpful error if a var, but if a static method, will give helpful feedback
-  static public PodcastDao getDao () {
-    return CassandraDb.inventoryMapper.podcastDao("podcasts_by_language");
+
+
+  ////////////////////
+  // Constructors
+  public Podcast(PodcastByLanguageRecord podcastByLanguageRecord) {
+    DataClassesHelpers.copyMatchingFields(podcastByLanguageRecord, this);
   }
 
-  /////////////////////////////////////////////////
-  // constructors
-
-  // for DSE DAO
-  public Podcast() {}
-
   // TODO add some error handling, so that for every attribute, if it doesn't work, just move on, no problem. Just get as much information as we can
-  public Podcast(JSONObject podcastJson, QueryResults fromQuery) 
+  public Podcast(JSONObject podcastJson, SearchQuery fromQuery) 
     throws Exception {
       // really is an `org.apache.commons.exec.ExecuteException`, but that inherits from IOException
       // sometimes it is `org.json.JSONException` which causes teh ExecuteException 
 
       //  assuming Itunes as API...:
 
-      System.out.println("okay were in");
-      this.owner = (String) podcastJson.get("artistName"); 
-      this.name = (String) podcastJson.get("collectionName"); 
-      this.imageUrl30 = (String) podcastJson.get("artworkUrl30");  
-      this.imageUrl60 = (String) podcastJson.get("artworkUrl60");  
-      this.imageUrl100 = (String) podcastJson.get("artworkUrl100");  
-      this.imageUrl600 = (String) podcastJson.get("artworkUrl600");  
+      this.setOwner((String) podcastJson.get("artistName")); 
+      this.setName((String) podcastJson.get("collectionName")); 
+      this.setImageUrl30((String) podcastJson.get("artworkUrl30"));
+      this.setImageUrl60((String) podcastJson.get("artworkUrl60"));  
+      this.setImageUrl100((String) podcastJson.get("artworkUrl100"));  
+      this.setImageUrl600((String) podcastJson.get("artworkUrl600"));  
       // TODO find way to dynamically get this from the result. Perhaps bake it into the filename or get from apiUrl 
-      this.api = "itunes"; 
-      this.apiId = (String) String.valueOf(podcastJson.get("collectionId"));
-      this.apiUrl = (String) podcastJson.get("collectionViewUrl");
-      this.country = (String) podcastJson.get("country");
-      this.feedUrl = (String) podcastJson.get("feedUrl");
+      this.setApi("itunes"); 
+      this.setApiId((String) String.valueOf(podcastJson.get("collectionId")));
+      this.setApiUrl((String) podcastJson.get("collectionViewUrl"));
+      this.setCountry((String) podcastJson.get("country"));
+      this.setFeedUrl((String) podcastJson.get("feedUrl"));
 
       JSONArray genresJson = (JSONArray) podcastJson.get("genres");
       // I want to be ordered, since probably matches order of api genre ids
-      this.genres = (ArrayList<String>) JsonHelpers.jsonArrayToList(genresJson);
+      this.setGenres((ArrayList<String>) JsonHelpers.jsonArrayToList(genresJson));
 
       // I want to be ordered, since probably matches order of genres
       JSONArray apiGenreIdsJson = (JSONArray) podcastJson.get("genreIds");
-      this.apiGenreIds = (ArrayList<String>) JsonHelpers.jsonArrayToList(apiGenreIdsJson);
-      this.primaryGenre = (String) podcastJson.get("primaryGenreName");
+      this.setApiGenreIds((ArrayList<String>) JsonHelpers.jsonArrayToList(apiGenreIdsJson));
+      this.setPrimaryGenre((String) podcastJson.get("primaryGenreName"));
       // itunes format: "2020-05-04T15:00:00Z"
       String rdStr = (String) podcastJson.get("releaseDate");
-      this.releaseDate = CassandraDb.stringToInstant(rdStr);
+      this.setReleaseDate(CassandraDb.stringToInstant(rdStr));
       
       // definitely don't want to break on this. And sometimes they set as collectionExplicitness instead I guess (?...at least, I saw one that itunes returned that way)
       
@@ -177,12 +121,23 @@ public class Podcast {
       }
 
       // have seen all of these returned, not sure what the difference is
-      this.explicit = Arrays.asList("notExplicit", "Clean", "cleaned").contains(rating);
+      this.setExplicit(Arrays.asList("notExplicit", "Clean", "cleaned").contains(rating));
 
-      this.episodeCount = (int) podcastJson.get("trackCount");
+      this.setEpisodeCount((int) podcastJson.get("trackCount"));
       // TODO persist somehow, probably with type List, and list chronologically the times that this was returned. BUt for me, don't need that info
-      this.fromQuery = fromQuery;
-      this.updatedAt = Instant.now();
+      this.setFromQuery(fromQuery);
+      this.setUpdatedAt(Instant.now());
+  }
+
+  // should have one of these for each record Class, and can determine which record Class by what their partition keys and clustering keys are
+  static public Podcast findOneByParams(String language, String primaryGenre, String feedUrl) {
+    PodcastByLanguageRecord p =  PodcastByLanguageRecord.getDao().findOneByParams(language, primaryGenre, feedUrl);
+
+    if (p == null) {
+      return null;
+    } else {
+      return new Podcast(p);
+    }
   }
 
   // TODO 
@@ -192,9 +147,14 @@ public class Podcast {
   }
   */
 
+  /////////////////////////////////////////
+  // Static methods
+
+  /////////////////////////////////////////
+  // instance methods
   /*
   public Podcast fetch () {
-    String query = "SELECT * FROM podcast_analysis_tool.podcasts_by_language WHERE language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = " + this.primaryGenre + " AND feed_url = " + this.feedUrl + " LIMIT 1";
+    String query = "SELECT * FROM podcast_analysis_tool.podcasts_by_language WHERE language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = " + this.primaryGenre + " AND feed_url = " + this.getFeedUrl() + " LIMIT 1";
     ResultSet result = CassandraDb.execute(query);
 
     Row CassandraDb.ecord = result.one();
@@ -211,13 +171,13 @@ public class Podcast {
       }
 
       // some data is faulty, so skip
-      if (this.feedUrl == null || this.feedUrl == "") {
+      if (this.getFeedUrl() == null || this.getFeedUrl() == "") {
         // TODO maybe want better error handling for this
         throw new IllegalArgumentException("feedUrl does not exist");
       }
 
       try {
-        System.out.println("Getting feed for: " + this.feedUrl);
+        System.out.println("Getting feed for: " + this.getFeedUrl());
 
         // getRssStr();
         return getRssFeed();
@@ -239,7 +199,7 @@ public class Podcast {
   private String getRssStr () 
     throws Exception {
       try {
-        String result = HttpReq.get(this.feedUrl, null);
+        String result = HttpReq.get(this.getFeedUrl(), null);
 
         System.out.println("RSS retrieved as String");
         System.out.println(result);
@@ -267,7 +227,7 @@ public class Podcast {
 				// setup connection
 				try {
 					client = HttpClients.createMinimal(); 
-					request = new HttpGet(this.feedUrl);
+					request = new HttpGet(this.getFeedUrl());
           response = client.execute(request); 
 
         } catch (Exception e) {
@@ -364,8 +324,8 @@ public class Podcast {
 
     this.getRss();
 
-    this.owner = feedInfo.getOwnerName();
-    this.ownerEmail = feedInfo.getOwnerEmailAddress();
+    this.setOwner(feedInfo.getOwnerName());
+    this.setOwnerEmail(feedInfo.getOwnerEmailAddress());
     /* not going to use these for now; just use what itunes returned
     // "http://a1.phobos.apple.com/Music/y2005/m06/d26/h21/mcdrrifv.jpg"
     feedInfo.getImage().toExternalForm();
@@ -377,23 +337,22 @@ public class Podcast {
     feedInfo.getCategories().get(1).getSubcategories().get(0).getName());
     */
     // something like "A weekly, hour-long romp through the worlds of media, politics, sports and show business, leavened with an eclectic mix of mysterious music, hosted by Harry Shearer."
-    this.summary = feedInfo.getSummary();
+    this.setSummary(feedInfo.getSummary());
     // might not work...maybe just using summary? But I see rss with description, not summary...
-    this.description = this.rssFeed.getDescription();
+    this.setDescription(this.rssFeed.getDescription());
     // not sure if this is what I think i tis TODO
-    this.websiteUrl = this.rssFeed.getLink();
+    this.setWebsiteUrl(this.rssFeed.getLink());
     // if they didn't set a language, default to "UNKNOWN" to avoid error: `InvalidQueryException: Key may not be empty`. Especially critical since we often sort by 
-    this.language = this.rssFeed.getLanguage() == null ? this.rssFeed.getLanguage() : "UNKNOWN";
+    this.setLanguage(this.rssFeed.getLanguage() == null ? this.rssFeed.getLanguage() : "UNKNOWN");
     // saw it here: https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/FeedInformationImpl.java#L179
-    this.subtitle = feedInfo.getSubtitle();
+    this.setSubtitle(feedInfo.getSubtitle());
 
     //feedInfo.getComplete(); (boolean, I'm guessing maybe for pagination?)
 
-    System.out.println("Set properties for    " + this.name + "   "  + "with rss feed url at " + this.feedUrl);
+    System.out.println("Set properties for    " + this.getName() + "   "  + "with rss feed url at " + this.getFeedUrl());
     // NOTE feedInfo.getNewFeedUrl() not working
   }
 
-  // TODO rename, not a getter. This can call http requests under the hood
   public ArrayList<Episode> extractEpisodes () throws Exception {
     // TODO find better way to see if there's any episodes...though in general, most podcasts should have at least one (?)
     if (this.episodes.size() != 0) {
@@ -423,10 +382,18 @@ public class Podcast {
   public void persistEpisodes() throws Exception {
     for (Episode episode : getEpisodes()) {
       System.out.println("Saving episode " + episode.getTitle());
-      Episode.getDao().save(episode);
+      //Episode.getDao().save(episode);
+      episode.persist();
     };
 
-    Podcast.getDao().save(this);
+    // add something to save this current record in IF we save episodes directly to podcasts somewhere
+    // PodcastByLanguageRecord.getDao().save(this);
+  }
+
+  // persists to all podcast tables
+  public void persist () throws Exception {
+    PodcastByLanguageRecord p = new PodcastByLanguageRecord(this);
+    PodcastByLanguageRecord.getDao().save(p);
   }
 
   // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
@@ -450,7 +417,7 @@ public class Podcast {
       .setColumn("api_id", literal(this.apiId))
       .setColumn("api_url", literal(this.apiUrl))
       .setColumn("country", literal(this.country))
-      //.setColumn("feed_url", literal(this.feedUrl)) // don't set because updating, so can't set any in primary key
+      //.setColumn("feed_url", literal(this.getFeedUrl())) // don't set because updating, so can't set any in primary key
       .setColumn("genres", literal(this.genres)) // hoping ArrayList converts to List here;
       .setColumn("api_genre_ids", literal(this.apiGenreIds))
       //.setColumn("primary_genre", literal(this.primaryGenre)) // can't update primary key
@@ -471,7 +438,7 @@ public class Podcast {
       // only update this unique record, so set by compound primary key
       .whereColumn("language").isEqualTo(literal(this.language))
       .whereColumn("primary_genre").isEqualTo(literal(this.primaryGenre))
-      .whereColumn("feed_url").isEqualTo(literal(this.feedUrl))
+      .whereColumn("feed_url").isEqualTo(literal(this.getFeedUrl()))
       .asCql();
 
       System.out.println("now executing:");
@@ -481,229 +448,22 @@ public class Podcast {
   }
   */
 
-  public String getLanguage() {
-      return language;
-  }
-
-  public void setLanguage(String language) {
-      this.language = language;
-  }
-
-  public String getPrimaryGenre() {
-      return primaryGenre;
-  }
-
-  public void setPrimaryGenre(String primaryGenre) {
-      this.primaryGenre = primaryGenre;
-  }
-
-  public String getFeedUrl() {
-      return feedUrl;
-  }
-
-  public void setFeedUrl(String feedUrl) {
-      this.feedUrl = feedUrl;
-  }
-
-  public String getOwner() {
-      return owner;
-  }
-
-  public void setOwner(String owner) {
-      this.owner = owner;
-  }
-
-  public String getName() {
-      return name;
-  }
-
-  public void setName(String name) {
-      this.name = name;
-  }
-
-  public String getImageUrl30() {
-      return imageUrl30;
-  }
-
-  public void setImageUrl30(String imageUrl30) {
-      this.imageUrl30 = imageUrl30;
-  }
-
-  public String getImageUrl60() {
-      return imageUrl60;
-  }
-
-  public void setImageUrl60(String imageUrl60) {
-      this.imageUrl60 = imageUrl60;
-  }
-
-  public String getImageUrl100() {
-      return imageUrl100;
-  }
-
-  public void setImageUrl100(String imageUrl100) {
-      this.imageUrl100 = imageUrl100;
-  }
-
-  public String getImageUrl600() {
-      return imageUrl600;
-  }
-
-  public void setImageUrl600(String imageUrl600) {
-      this.imageUrl600 = imageUrl600;
-  }
-
-  public String getApi() {
-      return api;
-  }
-
-  public void setApi(String api) {
-      this.api = api;
-  }
-
-  public String getApiId() {
-      return apiId;
-  }
-
-  public void setApiId(String apiId) {
-      this.apiId = apiId;
-  }
-
-  public String getApiUrl() {
-      return apiUrl;
-  }
-
-  public void setApiUrl(String apiUrl) {
-      this.apiUrl = apiUrl;
-  }
-
-  public String getCountry() {
-      return country;
-  }
-
-  public void setCountry(String country) {
-      this.country = country;
-  }
-
-  public ArrayList<String> getGenres() {
-      return genres;
-  }
-
-  public void setGenres(ArrayList<String> genres) {
-      this.genres = genres;
-  }
-
-  public ArrayList<String> getApiGenreIds() {
-      return apiGenreIds;
-  }
-
-  public void setApiGenreIds(ArrayList<String> apiGenreIds) {
-      this.apiGenreIds = apiGenreIds;
-  }
-
-  public Instant getReleaseDate() {
-      return releaseDate;
-  }
-
-  public void setReleaseDate(Instant releaseDate) {
-      this.releaseDate = releaseDate;
-  }
-
-  public boolean isExplicit() {
-      return explicit;
-  }
-
-  public void setExplicit(boolean explicit) {
-      this.explicit = explicit;
-  }
-
-  public int getEpisodeCount() {
-      return episodeCount;
-  }
-
-  public void setEpisodeCount(int episodeCount) {
-      this.episodeCount = episodeCount;
-  }
-
-  public String getDescription() {
-      return description;
-  }
-
-  public void setDescription(String description) {
-      this.description = description;
-  }
-
-  public String getSummary() {
-      return summary;
-  }
-
-  public void setSummary(String summary) {
-      this.summary = summary;
-  }
-
-  public String getSubtitle() {
-      return subtitle;
-  }
-
-  public void setSubtitle(String subtitle) {
-      this.subtitle = subtitle;
-  }
-
-  public String getWebmaster() {
-      return webmaster;
-  }
-
-  public void setWebmaster(String webmaster) {
-      this.webmaster = webmaster;
-  }
-
-  public String getOwnerEmail() {
-      return ownerEmail;
-  }
-
-  public void setOwnerEmail(String ownerEmail) {
-      this.ownerEmail = ownerEmail;
-  }
-
-  public String getAuthor() {
-      return author;
-  }
-
-  public void setAuthor(String author) {
-      this.author = author;
-  }
-
-  public String getWebsiteUrl() {
-      return websiteUrl;
-  }
-
-  public void setWebsiteUrl(String websiteUrl) {
-      this.websiteUrl = websiteUrl;
-  }
-
-  public Instant getUpdatedAt() {
-      return updatedAt;
-  }
-
-  public void setUpdatedAt(Instant updatedAt) {
-      this.updatedAt = updatedAt;
-  }
-
-  public List<Map<String, String>> getFoundByQueries() {
-      return foundByQueries;
-  }
-
-  public void setFoundByQueries(List<Map<String, String>> foundByQueries) {
-      this.foundByQueries = foundByQueries;
-  }  
-
   public ArrayList<Episode> getEpisodes() {
       return this.episodes;
   }
 
   public void setEpisodes(ArrayList<Episode> episodes) {
       this.episodes = episodes;
-  }  
+  }
+
+  public SearchQuery getFromQuery() {
+    return fromQuery;
+  }
+
+  public void setFromQuery(SearchQuery fromQuery) {
+    this.fromQuery = fromQuery;
+  }
+
 };
 
 

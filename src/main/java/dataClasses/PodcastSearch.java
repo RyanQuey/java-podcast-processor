@@ -20,6 +20,7 @@ import com.datastax.oss.driver.api.core.cql.ResultSet;
 // local imports
 import helpers.HttpReq;
 import cassandraHelpers.CassandraDb;
+import dataClasses.searchQuery.SearchQuery;
 
 public class PodcastSearch {
 
@@ -136,7 +137,7 @@ public class PodcastSearch {
      return results.all();
   }
 
-  public ArrayList<QueryResults> results = new ArrayList<QueryResults>();
+  public ArrayList<SearchQuery> searchQueries = new ArrayList<SearchQuery>();
 
   private void incrementApiHitCounter () {
     totalCounter ++;
@@ -166,7 +167,7 @@ public class PodcastSearch {
     };
   }
 
-  // TODO refactor, separate out  and put a lot into the QueryResults class
+  // TODO refactor, separate out  and put a lot into the SearchQuery class
   // TODO maintain references to results received from this search
   // TODO refactor: remove args from here, and just set as variable in the caller if we want to call that
   public void performAllQueries(String[] args){
@@ -188,11 +189,11 @@ public class PodcastSearch {
     for (String term : PodcastSearch.searchTerms) {
       for (String searchType : searchTypes) {
         // don't want to throw errors for these
-        QueryResults queryResult = new QueryResults(term, searchType, refreshData);
+        SearchQuery searchQuery = new SearchQuery(term, searchType, refreshData);
         try {
-          queryResult.getPodcastJson(refreshData);
+          searchQuery.getPodcastJson(refreshData);
         } catch (Exception e) {
-          System.out.println("Skipping queryResult: " + term + " for type: " + searchType + "due to error");
+          System.out.println("Skipping searchQuery: " + term + " for type: " + searchType + "due to error");
           // should log error already before this
 
           // Stop hitting their API if we max out the quota
@@ -205,10 +206,10 @@ public class PodcastSearch {
           continue;
         }
 
-        queryResult.save();
-        results.add(queryResult);
+        searchQuery.save();
+        searchQueries.add(searchQuery);
 
-        if (queryResult.madeApiCall) {
+        if (searchQuery.madeApiCall) {
           incrementApiHitCounter(); 
         }
 
