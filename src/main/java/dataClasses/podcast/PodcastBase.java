@@ -3,9 +3,12 @@ package dataClasses.podcast;
 import java.util.ArrayList;
 // import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.time.Instant;
 
+import dataClasses.searchQuery.SearchQueryUDT;
 
 /* 
  * For one file, gets all search results and retrieves the rss feed data
@@ -14,10 +17,10 @@ import java.time.Instant;
 
 public class PodcastBase {
   private String language;
-  private String primaryGenre;
   private String feedUrl; // rss feed url
 
   private String owner; 
+  private String primaryGenre;
   private String name; 
   private String imageUrl30;  
   private String imageUrl60;  
@@ -31,6 +34,7 @@ public class PodcastBase {
   private ArrayList<String> apiGenreIds;
   private Instant releaseDate;
   boolean explicit;
+  // NOTE currently is not actually counting the episodes, but based on the info they tell us in "trackCount"
   int episodeCount;
 
   // to get from rss, that itunes doesn't return in search
@@ -51,9 +55,18 @@ public class PodcastBase {
 
   // these should match the queryresult
   // list of queries, each query giving term, searchType, api, and when search was performed
-  private List<Map<String, String>> foundByQueries; 
+  private Set<SearchQueryUDT> foundByQueries; 
 
-  // access through getters
+  //////////////////////////////////
+  // helpers to add to Lists or Sets
+
+  public void addToFoundByQueries (SearchQueryUDT searchQueryUDT) {
+    if (this.foundByQueries == null) {
+      this.foundByQueries = new HashSet<SearchQueryUDT>();
+    }
+
+    this.foundByQueries.add(searchQueryUDT);
+  }
 
   public String getLanguage() {
       return language;
@@ -263,11 +276,11 @@ public class PodcastBase {
       this.updatedAt = updatedAt;
   }
 
-  public List<Map<String, String>> getFoundByQueries() {
+  public Set<SearchQueryUDT> getFoundByQueries() {
       return foundByQueries;
   }
 
-  public void setFoundByQueries(List<Map<String, String>> foundByQueries) {
+  public void setFoundByQueries(Set<SearchQueryUDT> foundByQueries) {
       this.foundByQueries = foundByQueries;
   }  
 

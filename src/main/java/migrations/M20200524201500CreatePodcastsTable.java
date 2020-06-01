@@ -12,10 +12,13 @@ public class M20200524201500CreatePodcastsTable {
       // - want to find across apis, so don't do by genres (which are probably api specific)
       // - want to search by language, primary_genre. 
       //      But language is difficult since could be en or English presumably...
+      //      primary_genre should be searchable, but so should other genres. Just make that indexed separately for now
       // - feed_url added on there to make sure it is unique
       // - make sure if another is found from different api, 
       // - Default ordering should be fine for this.
       String query = "CREATE TABLE IF NOT EXISTS podcast_analysis_tool.podcasts_by_language (" + 
+          "language TEXT," +
+          "feed_url TEXT, " +
           "owner TEXT, " + 
           "name TEXT, " +
           "image_url30 TEXT," +
@@ -26,26 +29,26 @@ public class M20200524201500CreatePodcastsTable {
           "api_id TEXT, " +
           "api_url TEXT, " +
           "country TEXT," +
-          "feed_url TEXT, " +
           "genres LIST<TEXT>, " +
           "api_genre_ids LIST<TEXT>," +
           "primary_genre TEXT," +
           "release_date TIMESTAMP," +
           "explicit BOOLEAN," +
           "episode_count INT," +
-          "rss_feed TEXT," +
-          "found_by_queries List<frozen<Map<Text, Text>>>, " +
+          //don't persist this, can be MBs in itself
+          //"rss_feed TEXT," +
+          // want a set, so doesn't store non-unique values
+          "found_by_queries SET<frozen<search_query>>, " +
           "description TEXT," +
           "summary TEXT," +
           "subtitle TEXT," +
           "webmaster TEXT," +
           "owner_email TEXT," +
           "author TEXT," +
-          "language TEXT," +
           "website_url TEXT," +
           "updated_at TIMESTAMP, " +
-          "PRIMARY KEY ((language), primary_genre, feed_url)) " +
-          "WITH CLUSTERING ORDER BY(primary_genre ASC, feed_url ASC);";
+          "PRIMARY KEY ((language), feed_url)) " +
+          "WITH CLUSTERING ORDER BY(feed_url ASC);";
 
       System.out.println(query);
       CassandraDb.execute(query);

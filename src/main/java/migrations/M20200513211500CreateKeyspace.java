@@ -16,6 +16,7 @@ public class M20200513211500CreateKeyspace {
     } catch (Exception e) {
       System.out.println("unsuccessful");
       System.out.println(e);
+      // TODO these should throw errors, should always work. If not just stop the program
     }
   }
 }

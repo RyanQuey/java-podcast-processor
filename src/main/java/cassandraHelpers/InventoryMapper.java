@@ -10,6 +10,7 @@ import com.datastax.oss.driver.api.mapper.MapperBuilder;
 
 import dataClasses.episode.EpisodeByPodcastDao;
 import dataClasses.podcast.PodcastByLanguageDao;
+import dataClasses.searchQuery.SearchQueryByTermDao;
 /*
  *
  * https://github.com/datastax/java-driver/tree/4.x/manual/mapper
@@ -40,6 +41,9 @@ public interface InventoryMapper {
 
   @DaoFactory
   EpisodeByPodcastDao episodeByPodcastDao(@DaoTable String table);
+
+  @DaoFactory
+  SearchQueryByTermDao searchQueryByTermDao(@DaoTable String table);
 
   // helper so can use the inventoryMapper more easily.
   // https://github.com/datastax/java-driver/tree/4.x/manual/mapper/mapper#mapper-builder

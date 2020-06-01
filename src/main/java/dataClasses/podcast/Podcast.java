@@ -38,6 +38,7 @@ import helpers.DataClassesHelpers;
 
 import dataClasses.episode.Episode;
 import dataClasses.searchQuery.SearchQuery;
+import dataClasses.searchQuery.SearchQueryUDT;
 // import helpers.HttpReq;
 
 /* 
@@ -63,7 +64,7 @@ public class Podcast extends PodcastBase {
 
   // the query that we got this podcast from
   // TODO remove and just set to foundByQueries directly
-  SearchQuery fromQuery; 
+  // TODO add this back in, currently all found_by_queries columns are set to null
 
   // in case we wanted to persist this error
   Exception errorGettingRss;
@@ -124,14 +125,15 @@ public class Podcast extends PodcastBase {
       this.setExplicit(Arrays.asList("notExplicit", "Clean", "cleaned").contains(rating));
 
       this.setEpisodeCount((int) podcastJson.get("trackCount"));
+
       // TODO persist somehow, probably with type List, and list chronologically the times that this was returned. BUt for me, don't need that info
-      this.setFromQuery(fromQuery);
+      this.addToFoundByQueries(new SearchQueryUDT(fromQuery));
       this.setUpdatedAt(Instant.now());
   }
 
   // should have one of these for each record Class, and can determine which record Class by what their partition keys and clustering keys are
-  static public Podcast findOneByParams(String language, String primaryGenre, String feedUrl) throws Exception {
-    PodcastByLanguageRecord p =  PodcastByLanguageRecord.getDao().findOneByParams(language, primaryGenre, feedUrl);
+  static public Podcast findOne(String language, String primaryGenre, String feedUrl) throws Exception {
+    PodcastByLanguageRecord p =  PodcastByLanguageRecord.getDao().findOne(language, primaryGenre, feedUrl);
 
     if (p == null) {
       return null;
@@ -396,61 +398,11 @@ public class Podcast extends PodcastBase {
 
   // persists to all podcast tables
   public void persist () throws Exception {
+    // currently only one table for this podcast so just save that
     PodcastByLanguageRecord p = new PodcastByLanguageRecord(this);
-    PodcastByLanguageRecord.getDao().save(p);
+    // for what we want to do, don't want to just write to disk. Want
+    p.saveAndAppendFoundBy();
   }
-
-  // using the mapper https://github.com/datastax/java-driver/tree/4.x/manual/mapper#dao-interface
-  // TODO This works, but deprecated; trying to just use DAO instead
-  /*
-  public void save () {
-    Term ts = CassandraDb.getTimestamp();
-
-    Map<String, String> foundBy = new HashMap<String, String>();
-    List<Map<String, String>> foundByList = Arrays.asList(foundBy);
-
-    // want to create or update if exists
-    String query = update("podcasts_by_language")
-      .setColumn("owner", literal(this.owner))
-      .setColumn("name", literal(this.name))
-      .setColumn("image_url30", literal(this.imageUrl30))
-      .setColumn("image_url60", literal(this.imageUrl60))
-      .setColumn("image_url100", literal(this.imageUrl100))
-      .setColumn("image_url600", literal(this.imageUrl600))
-      .setColumn("api", literal(this.api))
-      .setColumn("api_id", literal(this.apiId))
-      .setColumn("api_url", literal(this.apiUrl))
-      .setColumn("country", literal(this.country))
-      //.setColumn("feed_url", literal(this.getFeedUrl())) // don't set because updating, so can't set any in primary key
-      .setColumn("genres", literal(this.genres)) // hoping ArrayList converts to List here;
-      .setColumn("api_genre_ids", literal(this.apiGenreIds))
-      //.setColumn("primary_genre", literal(this.primaryGenre)) // can't update primary key
-      .setColumn("release_date", literal(this.releaseDate))
-      .setColumn("explicit", literal(this.explicit))
-      .setColumn("episode_count", literal(this.episodeCount))
-      //.setColumn("rss_feed", literal(this.rssFeedStr)) // don't save this for now, is really large and since I'm printing query, hard to debug
-      .append("found_by_queries", literal(foundByList))
-      .setColumn("description", literal(this.description))
-      .setColumn("summary", literal(this.summary))
-      .setColumn("subtitle", literal(this.subtitle))
-      .setColumn("webmaster", literal(this.webmaster))
-      .setColumn("owner_email", literal(this.ownerEmail))
-      .setColumn("author", literal(this.author))
-      //.setColumn("language", literal(this.language))
-      .setColumn("website_url", literal(this.websiteUrl))
-      .setColumn("updated_at", ts)
-      // only update this unique record, so set by compound primary key
-      .whereColumn("language").isEqualTo(literal(this.language))
-      .whereColumn("primary_genre").isEqualTo(literal(this.primaryGenre))
-      .whereColumn("feed_url").isEqualTo(literal(this.getFeedUrl()))
-      .asCql();
-
-      System.out.println("now executing:");
-      System.out.println(query);
-
-      CassandraDb.execute(query);
-  }
-  */
 
   public ArrayList<Episode> getEpisodes() {
       return this.episodes;
@@ -458,14 +410,6 @@ public class Podcast extends PodcastBase {
 
   public void setEpisodes(ArrayList<Episode> episodes) {
       this.episodes = episodes;
-  }
-
-  public SearchQuery getFromQuery() {
-    return fromQuery;
-  }
-
-  public void setFromQuery(SearchQuery fromQuery) {
-    this.fromQuery = fromQuery;
   }
 
 };

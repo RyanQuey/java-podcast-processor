@@ -8,13 +8,11 @@ import com.datastax.oss.driver.api.core.data.CqlDuration;
 import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
 import com.datastax.oss.driver.api.querybuilder.term.Term;
 
-import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 // import java.sql.Timestamp;
 
-import migrations.MigrationRunner;
+import migrations.AMigrationRunner;
 // import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 
 public class CassandraDb {
@@ -26,7 +24,7 @@ public class CassandraDb {
 
   public static void initialize () throws Exception {
     // create keyspace if doesn't exist already, and initialize tables
-    MigrationRunner.runMigrations();
+    AMigrationRunner.runMigrations();
     // TODO they don't recommend changing keyspace during a run. Not sure when you're supposed to set it htough
     session.execute("USE podcast_analysis_tool;");
   }
