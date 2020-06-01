@@ -154,7 +154,8 @@ public class Podcast extends PodcastBase {
   // instance methods
   /*
   public Podcast fetch () {
-    String query = "SELECT * FROM podcast_analysis_tool.podcasts_by_language WHERE language in ('en', 'en-US', 'UNKNOWN') AND primary_genre = " + this.primaryGenre + " AND feed_url = " + this.getFeedUrl() + " LIMIT 1";
+    // even better would be to use Lucerne/solr instead, or add indexes and do something like where language LIKE '%en%' 
+    String query = "SELECT * FROM podcast_analysis_tool.podcasts_by_language WHERE language in ('en', 'en-us', 'en-US', 'en-EN', 'en-en', 'en-CA', 'en-ca', 'en-GB', 'en-gb', 'UNKNOWN') AND primary_genre = " + this.primaryGenre + " AND feed_url = " + this.getFeedUrl() + " LIMIT 1";
     ResultSet result = CassandraDb.execute(query);
 
     Row CassandraDb.ecord = result.one();
@@ -346,7 +347,7 @@ public class Podcast extends PodcastBase {
     // not sure if this is what I think i tis TODO
     this.setWebsiteUrl(this.rssFeed.getLink());
     // if they didn't set a language, default to "UNKNOWN" to avoid error: `InvalidQueryException: Key may not be empty`. Especially critical since we often sort by 
-    this.setLanguage(this.rssFeed.getLanguage() == null ? this.rssFeed.getLanguage() : "UNKNOWN");
+    this.setLanguage(this.rssFeed.getLanguage() == null ? "UNKNOWN" : this.rssFeed.getLanguage());
     // saw it here: https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/main/java/com/rometools/modules/itunes/FeedInformationImpl.java#L179
     this.setSubtitle(feedInfo.getSubtitle());
 
