@@ -31,7 +31,7 @@ public class Main {
   static PodcastSearch podcastSearch = new PodcastSearch();
 
   // which results to process
-  static ArrayList<SearchQuery> searchResultsToProcess = new ArrayList<SearchQuery>();
+  static ArrayList<SearchQuery> searchQueriesToProcess = new ArrayList<SearchQuery>();
 
   static ArrayList<Episode> episodesFound = new ArrayList<Episode>();
 
@@ -58,9 +58,11 @@ public class Main {
 
       } else if (s.equals("--process=default-query")) {
         // if true, process a default query (FOR TESTING ONLY)
+        // NOTE still runs all searches regardless, if runs any at all (check the --perform-search cli flag)
         toProcess = "default-query";
         System.out.println(toProcess);     
       } else if (s.equals("--process=all")) {
+        // TODO Make another option, that runs all UNPROCESSED searches. This could be found by only processing searches that have null podcast_count, at least for now (a boolean flag would be better)
         // only do this if need to get the db back from nothing or something
         toProcess = "all";
       } else if (s.equals("--process=none")) {
@@ -73,12 +75,15 @@ public class Main {
     };
   }
 
-  private static void performSearch(String[] args) {
+  // runs searches
+  // Persists searchQuery records
+  // DOES NOT extract or persist podcasts or episodes
+  private static void performSearch(String[] args) throws Exception {
     // initialize this when we initialize the podcastSearch itself
     podcastSearch.performAllQueries(args);
   }
 
-  private static void setSearchResultsToProcess() {
+  private static void setSearchQueriesToProcess() {
     if (toProcess.equals("default-query")) {
       // process only the specified default query (FOR TESTING ONLY)
       // make sure to copy the SearchQuery constructor when term and searchType are passed in. Keep this in sync with that (that is going to be more up to date than this)
@@ -87,16 +92,16 @@ public class Main {
 
       // beware, might be more than one in actuality, if user passed in --process-new-search too on accident. 
 
-      SearchQuery qr = new SearchQuery(term, searchType, false);
+      SearchQuery qr = new SearchQuery(term, searchType);
       System.out.println("Only going to process the default query: " + qr.friendlyName());
       System.out.println(qr.friendlyName());
-      searchResultsToProcess.add(qr);
+      searchQueriesToProcess.add(qr);
 
     } else if (toProcess.equals("new-search")) {
       // For the most part, will use this. the other ones are for testing
       // NOTE Even if we had already persisted the search results previously, if the search was done, we are processing currently. Maybe Want to change his behavior later, depending on how we do the searches.
       System.out.println("only processing new search results: " + String.valueOf(podcastSearch.searchQueries.size()));
-      searchResultsToProcess.addAll(podcastSearch.searchQueries);
+      searchQueriesToProcess.addAll(podcastSearch.searchQueries);
       // note: if didn't run search, won't do anything
 
     } else if (toProcess.equals("none")) {
@@ -112,15 +117,10 @@ public class Main {
         // NOTE each search can have zero or many search results
         // NOTE is it List<Row> or List<ElementT>?
         System.out.println("processing ALL we've ever gotten");
-        List<Row> allSearches = PodcastSearch.fetchAllSearches();
-        
-        for (Row dbRow : allSearches) {
-          // TODO for better performance, and less memory use, don't add them all here. Instead, just iterate over the ResultSet, and call "resultSet.one()" multiple times. 
-          // But  for now no problem, since for the most part we shouldn't even process all the records, should process the results as we get them.
-          SearchQuery qr = new SearchQuery(dbRow);
-          System.out.println("adding " + qr.friendlyName());
-          searchResultsToProcess.add(qr);
-        }
+        // TODO for better performance, and less memory use, don't add them all here. Instead, just iterate over the ResultSet, and call "resultSet.one()" multiple times. 
+        // But if performance is not an issue, this is simpler
+        List<SearchQuery> allSearches = SearchQuery.findAll();
+        searchQueriesToProcess.addAll(allSearches);
 
       } catch (Exception e) { 
         // temporarily just using a more general exception. But I'm guessing that hitting db with db.execute can throw a very specific error...
@@ -132,13 +132,15 @@ public class Main {
     }
   }
 
-  private static void processSearchResults() throws Exception {
+  // takes existing search results that we have already retrieved from external APIs, and processes them
+  // extracts and persists podcasts and their episodes
+  private static void processSearchQueries() throws Exception {
     System.out.println("start");
     int count = 0;
-    int total = searchResultsToProcess.size();
+    int total = searchQueriesToProcess.size();
 
     // iterate over search results
-    for (SearchQuery searchQuery : searchResultsToProcess) {
+    for (SearchQuery searchQuery : searchQueriesToProcess) {
       count ++;
       System.out.println("starting number: " + count + " out of " + total);
 
@@ -147,15 +149,22 @@ public class Main {
 				// perhaps one day, searchQuery will have a single method that gets podcasts, and then as it gets it it persists it immediately. But right now just building out our api
 
 				// most often unnecessary, but if so it will only do a quick boolean check
-				searchQuery.getPodcastJson(false);
-				// hits the feedUrls for each podcast and pulls out data from that xml to get data about the podcasts 
-				searchQuery.getPodcasts();
-				// persists data we just got
-				searchQuery.persistPodcasts();
-        // get episodes for each of those podcasts
+				boolean forceRefresh = false;
+				searchQuery.performSearchIfNecessary(forceRefresh);
 
-				searchQuery.getEpisodes();
-				searchQuery.persistEpisodes();
+				// hits the feedUrls for each podcast and pulls out data from that xml to get data about the podcasts 
+				// DOES NOT PERSIST PODCASTS YET 
+				// TODO as we extract them, just persist them, and then go through their episodes, and persist those too. Loops over each podcast only once
+				// would be almost certainly less memory, get errors back faster, and just cleaner
+				// searchQuery.extractPodcasts();
+				// // persists data we just got
+
+				// searchQuery.persistPodcasts();
+        // // get episodes for each of those podcasts
+
+				// searchQuery.extractEpisodes();
+				// searchQuery.persistEpisodes();
+				searchQuery.extractAndPersistData();
 
       } catch (Exception e) {
 				System.out.println("An error occurred while retrieving podcast and episode data for :" + searchQuery.friendlyName());
@@ -183,10 +192,10 @@ public class Main {
 
     System.out.println("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-");     
     System.out.println("Now beginning to process search results: Setting");     
-    setSearchResultsToProcess();
+    setSearchQueriesToProcess();
 
     System.out.println("Now beginning to process search results: Processing");
-    processSearchResults();
+    processSearchQueries();
   }
 
   // TODO finish adding this helper
@@ -216,7 +225,7 @@ public class Main {
 
     try {
       System.out.println("searching");
-      Podcast podcast = Podcast.findOneByParams(language, primaryGenre, feedUrl);
+      Podcast podcast = Podcast.findOne(language, primaryGenre, feedUrl);
 
       System.out.println("Found podcast:");
       System.out.println(podcast.getName());

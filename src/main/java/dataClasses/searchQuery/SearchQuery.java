@@ -1,196 +1,147 @@
 package dataClasses.searchQuery;
 
-import java.util.Arrays;
-import java.util.List;
+import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Date;
-import java.time.Instant;
-import java.util.UUID;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.lang.System;
-import java.lang.Exception;
-import java.lang.InterruptedException;
-import java.lang.IllegalArgumentException;
-import java.lang.Thread;
-import java.io.IOException;
+import java.util.List;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONArray;
-import com.google.common.collect.Iterables;
 
-import helpers.HttpReq;
-import cassandraHelpers.CassandraDb;
+import com.datastax.oss.driver.api.core.PagingIterable;
 
 import dataClasses.podcast.Podcast;
-import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.*;
-import com.datastax.oss.driver.api.core.cql.*;
-import com.datastax.oss.driver.api.querybuilder.term.Term;
+
+import helpers.DataClassesHelpers;
+import helpers.HttpReq;
 
 
 /* 
  * Represents a single set of search results, given a term and search type
  *
- * TODO change name to "SearchQuery"
- * as opposed to PodcastSearch, this is just one query
+ * as opposed to PodcastSearch, this is just one query (ie one search ran against an external API)
  */
 
-public class SearchQuery {
+public class SearchQuery extends SearchQueryBase {
 
-  // receive when put into db. uuid. TODO maybe don't set or use this
-  public String id;
+  // renaming to searchQueryByTermRecord
+  // public Row dbRow;
 
-  public String term;
-  public String searchType;
-  public Row dbRow;
-
-  // to be either fetched from api or db
-  // NOTE instead of storing in db as a Cassandra collection, just store as json string. This Is better in case the data we receive from foreign api is corrupted in one way or the other. UNLESS we want to verify on write instead of read, but that seems to be less than optimal for distributed systems like Cassandra. Would rather just dump the info in
-  public String podcastJson;
-  public String constructedFrom;
-
-
-  // TODO when add other external apis, need to set dynamically
-  public String externalApi = "itunes";
-
-  // whether or not had to hit the external api to retrieve the json
+  // whether or not had to hit the external api in the lifecycle of this object to retrieve the json
+  // Can be true or false, whether or not record persisted. 
+  // false would mean we've saved to db so didn't hit api this time
+  // true would mean we hit their external API, and then persisted it this round
+  // if true but persisted is false, means we've hit their api, but not yet persisted
   public boolean madeApiCall;
+
+  // whether or not this object is up to date with our db, assuming no one else wrote to db during the lifecycle of this object
   private boolean persisted = false;
 
+  // whether we've fetched podcasts on this instance yet
+  private boolean extractedPodcasts = false;
+
   private ArrayList<Podcast> podcasts = new ArrayList<Podcast>();
-  private static CassandraDb db;
-  public Instant updatedAt;
+
+  /////////////////////////////
+  // constructors
 
   // for when initializing from just search term and search type
-  // TODO refreshData should eventually just force hitting the database immediately; currently does nothing
-  public SearchQuery(String term, String searchType, boolean refreshData) 
-    {
-      this.constructedFrom = "term-and-type";
-      this.term = term;
-      this.searchType = searchType;
-
-      String typePrefix = searchType != "all" ? searchType.replace("Term", "") : "generalSearch" ;
+  public SearchQuery (String term, String searchType) {
+    this.term = term;
+    this.searchType = searchType;
   }
 
+  public SearchQuery (SearchQueryByTermRecord searchQueryByTermRecord) {
+    DataClassesHelpers.copyMatchingFields(searchQueryByTermRecord, this);
+  }
+
+  // Not using, DAO should handle this
+  //
   // for when we have already ran the search, and retriving from DB
-  public SearchQuery(Row dbRow) 
-    // TODO figure out what to catch if the data in db is corrupted
-    {
-      this.constructedFrom = "db-record";
-      this.term = dbRow.getString("term");
-      this.searchType = dbRow.getString("search_type");
-      this.dbRow = dbRow;
+  // public SearchQuery(Row dbRow) 
+  //   // TODO figure out what to catch if the data in db is corrupted
+  //   {
+  //     this.term = dbRow.getString("term");
+  //     this.searchType = dbRow.getString("search_type");
+  //     this.dbRow = dbRow;
+  // }
+
+  /////////////////////////////////
+  // static methods
+
+  // get all searches from all time
+  // https://docs.datastax.com/en/drivers/java/4.6/com/datastax/oss/driver/api/core/PagingIterable.html
+  static public List<SearchQuery> findAll () throws Exception {
+    PagingIterable<SearchQueryByTermRecord> iterable = SearchQueryByTermRecord.getDao().findAll();
+    // in this case, we want it to be easy. And there's not that many. So just get all of them 
+    // if performance is an issue, consider using map https://docs.datastax.com/en/drivers/java/4.6/com/datastax/oss/driver/api/core/PagingIterable.html#map-java.util.function.Function-
+
+    List<SearchQuery> allSearchQueries = new ArrayList<SearchQuery>(); 
+    for (SearchQueryByTermRecord record : iterable) {
+      allSearchQueries.add(new SearchQuery(record));
+    }
+
+    return allSearchQueries;
   }
+
+
 
   ////////////////////////////////
   // display helpers
 
   public String friendlyName () {
-    return "(" + this.term + ", " + this.searchType + ")";
+    return "(" + this.getTerm() + ", " + this.getSearchType() + ")";
   };
 
 
   //////////////////////////////////////
   // some db stuff 
-  // TODO add some of these methods into something all models can borrow from
 
+  // check to see if we have ever hit the external API already for this search query
+
+  // basically the opposite of a "dirty" flag, this checks to see if we're up to date with the db AND there is a record in the db
   // checks if this search query is persisted
-  // TODO for performance, if known batch job, do a single query to grab all records for this partition once and check that instead? 
-  // TODO be careful using this, maybe better to not do this in general, since requires a read for every write? But want to avoid hitting external api quota...
-  public boolean getPersisted () {
+  // TODO maybe want to rename this one too, sometimes is__ methods are used as getters for booleans. So rename to make clear this can hit our db
+  public boolean isPersisted () throws Exception {
+    // if we make changes at any point, need to set this to false. So if true, it should definitely be true. If null or false, then check db and see. NOTE this is a read-only command
     if (this.persisted) {
       return true;
     }
 
-    String query = "SELECT * FROM search_results_by_term WHERE term='" + term + "' AND search_type = '" + searchType + "' AND external_api = 'itunes' LIMIT 1;";
-    System.out.println("checking for existence by using query: " + query);
-    ResultSet result = db.execute(query);
+    this.reloadFromDb();
 
+    return this.persisted;
+  }
 
-    // will be null if nothing found
-    // NOTE that return Iterables.size(result) > 0; doesn't work, always returns 0 for some reason
-    Row row = result.one();
-    if (row != null) {
-      this.dbRow = row;
+  public void reloadFromDb () throws Exception {
+    SearchQueryByTermRecord searchQueryByTermRecord = SearchQueryByTermRecord.findOne(this);
+
+    // TODO test what this is if nothing is there in db
+    if (searchQueryByTermRecord != null) {
+
+      // update this object based on what we retrieved
+      DataClassesHelpers.copyMatchingFields(searchQueryByTermRecord, this);
+      // record that this obj is up to date with db
       this.persisted = true;
-      this.getPodcastJsonFromDbRecord();
 
-      return true;
     } else {
-      return false;
+      // don't change anything on current object. Otherwise, for example, this would remove term and searchType from current object
+      // record that this obj is up to date with db
+      this.persisted = false;
     }
   }
 
-  // TODO implement DAO for query_results
-  // untested and not used currently
-  public void save () {
-    String updateQuery = update("search_results_by_term")
-      .setColumn("result_json", literal(this.podcastJson))
-      .setColumn("updated_at", literal(this.updatedAt))
-      .whereColumn("term").isEqualTo(literal(this.term))
-      .whereColumn("search_type").isEqualTo(literal(this.searchType))
-      .whereColumn("external_api").isEqualTo(literal(this.externalApi))
-      .asCql();
-
-    db.execute(updateQuery);
-    this.persisted = true;
-  }
-
-  // for now will generate lots of duplicates, but can handle that later
-  // NOTE not using, just save it
-  public void insertIntoDb () {
-    Term ts = db.getTimestamp();
-
-    String insertQuery = insertInto("search_results_by_term")
-      .value("term", literal(this.term))
-      .value("search_type", literal(this.searchType))
-      .value("result_json", literal(this.podcastJson))
-      .value("external_api", literal(this.externalApi))
-      .value("updated_at", ts)
-      .asCql();
-
-    this.persisted = true;
-    db.execute(insertQuery);
-  }
-
-
-  ////////////////////////////////////////////
+  // converts resultJson (a json string representing what itunes returned to us, including the results themselves and metadata) to a java JSONObject
+  // then gets the results from the "results" key of that object
   //
-
-  // pulls data we need from db record, and returns as json
-  // DOES NOT hit any external apis (for that, see this.getPodcastJson)
-  // TODO rename, sounds like it hits db
-  private String getPodcastJsonFromDbRecord () throws IllegalArgumentException {
-    if (this.podcastJson != null) {
-      // can save a hop to the db
-      return this.podcastJson;
-    }
+  // assumes format that itunes search api returns
+  private JSONArray extractSearchResultsJSON () throws IllegalArgumentException, IOException {
 
     try {
-      this.podcastJson = this.dbRow.getString("result_json");
-      return this.podcastJson;
-
-    } catch (IllegalArgumentException e) {
-			// could be different types of errors I think...though maybe all are IO? but Exception is fiene
-      System.out.println(e);
-      e.printStackTrace();
-
-      throw e;
-    }
-  }
-
-  // no reason to set to variable, should only call once ever per QueryResult instance
-  // currently assumes externalApi.equals("itunes")
-  // TODO rename to fetchPodcastJson or something
-  private JSONArray getSearchResults () throws IllegalArgumentException, IOException {
-    System.out.println("extracting");
-    getPodcastJsonFromDbRecord();
-    System.out.println("extracted");
-
-    try {
-      JSONObject contentsJson = (JSONObject) new JSONObject(this.podcastJson);
+      JSONObject contentsJson = (JSONObject) new JSONObject(this.resultJson);
       JSONArray resultsJson = (JSONArray) contentsJson.get("results");
       // currently not using
       //int resultsCount = (int) contentsJson.get("resultCount");
@@ -207,98 +158,39 @@ public class SearchQuery {
     }
   };
 
-  public ArrayList<Podcast> getPodcasts () throws IOException {
-    if (podcasts.size() > 0) {
-      // already got them, so just return
-      return podcasts;
-
-    } else {
-      System.out.println("*********GETTING PODCASTS FOR SEARCH " + this.friendlyName() + " *************");
-      JSONArray resultsJson = getSearchResults();
-
-      for (int i = 0; i < resultsJson.length(); i++) {
-
-        JSONObject podcastJson = resultsJson.getJSONObject(i);
-
-        Podcast podcast;
-        try {
-          System.out.println("extracting from json");
-          System.out.println(podcastJson);
-          podcast = new Podcast(podcastJson, this);
-          // not sure if I want to call this here, but it's fine for now
-          System.out.println("updating based on RSS");
-          podcast.updateBasedOnRss();
-
-          this.podcasts.add(podcast);
-
-        } catch (Exception e) {
-          // normally just allow ExecutionException (which is what this ends up being), at least what I've seen so far) to throw, but for this, is really just a json issue, want to continue no matter what
-          System.out.println("Error getting info for podcast with json:: " + podcastJson);
-          System.out.println("  \n  ");
-          System.out.println(e);
-          e.printStackTrace();
-          System.out.println("moving to next");
-          continue;
-        }
-
-        System.out.println("adding podcast to result list");
-      }
-    };
-
-    System.out.println("*********GOT PODCASTS*************");
-    return podcasts;
-  }
-
-  public void persistPodcasts () throws Exception {
-    System.out.println("*********PERSISTING PODCASTS*************");
-    if (podcasts.size() == 0) {
-      // have none, so just return
-      System.out.println("no this search didn't have any podcasts, so not persisting");
-
-    } else {
-      for (Podcast podcast : getPodcasts()) {
-        // get RSS for podcast, to get episode list
-        podcast.persist();
-      };
-
-      System.out.println("finished getting episodes for this set of query results: " + this.friendlyName());
-    };
-
-    System.out.println("*********PERSISTED PODCASTS*************");
-  }
+  ////////////////////////////////////////
+  // methods for performing search on external api
 
   // retrieves from db or from external api
+  // If refreshData is true, that means that a search is definitely necessary
+  // if not, then only necessary to hit eexternal API if we don't have data already for this search query
   // One way or the other, returns the json
-  // TODO rename since it isn't just a getter
-  public String getPodcastJson (boolean refreshData) 
-    // TODO if we ever use refreshData make sure that we do not set created_at, but only updated_at for those records
-
+  public String performSearchIfNecessary (boolean refreshData) 
     // TODO which type of exception?
     throws Exception {
 
       // check if we should skip
-      if (this.podcastJson != null) {
+      if (this.resultJson != null) {
         // don't set this.madeApiCall = true here, since maybe we hit the external API earlier on in the lifecycle
-        return this.podcastJson;
+        return this.resultJson;
 
-      } else if (!refreshData && this.getPersisted() ) { 
-        // hit db 
-        // TODO this is pretty messy, relies on this.getPersisted() to hit db and retrieve record for us. should find a better way and give this object (and all models) a better, cleaner api. But for now just working on learning these data engineering libs
-
+      } else if (!refreshData && this.isPersisted() ) { 
+        // note that isPersisted will retrieve from db if we have to
         System.out.println("Already have this record; skipping search for" + this.friendlyName());
 
-        this.getPodcastJsonFromDbRecord(); 
-        return this.podcastJson;
+        return this.resultJson;
 
       } else {
-        this.madeApiCall = true; 
-        this.performQuery();
-        return this.podcastJson;
+        this.resultJson = this.performSearch();
+
+        return this.resultJson;
       }
   }
 
   // hits external api to get podcast json
-  private void performQuery () 
+  // DON'T CALL DIRECTLY (for the most part), even internally call performSearch
+  // Could expose this publicly in future though if we wanted to
+  private String performSearch () 
     throws IOException {
       try {
 
@@ -326,12 +218,16 @@ public class SearchQuery {
 
         // begin reading
         this.madeApiCall = true;  // set whether or not we suceeed in api call here
+        // record that this obj is NOT up to date with db
+        this.persisted = false;
+
         String result = HttpReq.get(urlStr, queryParams);
         this.updatedAt = Instant.now();
 
         System.out.println(result);
 
-        podcastJson = result;
+        this.resultJson = result;
+        return result;
 
       } catch (IOException e) {
         System.out.println("Error after hitting db for search query:");
@@ -341,13 +237,94 @@ public class SearchQuery {
       }
   }
 
+  ///////////////////////////////////////////////////////////////////////////
+  // helpers for extracting and persisting associations (mostly podcasts and episodes)
+
+  // takes the results json and extracts podcasts from it
+  // DOES NOT PERSIST podcasts or do anything for episodes
+  // Does also hit the rss feed using a GET request, so that's a little slow. Maybe want to break that out in the future
+  public ArrayList<Podcast> extractPodcasts () throws IOException {
+    if (this.extractedPodcasts) {
+      // already got them, so just return
+      return this.podcasts;
+
+    } else {
+      System.out.println("*********EXTRACTING PODCASTS FOR SEARCH " + this.friendlyName() + " *************");
+      JSONArray resultsJson = this.extractSearchResultsJSON();
+
+      for (int i = 0; i < resultsJson.length(); i++) {
+        try {
+          JSONObject resultJson = resultsJson.getJSONObject(i);
+          Podcast podcast = extractOnePodcast(resultJson);
+          this.podcasts.add(podcast);
+        } catch (Exception e) {
+          System.out.println("skipping this one and moving to next");
+        }
+      }
+    };
+
+    System.out.println("*********EXTRACTED PODCASTS*************");
+    this.extractedPodcasts = true;
+    return podcasts;
+  }
+
+  // DOES NOT THROW ERRORS just catch it and continue.
+  // currently designed to be used in a loop
+  private Podcast extractOnePodcast (JSONObject resultJson) throws Exception {
+    Podcast podcast;
+
+    try {
+      System.out.println("extracting from json");
+      System.out.println(resultJson);
+      podcast = new Podcast(resultJson, this);
+      // not sure if I want to call this here, but it's fine for now
+      System.out.println("updating based on RSS");
+      // could do a try-catch here, if wanted to persist this podcast even if this get request failed. But really I don't care about podcasts that don't have RSS feeds that work, so not bothering. 
+      // I'm assuming if hitting their rss feed fails, it's their fault of course, but it's a reasonable enough assumption for my use case (if it's my fault, maybe I'd want to persist the podcast and try getting the rss again later). 
+      // But it is often enough that the podcast's rss is wrongly listed or they don't want people crawling it, so just don't bother persisting this podcast
+      podcast.updateBasedOnRss();
+
+      return podcast;
+
+    } catch (Exception e) {
+      // normally just allow ExecutionException (which is what this ends up being), at least what I've seen so far) to throw, but for this, is really just a json issue, want to continue no matter what
+      System.out.println("Error extracting info for podcast from json: " + resultJson);
+      System.out.println("  \n  ");
+      System.out.println(e);
+      e.printStackTrace();
+
+      throw e;
+    }
+
+  }
+
+  // loops over the associated podcasts and persists them
+  public void persistPodcasts () throws Exception {
+    System.out.println("*********PERSISTING PODCASTS*************");
+    if (podcasts.size() == 0) {
+      // have none, so just return
+      System.out.println("no this search didn't have any podcasts, so not persisting");
+
+    } else {
+      for (Podcast podcast : this.getPodcasts()) {
+        // get RSS for podcast, to get episode list
+        podcast.persist();
+      };
+
+      System.out.println("finished getting episodes for this set of query results: " + this.friendlyName());
+    };
+
+    System.out.println("*********PERSISTED PODCASTS*************");
+  }
+
   // gets rss data for a podcast (which includes all the episode data)
   // TODO currently, we are not verifying whether or not we've already gotten data for this podcast. 
   // if we do, can use following method definition or something like it:
-  public void getEpisodes() throws Exception {
+  //public void getEpisodes() throws Exception { // RENAMED
+  public void extractEpisodes() throws Exception {
     System.out.println("*********EXTRACTING EPISODES*************");
     System.out.println("about to get episodes for query" + this.friendlyName());
-    for (Podcast podcast : getPodcasts()) {
+    for (Podcast podcast : this.getPodcasts()) {
       // get RSS for podcast, to get episode list
       podcast.extractEpisodes();
     };
@@ -360,7 +337,7 @@ public class SearchQuery {
   public void persistEpisodes() throws Exception {
     System.out.println("*********PERSISTING EPISODES*************");
     System.out.println("about to persist episodes for query" + this.friendlyName());
-    for (Podcast podcast : getPodcasts()) {
+    for (Podcast podcast : this.getPodcasts()) {
       // get RSS for podcast, to get episode list
       podcast.persistEpisodes();
     };
@@ -368,6 +345,71 @@ public class SearchQuery {
     System.out.println("finished persisting episodes for this set of query results" + this.friendlyName());
     System.out.println("--");
   }
+
+  // does it all. Extract all podcasts, persist all podcasts, and extract all their episodes and persist all their episodes
+  public void extractAndPersistData () throws Exception {
+    System.out.println("****************EXTRACTING AND PERSISTING PODCASTS AND EPISODES FOR QUERY" + this.friendlyName() + " ******************");
+    JSONArray resultsJson = this.extractSearchResultsJSON();
+
+    System.out.println("processing " + resultsJson.length() + " podcasts");
+    for (int i = 0; i < resultsJson.length(); i++) {
+      try {
+        JSONObject resultJson = resultsJson.getJSONObject(i);
+        Podcast podcast = extractOnePodcast(resultJson);
+        this.podcasts.add(podcast);
+
+        System.out.println(podcast);
+
+        podcast.persist();
+
+        // TODO combine this so as we extract the episode, we persist it immediately
+        podcast.extractEpisodes();
+        podcast.persistEpisodes();
+      } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("skipping this one and moving to next");
+      }
+    }
+
+    // though keep in mind, there might be some skipped due to errors
+    this.extractedPodcasts = true;
+
+    // persist podcast count to the search query record
+    this.setPodcastCount(this.podcasts.size());
+    this.persist();
+
+    System.out.println("*********EXTRACTED AND PERSISTED PODCASTS AND EPISODES FOR" + this.friendlyName() + "*************");
+
+  }
+
+  ////////////////////////////////////////
+  // DB helpers
+
+  public void persist () throws Exception {
+    // currently only one table for this podcast so just save that
+    SearchQueryByTermRecord s = new SearchQueryByTermRecord(this);
+    s.save();
+  }
+
+
+
+  //////////////////////
+  // Getters and setters
+
+  public ArrayList<Podcast> getPodcasts() {
+    if (!extractedPodcasts) {
+      throw new IllegalArgumentException("Need to extract podcasts before can get them!");
+    }
+
+    return podcasts;
+  }
+
+  public void setPodcasts(ArrayList<Podcast> podcasts) {
+    this.podcasts = podcasts;
+  }
+
+
+
 }
 
 

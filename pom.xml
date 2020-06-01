@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <name>Data Engineering Podcast Analysis Tool</name>
   <packaging>jar</packaging>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <dependencies>
     <!-- http client, used initially so I can do this https://github.com/rometools/rome/issues/276#issuecomment-192755732 Note though that 5.0 is out--> 
     <dependency>
@@ -121,7 +121,7 @@
 						<classpath />
 						<argument>${mainClass}</argument>
 
-						<argument>--process=${searchResultsToProcess}</argument>
+						<argument>--process=${searchQueriesToProcess}</argument>
 						<argument>--perform-search=${performSearch}</argument>
 						<argument></argument>
 					</arguments>
@@ -149,7 +149,7 @@
     <maven.compiler.source>1.8</maven.compiler.source>
     <mainClass>Main</mainClass>
     <performSearch>true</performSearch>
-    <searchResultsToProcess>new</searchResultsToProcess>
+    <searchQueriesToProcess>new</searchQueriesToProcess>
 		<java-driver.version>4.6.1</java-driver.version>
 	</properties>
 </project>

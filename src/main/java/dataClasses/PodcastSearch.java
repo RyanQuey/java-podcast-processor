@@ -22,6 +22,10 @@ import helpers.HttpReq;
 import cassandraHelpers.CassandraDb;
 import dataClasses.searchQuery.SearchQuery;
 
+/* 
+ * represents an entire set of searches
+ * currently not persisting anything from this into the database
+ */ 
 public class PodcastSearch {
 
   static private CassandraDb db;
@@ -85,9 +89,11 @@ public class PodcastSearch {
     "kubernetes",
     "containerization",
     "hashicorp",
-    "vagrant",
+    // careful including this...end up getting so many explicit results unrelated to tech...
+    //"vagrant",
     "hashicorp vagrant",
-    "packer",
+    // careful including this...end up getting so many Green Bay packer results...
+    //"packer",
     "hashicorp packer",
 
     "hortonworks",
@@ -133,16 +139,8 @@ public class PodcastSearch {
     "artistTerm"
   };
 
-
-  // get all searches from all time
-  // https://docs.datastax.com/en/drivers/java/4.6/com/datastax/oss/driver/api/core/PagingIterable.html
-  static public List<Row> fetchAllSearches () throws Exception {
-     ResultSet results = db.execute("SELECT * FROM search_results_by_term ;");
-     // NOTE in contrast with doing results.forEach, pulls all the data into memory at once. 
-     return results.all();
-  }
-
   public ArrayList<SearchQuery> searchQueries = new ArrayList<SearchQuery>();
+
 
   private void incrementApiHitCounter () {
     totalCounter ++;
@@ -165,8 +163,9 @@ public class PodcastSearch {
 
       };
 
-    } else if (totalCounter > 50) {
+    } else if (totalCounter > 35) {
       // just a shot in the dark, but let's not hit more than 50 times per run (once stopped at 62 after not running for a whole day)
+      // 35 will keep things under two rounds though, so don't have to do our thread.sleep thing too many times
       // TODO stop looping if get here
       this.keepGoing = false;
     };
@@ -175,7 +174,7 @@ public class PodcastSearch {
   // TODO refactor, separate out  and put a lot into the SearchQuery class
   // TODO maintain references to results received from this search
   // TODO refactor: remove args from here, and just set as variable in the caller if we want to call that
-  public void performAllQueries(String[] args){
+  public void performAllQueries(String[] args) throws Exception {
     boolean refreshData = false;
     for (String s: args) {
       if (s == "refresh-data") {
@@ -194,15 +193,16 @@ public class PodcastSearch {
     for (String term : PodcastSearch.searchTerms) {
       for (String searchType : searchTypes) {
         // don't want to throw errors for these
-        SearchQuery searchQuery = new SearchQuery(term, searchType, refreshData);
+        SearchQuery searchQuery = new SearchQuery(term, searchType);
         try {
-          searchQuery.getPodcastJson(refreshData);
+          // hit the external api, unless search has been done OR refreshData is true
+          searchQuery.performSearchIfNecessary(refreshData);
         } catch (Exception e) {
           System.out.println("Skipping searchQuery: " + term + " for type: " + searchType + "due to error");
           // should log error already before this
 
           // Stop hitting their API if we max out the quota
-          // NOTE this conditional is a little bit fragile, but works for now TODO
+          // NOTE this conditional is a little bit fragile, if they ever change their message. But works for now TODO
           if (e.toString().equals("java.io.IOException: Server returned HTTP response code: 403 for URL: https://itunes.apple.com/search")) {
             System.out.println("itunes doesn't want us to query anymore, taking a break");     
             return;
@@ -212,8 +212,8 @@ public class PodcastSearch {
         }
 
         if (searchQuery.madeApiCall) {
-          searchQuery.save();
-          searchQueries.add(searchQuery);
+          searchQuery.persist();
+          this.searchQueries.add(searchQuery);
           incrementApiHitCounter(); 
         }
 
