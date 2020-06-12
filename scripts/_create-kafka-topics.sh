@@ -2,6 +2,8 @@
 
 # NOTE will get warning message: "WARNING: Due to limitations in metric names, topics with a period ('.') or underscore ('_') could collide. To avoid issues it is best to use either, but not both."
 # however, this is given when do a period or a dash, or both. Just a warning, so don't worry when doing with period and dash
+
+# https://unix.stackexchange.com/a/53942/216300
 export topics="
   queue.podcast-analysis-tool.query-term
   queue.podcast-analysis-tool.search-query-with-results

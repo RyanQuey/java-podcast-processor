@@ -103,12 +103,6 @@
 			<artifactId>java-driver-mapper-processor</artifactId>
 			<version>${java-driver.version}</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-clients</artifactId>
-			<version>2.5.0</version>
-		</dependency>
   </dependencies>
 
 	<build>
@@ -126,6 +120,9 @@
 						<argument>-classpath</argument>
 						<classpath />
 						<argument>${mainClass}</argument>
+
+						<argument>--process=${searchQueriesToProcess}</argument>
+						<argument>--perform-search=${performSearch}</argument>
 						<argument></argument>
 					</arguments>
 				</configuration>
@@ -176,7 +173,9 @@
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <mainClass>KafkaDriver</mainClass>
+    <mainClass>Main</mainClass>
+    <performSearch>true</performSearch>
+    <searchQueriesToProcess>new</searchQueriesToProcess>
 		<java-driver.version>4.6.1</java-driver.version>
 	</properties>
 </project>
