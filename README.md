@@ -7,12 +7,44 @@
 # Run
 
 ## UPDATE
-use `mvn exec:exec` instead of `java -cp target/podcast-analyzer-0.1.0.jar Main`, for whatever reason it wasn't finding the packages correctly when running, even though it was working fine when packaging. See issue [here](https://stackoverflow.com/questions/37960551/caused-by-java-lang-classnotfoundexception-org-apache-commons-io-fileutils/37960658#comment109230841_37960658).
+* before, had to use `mvn exec:exec` instead of `java -cp target/podcast-analyzer-0.1.0.jar Main`, for whatever reason it wasn't finding the packages correctly when running, even though it was working fine when packaging. See issue [here](https://stackoverflow.com/questions/37960551/caused-by-java-lang-classnotfoundexception-org-apache-commons-io-fileutils/37960658#comment109230841_37960658).
+* However, now that we're bundling all of dependencies into the jar, can use `java-jar...` command
 
-- Run 
-`mvn exec:exec` or `mvn exec:java`
+## Run it all, skipping things that are already running
+```sh
+bash ./scripts/start-everything.sh
 
-### Options
+
+## Start external services
+```sh
+# start cassandra DSE
+bash $HOME/dse-6.8.0/bin/dse cassandra -k -s
+
+# start kafka server and create topics
+bash ./scripts/_start-kafka.sh
+```
+
+# Implementation decisions
+## Several main classes
+Rather than doing [multiple modules](https://maven.apache.org/guides/mini/guide-multiple-modules.html), it seems better in this case to do just one module, since we want multiple jars but (at least for now) each jar will potentially be reusing the same old classes (e.g., all will use Podcast.java, etc).
+
+So instead, will just run `mvn package` multiple times, one for each main class.
+
+### The Main main java class: Main.java
+* There are several "main" methods that can be ran, but the one in Main.java is the *main* main...
+  - There is probably a better way that doing this, but this is fine for now
+* This main main method just gets runs a search, extracts relevant podcasts, and then processes the podcasts, extracting episodes from rss feeds. Does not interact with kafka
+* Make sure to wait for cassandra AND kafka to start up. `nodetool status` will error out until cassandra is up and running (at least on a local machine...will have to figure something else out for prod)
+`bin/nodetool status && mvn clean package && mvn exec:exec` 
+
+or 
+
+`bin/nodetool status && mvn clean package && java -jar ./target/podcast-analysis-tool-0.2.0.jar` 
+
+(both commands should do the same thing)
+
+
+#### Options
 - Do not perform a search for podcasts:
 Change default args to have `--perform-search=false`
 
@@ -32,6 +64,8 @@ Change default args to have `--process=default-query`
 #### Good defaults:
 `--process=new`
 `--perform-search=true`
+
+
 
 ## Next TODOs
 - Change it around so that it runs iteratively on an Airflow job
