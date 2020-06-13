@@ -4,35 +4,46 @@
 
 package kafkaInitializers;
 
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.utils.Bytes;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.KeyValueMapper;
-import org.apache.kafka.streams.kstream.Materialized;
-import org.apache.kafka.streams.kstream.Produced;
-import org.apache.kafka.streams.kstream.ValueMapper;
-import org.apache.kafka.streams.state.KeyValueStore;
+// import org.apache.kafka.streams.KafkaStreams;
+// import org.apache.kafka.streams.StreamsBuilder;
+// import org.apache.kafka.streams.StreamsConfig;
+// import org.apache.kafka.streams.Topology;
+// import org.apache.kafka.streams.kstream.KeyValueMapper;
+// import org.apache.kafka.streams.kstream.Materialized;
+// import org.apache.kafka.streams.kstream.Produced;
+// import org.apache.kafka.streams.kstream.ValueMapper;
+// import org.apache.kafka.streams.state.KeyValueStore;
 
+import dataClasses.searchQuery.SearchQuery;
+
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.util.regex.Pattern;
 
 public class Consumers {
   ///////////////////////////////////
   // private fields
-  private  Properties props = new Properties();
-  props.setProperty("bootstrap.servers", "localhost:9092");
-  props.setProperty("group.id", "test");
-  props.setProperty("enable.auto.commit", "false");
-  // once we have topics that are not just simple strings, cannot use this
-  // TODO
-  props.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-  props.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-
+  static private Properties props = new Properties();
+  static {
+    props.setProperty("bootstrap.servers", "localhost:9092");
+    props.setProperty("group.id", "test");
+    props.setProperty("enable.auto.commit", "false");
+    // once we have topics that are not just simple strings, cannot use this
+    // TODO make a default set as a template, and then use that to create a props field for each consumer instance
+    props.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    props.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+  }
+  
   static private String[] searchTypes = {
     // empty for getting default, which I believe searches more generally (?) or maybe all terms
     "all",
@@ -42,7 +53,7 @@ public class Consumers {
     "artistTerm"
   };
 
-  private refreshData = false;
+  static private boolean refreshData = false;
 
 
 
@@ -50,8 +61,11 @@ public class Consumers {
   //////////////////////////////////////
   // some static methods (initializers)
 
-  public static void initializeQueryTermConsumer(String[] args) throws Exception {
-    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
+  // take a term and hit external api (Itunes) to get some podcasts and basic data about them that match that term
+  // currently runs each term with all the different search types to see what gets returned
+  // After a search_query is persisted to database, send record to queuing.podcast-analysis-tool.search-query-with-results
+  public static void initializeQueryTermConsumer() throws Exception {
+    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Consumers.props);
     consumer.subscribe(Arrays.asList("queuing.podcast-analysis-tool.query-term"));
 
     // list of all unprocessed records received
@@ -80,15 +94,15 @@ public class Consumers {
           try {
             // run the search
             String term = record.value();
-            for (String searchType : Consumer.searchTypes) {
+            for (String searchType : Consumers.searchTypes) {
               try {
                 // hit the external api, unless search has been done recently enough
                 SearchQuery searchQuery = new SearchQuery(term, searchType);
-                searchQuery.performSearchIfNecessary(refreshData);
+                searchQuery.performSearchIfNecessary(Consumers.refreshData);
 
                 // if got new results, send results
                 if (searchQuery.madeApiCall) {
-
+                  Producers.searchQueryProducer.send(searchQuery)
                 }
 
               } catch (Exception e) {
@@ -121,9 +135,10 @@ public class Consumers {
     }
     System.exit(0);
   }
-
+  
+  // Go through results,  and send podcasts feed_url to queuing.podcast_analysis_tool.feed_url
   // this one persists to db in batch
-  public static void initializeSearchQueryWithResultsConsumer(String[] args) throws Exception {
+  public static void initializeSearchQueryWithResultsConsumer() throws Exception {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
     consumer.subscribe(Arrays.asList("queuing.podcast-analysis-tool.search-query-with-results"));
     final int minBatchSize = 200;
@@ -169,7 +184,7 @@ public class Consumers {
     System.exit(0);
   }
 
-  static initializeLogger () {
+  public static void initializeLogger () {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
     consumer.subscribe(Pattern.compile("queue.*"));
       while (true) {
@@ -179,9 +194,9 @@ public class Consumers {
           try {
             // run the search
             for (String searchType : Consumer.searchTypes) {
-              System.println.out("Got record:");
-              System.println.out(record);
-              System.println.out(record.value());
+              System.out.println("Got record:");
+              System.out.println(record);
+              System.out.println(record.value());
             }
 
           } catch (Throwable e) {
@@ -196,7 +211,7 @@ public class Consumers {
       }
   }
 
-  static initializeAll () {
+  static void initializeAll () {
     Consumers.initializeLogger();
     Consumers.initializeQueryTermConsumer();
     Consumers.initializeSearchQueryWithResultsConsumer();
