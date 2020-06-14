@@ -4,6 +4,7 @@ package dataClasses.podcast;
 // import static com.datastax.oss.driver.api.querybuilder.QueryBuilder.update;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 // import java.util.HashMap;
@@ -47,7 +48,7 @@ import dataClasses.searchQuery.SearchQueryUDT;
  *
  */
 
-public class Podcast extends PodcastBase {
+public class Podcast extends PodcastBase implements Serializable {
 
   // access through getters
   private ArrayList<Episode> episodes = new ArrayList<Episode>();

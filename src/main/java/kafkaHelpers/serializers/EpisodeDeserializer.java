@@ -1,6 +1,7 @@
 // convert java Episode obj to serialized version that Kafka can send in topic
 package kafkaHelpers.serializers;
 
+import java.io.IOException;
 import java.util.Map;
 
 import org.apache.kafka.common.serialization.Deserializer;
@@ -23,7 +24,7 @@ public class EpisodeDeserializer implements Deserializer<Episode>
 	@Override
 	public Episode deserialize(String s, byte[] data)
 	{
-		if (value == null) {
+		if (data == null) {
 			return null;
 		}
 
@@ -31,7 +32,7 @@ public class EpisodeDeserializer implements Deserializer<Episode>
 			Episode episode = SerializationUtils.deserialize(data);
 			return episode;
 
-		} catch (IOException | RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw new SerializationException("Error deserializing value", e);
 		}
 	}

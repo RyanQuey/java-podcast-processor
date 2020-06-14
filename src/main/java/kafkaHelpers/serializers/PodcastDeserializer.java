@@ -23,7 +23,7 @@ public class PodcastDeserializer implements Deserializer<Podcast>
 	@Override
 	public Podcast deserialize(String s, byte[] data)
 	{
-		if (value == null) {
+		if (data == null) {
 			return null;
 		}
 
@@ -31,7 +31,7 @@ public class PodcastDeserializer implements Deserializer<Podcast>
 			Podcast podcast = SerializationUtils.deserialize(data);
 			return podcast;
 
-		} catch (IOException | RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw new SerializationException("Error deserializing value", e);
 		}
 	}

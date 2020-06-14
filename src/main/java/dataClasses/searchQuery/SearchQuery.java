@@ -1,6 +1,7 @@
 package dataClasses.searchQuery;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ import helpers.HttpReq;
  * as opposed to PodcastSearch, this is just one query (ie one search ran against an external API)
  */
 
-public class SearchQuery extends SearchQueryBase {
+public class SearchQuery extends SearchQueryBase implements Serializable {
 
   // renaming to searchQueryByTermRecord
   // public Row dbRow;

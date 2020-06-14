@@ -303,7 +303,7 @@ public class Consumers {
     }
   }
 
-  static void initializeAll () {
+  public static void initializeAll () throws Exception {
     Consumers.initializeLogger();
     Consumers.initializeQueryTermConsumer();
     Consumers.initializeSearchQueryWithResultsConsumer();

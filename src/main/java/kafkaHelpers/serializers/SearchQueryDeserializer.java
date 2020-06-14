@@ -23,7 +23,7 @@ public class SearchQueryDeserializer implements Deserializer<SearchQuery>
 	@Override
 	public SearchQuery deserialize(String s, byte[] data)
 	{
-		if (value == null) {
+		if (data == null) {
 			return null;
 		}
 
@@ -31,7 +31,7 @@ public class SearchQueryDeserializer implements Deserializer<SearchQuery>
 			SearchQuery searchQuery = SerializationUtils.deserialize(data);
 			return searchQuery;
 
-		} catch (IOException | RuntimeException e) {
+		} catch (RuntimeException e) {
 			throw new SerializationException("Error deserializing value", e);
 		}
 	}

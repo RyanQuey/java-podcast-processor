@@ -35,7 +35,7 @@ public class SearchQuerySerializer implements Serializer<SearchQuery>
            
         return data;
 
-      } catch (IOException | RuntimeException e) {
+      } catch (RuntimeException e) {
         throw new SerializationException("Error serializing value", e);
       }
     }

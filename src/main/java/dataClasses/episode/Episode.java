@@ -1,5 +1,6 @@
 package dataClasses.episode;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,7 +21,7 @@ import dataClasses.podcast.Podcast;
  * for now, just nesting within the parent podcast
  *
  */
-public class Episode extends EpisodeBase {
+public class Episode extends EpisodeBase implements Serializable {
   private Podcast podcast;
 
   // constructors
