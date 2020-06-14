@@ -2,6 +2,7 @@
 # based on:
 # https://kafka.apache.org/quickstart
 
+source $HOME/projects/java-podcast-processor/scripts/_try-catch.sh
 
 cd $HOME/kafka_2.12-2.5.0 && \
   # start zookeeper unless it's already running
@@ -15,11 +16,7 @@ cd $HOME/kafka_2.12-2.5.0 && \
   } && \
 
 # then start kafka server unless it's already going
-  { 
-    nc -vz localhost 9092 && 
-    echo "kafka server (broker) running, so no need started again"
-    true
-  } || {
+  nc -vz localhost 9092 && echo "kafka server (broker) running, so no need started again" || {
     # could not connect to kafka server, so start it
     echo "starting kafka server daemon"
     bin/kafka-server-start.sh -daemon config/server.properties

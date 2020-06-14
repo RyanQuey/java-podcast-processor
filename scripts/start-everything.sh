@@ -1,19 +1,25 @@
 #!/bin/bash -eux
-# for try/catch stuff, see here https://stackoverflow.com/a/25180186/6952495
 
+if [ "$BASH" != "/bin/bash" ]; then
+  echo "Please do ./$0"
+  exit 1
+fi
+
+#########################################
+# instructions: 
+# start with bash NOT sh. Currently only works in bash
+#########################################
+
+# for more advanced try/catch stuff, see here https://stackoverflow.com/a/25180186/6952495
+# not necessary for now though
 
 # want to start this in a daemon, and asynchronously, since it takes a while.
 # just make sure not to run the main jar file until Cassandra is ready
 # TODO suppress logs in this console
-# should only run if 
-{ 
-  $HOME/dse-6.8.0/bin/nodetool status && \
-    echo "cassandra already running, so don't start cassandra"
-
-  # suppress the error and return false, so can go to the "catch" block
-  set +e
-} || {
-  echo "starting cassandra " && \
+$HOME/dse-6.8.0/bin/nodetool status && 
+  echo "cassandra already running, so don't start cassandra" || {
+    echo "starting cassandra"
+    JUST_STARTED_CASSANDRA=true
     bash $HOME/dse-6.8.0/bin/dse cassandra -k -s
 } && \
 
@@ -29,22 +35,22 @@ bash ./scripts/_start-kafka-server.sh && \
 
 echo "now packaging java packages" && \
 mvn clean package && \
-while [ $? == 1 ]; do
+CASSANDRA_IS_UP=false
+while [ $CASSANDRA_IS_UP == false ]; do
   # keep running until last command in loop returns true
 
-  { # try
-    $HOME/dse-6.8.0/bin/nodetool status | grep 'UN' &> /dev/null
-    # returning true means there was no error, and Cassandra is running
-
-    # suppress the error and return false, so can go to the catch block
-    set +e
-
-	} || { # catch
+  $HOME/dse-6.8.0/bin/nodetool status | grep -q 'UN' && CASSANDRA_IS_UP=true
+  if [ $CASSANDRA_IS_UP == false ]; then
     # TODO add a timeout or handle if cassandra is down
-  	echo "Cassandra is  not up yet, waiting and try again"
-		# false will make $? return 1
-		false
-	}
+  	echo "Cassandra is not up yet, waiting and try again"
+  	sleep 1s
+  elif [ $JUST_STARTED_CASSANDRA == true ]; then
+  	echo "Cassandra is up, but just started and even when getting UN for status, not yet ready to connect. So waiting a bit first anyways"
+    # sleep 2 minutes anyways...
+		# TODO test how long we need
+		# last time was at least a minute after all this ran.
+    sleep 120s
+  fi
 
   # returns true if: nodetool status ran without erroring and there is substring 'UN' in the output.
   
