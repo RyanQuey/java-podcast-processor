@@ -31,26 +31,33 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
+import java.lang.InterruptedException;
 import java.util.regex.Pattern;
+import java.util.concurrent.CompletableFuture;
 
 public class Consumers {
   ///////////////////////////////////
   // private fields
-  static private Properties baseProps = new Properties();
-  static {
-    baseProps.setProperty("bootstrap.servers", "localhost:9092");
-    baseProps.setProperty("group.id", "test");
-    baseProps.setProperty("enable.auto.commit", "false");
+  static private void setPropertyDefaults (Properties props) {
+    props.setProperty("bootstrap.servers", "localhost:9092");
+    props.setProperty("group.id", "test");
+    props.setProperty("enable.auto.commit", "false");
     // once we have topics that are not just simple strings, cannot use this
-    // TODO make a default set as a template, and then use that to create a baseProps field for each consumer instance
-    baseProps.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
-    baseProps.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    // TODO make a default set as a template, and then use that to create a props field for each consumer instance
+    props.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    props.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
   }
-  static private Properties stringProps = new Properties(baseProps);
-  static private Properties searchQueryProps = new Properties(baseProps);
-  static private Properties podcastProps = new Properties(baseProps);
-  static private Properties episodeProps = new Properties(baseProps);
+
+  static private Properties stringProps = new Properties();
+  static private Properties searchQueryProps = new Properties();
+  static private Properties podcastProps = new Properties();
+  static private Properties episodeProps = new Properties();
   static {
+    Consumers.setPropertyDefaults(stringProps);
+    Consumers.setPropertyDefaults(searchQueryProps);
+    Consumers.setPropertyDefaults(podcastProps);
+    Consumers.setPropertyDefaults(episodeProps);
+
     searchQueryProps.put("value.deserializer", "kafkaHelpers.serializers.SearchQueryDeserializer");
     podcastProps.put("value.deserializer", "kafkaHelpers.serializers.PodcastDeserializer");
     episodeProps.put("value.deserializer", "kafkaHelpers.serializers.EpisodeDeserializer");
@@ -77,13 +84,15 @@ public class Consumers {
   // currently runs each term with all the different search types to see what gets returned
   // After a search_query is persisted to database, send record to queue.podcast-analysis-tool.search-query-with-results
   public static void initializeQueryTermConsumer() throws Exception {
-    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Consumers.stringProps);
+    KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(Consumers.stringProps);
     consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.query-term"));
 
+    System.out.println("set the latch");
     final CountDownLatch latch = new CountDownLatch(1);
 
     // attach shutdown handler to catch control-c
-    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
+    System.out.println("add hook");
+    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook1") {
       @Override
       public void run() {
         consumer.close();
@@ -92,12 +101,15 @@ public class Consumers {
     });
 
     try {
-      latch.await();
+      // skipping for now, need new system TODO
+      // latch.await();
 
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
       while (true) {
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+        // ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
+        System.out.println("polled");
         boolean successful = true;
         for (ConsumerRecord<String, String> record : records) {
           try {
@@ -157,7 +169,7 @@ public class Consumers {
 
     // attach shutdown handler to catch control-c
     // TODO will this work when not with kafka streams? 
-    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
+    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook2") {
       @Override
       public void run() {
         consumer.close();
@@ -166,7 +178,8 @@ public class Consumers {
     });
 
     try {
-      latch.await();
+      // skipping for now, need new system TODO
+      // latch.await();
 
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
@@ -208,19 +221,18 @@ public class Consumers {
     KafkaConsumer<String, Podcast> consumer = new KafkaConsumer<>(Consumers.podcastProps);
     consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.podcast"));
 
-    final CountDownLatch latch = new CountDownLatch(1);
 
     // attach shutdown handler to catch control-c
-    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
+    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook3") {
       @Override
       public void run() {
         consumer.close();
-        latch.countDown();
       }
     });
 
     try {
-      latch.await();
+      // skipping for now, need new system TODO
+      // latch.await();
 
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
@@ -263,6 +275,7 @@ public class Consumers {
 
 
 
+  /*
   // this one consumes all the topics and just as logging
   // For both debugging and just playing around with Kafka
   public static void initializeLogger () {
@@ -273,7 +286,7 @@ public class Consumers {
     final CountDownLatch latch = new CountDownLatch(1);
 
     // attach shutdown handler to catch control-c
-    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook") {
+    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook4") {
       @Override
       public void run() {
         consumer.close();
@@ -302,12 +315,60 @@ public class Consumers {
       }
     }
   }
+  */
 
+  // eventually want all these consumers running on separate machines. But for now just running them all in async jobs
+  // TODO I'm trying to run all while avoiding dangers of multithreading. But in reality I don't know how these all work, and the whole latch mechanism is still a mystery. So need to figure this stuff out
   public static void initializeAll () throws Exception {
-    Consumers.initializeLogger();
-    Consumers.initializeQueryTermConsumer();
-    Consumers.initializeSearchQueryWithResultsConsumer();
-    Consumers.initializePodcastConsumer();
-    // Consumers.initializeEpisodeConsumer();
+    final CountDownLatch latch = new CountDownLatch(1);
+
+    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook-final") {
+      @Override
+      public void run() {
+        // maybe can allow consumers to close before shutting stuff down?
+        try {
+          System.out.println("waiting for kafka to close consumers...");
+          Thread.sleep(2000);
+        }catch (InterruptedException e) {
+          System.out.println("Don't do this! Why interrupting the sleep!");
+        } finally {
+          // basically will end the latch.await() thing below
+          latch.countDown();
+        }
+      }
+    });
+
+    CompletableFuture.runAsync(() -> {
+      try {
+        System.out.println("initializeQueryTermConsumer:");
+        Consumers.initializeQueryTermConsumer();
+      } catch (Exception e) {
+      }
+    });
+    CompletableFuture.runAsync(() -> {
+      try {
+        System.out.println("initializeSearchQueryWithResultsConsumer:");
+        Consumers.initializeSearchQueryWithResultsConsumer();
+      } catch (Exception e) {
+      }
+    });
+    CompletableFuture.runAsync(() -> {
+      try {
+        System.out.println("initializePodcastConsumer:");
+        Consumers.initializePodcastConsumer();
+      } catch (Exception e) {
+      }
+    });
+
+
+    latch.await();
+
+    /*
+    CompletableFuture.runAsync(() -> {
+      // Consumers.initializeEpisodeConsumer();
+      System.out.println("initializeLogger:");
+      Consumers.initializeLogger();
+    });
+    */
   }
 }

@@ -32,19 +32,24 @@ public class Producers {
   // private fields
 
   // default props
-  static private Properties baseProps = new Properties();
-  static {
-    baseProps.put("bootstrap.servers", "localhost:9092");
-    baseProps.put("acks", "all");
-    baseProps.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-    baseProps.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+  static private Properties props = new Properties();
+  static private void setPropertyDefaults (Properties props) {
+    props.put("bootstrap.servers", "localhost:9092");
+    props.put("acks", "all");
+    props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+    props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
   }
 
-  static private Properties stringProps = new Properties(baseProps);
-  static private Properties searchQueryProps = new Properties(baseProps);
-  static private Properties podcastProps = new Properties(baseProps);
-  static private Properties episodeProps = new Properties(baseProps);
+  static private Properties stringProps = new Properties();
+  static private Properties searchQueryProps = new Properties();
+  static private Properties podcastProps = new Properties();
+  static private Properties episodeProps = new Properties();
   static {
+    Producers.setPropertyDefaults(stringProps);
+    Producers.setPropertyDefaults(searchQueryProps);
+    Producers.setPropertyDefaults(podcastProps);
+    Producers.setPropertyDefaults(episodeProps);
+    
     searchQueryProps.put("value.serializer", "kafkaHelpers.serializers.SearchQuerySerializer");
     podcastProps.put("value.serializer", "kafkaHelpers.serializers.PodcastSerializer");
     episodeProps.put("value.serializer", "kafkaHelpers.serializers.EpisodeSerializer");
