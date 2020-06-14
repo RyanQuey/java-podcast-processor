@@ -28,14 +28,14 @@ import dataClasses.searchQuery.SearchQuery;
  */ 
 public class PodcastSearch {
 
-  static private CassandraDb db;
+  private static CassandraDb db;
 
   private int totalCounter = 0;
   private int byMinuteCounter = 0;
   private long start;
   private boolean keepGoing = true;
 
-  static public String[] searchTerms = {
+  public static String[] searchTerms = {
     "data engineering",
     "big data",
     "streaming architecture",

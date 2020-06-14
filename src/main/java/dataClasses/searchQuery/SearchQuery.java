@@ -74,7 +74,7 @@ public class SearchQuery extends SearchQueryBase {
 
   // get all searches from all time
   // https://docs.datastax.com/en/drivers/java/4.6/com/datastax/oss/driver/api/core/PagingIterable.html
-  static public List<SearchQuery> findAll () throws Exception {
+  public static List<SearchQuery> findAll () throws Exception {
     PagingIterable<SearchQueryByTermRecord> iterable = SearchQueryByTermRecord.getDao().findAll();
     // in this case, we want it to be easy. And there's not that many. So just get all of them 
     // if performance is an issue, consider using map https://docs.datastax.com/en/drivers/java/4.6/com/datastax/oss/driver/api/core/PagingIterable.html#map-java.util.function.Function-
@@ -270,6 +270,7 @@ public class SearchQuery extends SearchQueryBase {
 
   // DOES NOT THROW ERRORS just catch it and continue.
   // currently designed to be used in a loop
+  // NOTE this currently fetches the rss feed as well
   private Podcast extractOnePodcast (JSONObject resultJson) throws Exception {
     Podcast podcast;
 

@@ -7,9 +7,12 @@
 export topics="
   queue.podcast-analysis-tool.query-term
   queue.podcast-analysis-tool.search-query-with-results
-  queue.podcast-analysis-tool.feed-url-to-crawl
-  queue.podcast-analysis-tool.rss-feed
+  queue.podcast-analysis-tool.podcast
+  queue.podcast-analysis-tool.episode
 "
+# not doing these for nwo for simplicity
+#queue.podcast-analysis-tool.rss-feed-url
+#queue.podcast-analysis-tool.rss-feed
 
 {
   nc -vz localhost 9092

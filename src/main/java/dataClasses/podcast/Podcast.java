@@ -132,7 +132,7 @@ public class Podcast extends PodcastBase {
   }
 
   // should have one of these for each record Class, and can determine which record Class by what their partition keys and clustering keys are
-  static public Podcast findOne(String language, String primaryGenre, String feedUrl) throws Exception {
+  public static Podcast findOne(String language, String primaryGenre, String feedUrl) throws Exception {
     PodcastByLanguageRecord p =  PodcastByLanguageRecord.getDao().findOne(language, primaryGenre, feedUrl);
 
     if (p == null) {
@@ -166,6 +166,7 @@ public class Podcast extends PodcastBase {
   */
 
 	// wrapper around getRssStr and getRss, with extra error handling, and makes sure we don't make the http request multiple times if unnecessary
+	// TODO rename to disambiguate from getRssFeed
 	// TODO once we are sure with this can return, specify String or whatever rssFeed is 
 	private Object getRss () 
 	  throws Exception {
@@ -325,6 +326,8 @@ public class Podcast extends PodcastBase {
 
   // might not use since we're getting from the api already. but Good to have on hand
   // should it really be RuntimeException? not sure hwat it should be, just guessing here
+  // TODO there is actually a danger of creating multiple records, if podcast has different language in itunes as opposed to in rss feed. 
+  // Probably best solution is to stop partitioning based on language, and instead partition on something that cna be retrieved from itunes and the rss data consistently, like the feedUrl. Then just index it for when want to query across partitions
   public void updateBasedOnRss () throws Exception {
     // see here for how this would look like https://github.com/rometools/rome/blob/b91b88f8e9fdc239a2258e4efae06b83dffb2621/rome-modules/src/test/java/com/rometools/modules/itunes/ITunesParserTest.java#L78
 

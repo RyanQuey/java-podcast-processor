@@ -13,7 +13,7 @@ import dataClasses.podcast.Podcast;
 import dataClasses.episode.Episode;
 import dataClasses.episode.EpisodeByPodcastRecord;
 import dataClasses.episode.EpisodeByPodcastDao;
-import kafkaInitializers.Consumers;
+import kafkaHelpers.Consumers;
 
 // import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import com.datastax.oss.driver.api.core.cql.Row;
@@ -77,8 +77,6 @@ public class KafkaDriver {
   ////
   // kafka consumer initializers
   //
-  private static 
-
   //////////////////////////////////
   // main
 
