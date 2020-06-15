@@ -261,8 +261,7 @@ public class Consumers {
       // skipping for now, need new system TODO
       // latch.await();
 
-      System.out.println("running? " + Consumers.running);
-      while (true) {
+      while (Consumers.running) {
         Consumers.spin();
         try {
           ConsumerRecords<String, Podcast> records = consumer.poll(Duration.ofMillis(1000));
@@ -302,7 +301,6 @@ public class Consumers {
             // mark these records as read
             consumer.commitSync();
           }
-          System.out.println("running at end of loop? " + Consumers.running);
 
         } catch (Exception e) {
           // I know it fail during deserialization, because other errors should be caught and not rethrown before getting here

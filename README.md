@@ -10,12 +10,12 @@
 * before, had to use `mvn exec:exec` instead of `java -cp target/podcast-analyzer-0.1.0.jar Main`, for whatever reason it wasn't finding the packages correctly when running, even though it was working fine when packaging. See issue [here](https://stackoverflow.com/questions/37960551/caused-by-java-lang-classnotfoundexception-org-apache-commons-io-fileutils/37960658#comment109230841_37960658).
 * However, now that we're bundling all of dependencies into the jar, can use `java-jar...` command
 
-## Run it all, skipping things that are already running
+## Run it all (except currently, not the jars themselves), skipping things that are already running
 ```sh
 bash ./scripts/start-everything.sh
 
 
-## Start external services
+### Want to run things with more granularity? Start external services
 ```sh
 # start cassandra DSE
 bash $HOME/dse-6.8.0/bin/dse cassandra -k -s
@@ -23,6 +23,25 @@ bash $HOME/dse-6.8.0/bin/dse cassandra -k -s
 # start kafka server and create topics
 bash ./scripts/_start-kafka.sh
 ```
+
+### Then start the jars
+In three separate terminals:
+
+This one responds to terms coming in, and runs searches with all search types
+* `java -jar target/run-search-per-term-0.3.0.jar`
+
+For each search ran, grab all podcasts
+* `java -jar target/extract-podcasts-per-search-0.3.0.jar`
+
+For all podcasts, persist them and extract out all episodes to send to another topic
+* `java -jar target/extract-episodes-per-podcasts-0.3.0.jar `
+
+### Then, start sending terms
+* `bash scripts/kafka-testers/start-search-term-producer.sh`
+
+### want to debug, and see the raw strings of other topics? 
+Take a look at other scripts in `scripts/kafka-testers/`
+
 
 # Implementation decisions
 ## Several main classes
