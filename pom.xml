@@ -157,14 +157,8 @@
 			<plugin>
 				<!--  bundle everything into a single file executable with dependencies when packaging -->
 				<!-- https://stackoverflow.com/a/574650/6952495-->
+        <!-- also https://stackoverflow.com/a/15799254/6952495 -->
 				<artifactId>maven-assembly-plugin</artifactId>
-				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-					<!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
-					<appendAssemblyId>false</appendAssemblyId>
-				</configuration>
 				<!-- build multiple jars, one for each main we want to specify. https://stackoverflow.com/a/8726969/6952495 -->
 				<executions>
 					<execution>
@@ -174,6 +168,12 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
+              <descriptorRefs>
+				        <!--  bundle everything into a single file executable with dependencies when packaging -->
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
+              <appendAssemblyId>false</appendAssemblyId>
               <archive>
                 <manifest>
                   <mainClass>kafkaMains.RunSearchPerTermMain</mainClass>
