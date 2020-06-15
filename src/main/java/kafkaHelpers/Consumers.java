@@ -106,8 +106,6 @@ public class Consumers {
 
 
     try {
-      // keep running forever until ctrl+c is pressed
-      // TODO this go before or after the latch?
       while (Consumers.running) {
         // ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
         Consumers.spin();
@@ -244,44 +242,40 @@ public class Consumers {
     KafkaConsumer<String, Podcast> consumer = new KafkaConsumer<>(Consumers.podcastProps);
     consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.podcast"));
 
-
-    // attach shutdown handler to catch control-c
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-        Consumers.running = false;
-      }
-    });
-
     try {
-      // skipping for now, need new system TODO
-      // latch.await();
-
-      // keep running forever until ctrl+c is pressed
-      // TODO this go before or after the latch?
       while (Consumers.running) {
+        Consumers.spin();
         ConsumerRecords<String, Podcast> records = consumer.poll(Duration.ofMillis(100));
+        boolean successful = true;
         // for each search query, go through its results and get out all the feedurls
         for (ConsumerRecord<String, Podcast> record : records) {
-          Podcast p = record.value();
+          try {
+            Podcast p = record.value();
 
-          // since the rss feed might have data that's more up to date than itunes search api
-          // NOTE this performs the fetch to get the rss feed for us
-          p.updateBasedOnRss();
+            // since the rss feed might have data that's more up to date than itunes search api
+            // NOTE this performs the fetch to get the rss feed for us
+            p.updateBasedOnRss();
 
-          p.persist();
+            p.persist();
 
-          // send each episode to episodes topic
-          p.extractEpisodes();
-          for (Episode episode : p.getEpisodes()) {
-            ProducerRecord<String, Episode> producerRecord = new ProducerRecord<String, Episode>("queue.podcast-analysis-tool.episode", episode);
+            // send each episode to episodes topic
+            p.extractEpisodes();
+            for (Episode episode : p.getEpisodes()) {
+              ProducerRecord<String, Episode> producerRecord = new ProducerRecord<String, Episode>("queue.podcast-analysis-tool.episode", episode);
 
-            Producers.episodeProducer.send(producerRecord);
+              Producers.episodeProducer.send(producerRecord);
+            }
+          } catch (Throwable e) {
+            e.printStackTrace();
+            successful = false;
           }
         }
 
-        consumer.commitSync();
-      }
+        if (successful) {
+          // mark these records as read
+          consumer.commitSync();
+        }
+      } // end while loop
 
       consumer.close();
 
@@ -378,7 +372,7 @@ public class Consumers {
     // consider running each in separate thread?
     CompletableFuture.runAsync(() -> {
       try {
-        System.out.println("initializeSearchQueryWithResultsConsumer:");
+        System.out.println("initializeSearchResultsJsonConsumer:");
         Consumers.initializeSearchResultsJsonConsumer();
       } catch (Exception e) {
       }

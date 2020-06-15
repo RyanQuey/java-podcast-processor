@@ -2,12 +2,12 @@ package kafkaMains;
 
 import kafkaHelpers.Consumers;
 
-public class ExtractPodcastsPerSearchMain extends KafkaMain {
+public class ExtractEpisodesPerPodcastMain extends KafkaMain {
 
   private static void startConsumer () throws Exception {
     System.out.println("*************************");
-    System.out.println("extract out (but don't yet persist) podcasts for each search ran");
-    Consumers.initializeSearchResultsJsonConsumer();
+    System.out.println("extract out and persist episodes for each podcast retrieved by a search");
+    Consumers.initializePodcastConsumer();
   }
 
   public static void main (String[] args) throws Exception {

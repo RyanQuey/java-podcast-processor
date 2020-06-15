@@ -204,6 +204,28 @@
               <finalName>extract-podcasts-per-search-${project-package.version}</finalName>
 						</configuration>
 					</execution>
+
+					<execution>
+						<id>extract-episodes-per-podcast</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+              <descriptorRefs>
+				        <!--  bundle everything into a single file executable with dependencies when packaging -->
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
+              <appendAssemblyId>false</appendAssemblyId>
+              <archive>
+                <manifest>
+                  <mainClass>kafkaMains.ExtractEpisodesPerPodcastMain</mainClass>
+                </manifest>
+              </archive>
+              <finalName>extract-episodes-per-podcasts-${project-package.version}</finalName>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>
