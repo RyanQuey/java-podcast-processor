@@ -22,6 +22,7 @@ import org.apache.kafka.common.utils.Bytes;
 
 import dataClasses.podcast.Podcast;
 import dataClasses.searchQuery.SearchQuery;
+import dataClasses.searchQuery.SearchQueryBase;
 import dataClasses.episode.Episode;
 
 import java.time.Duration;
@@ -103,18 +104,6 @@ public class Consumers {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(Consumers.stringProps);
     consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.query-term"));
 
-    System.out.println("set the latch");
-    final CountDownLatch latch = new CountDownLatch(1);
-
-
-    // attach shutdown handler to catch control-c
-		// TODO make this on class level, so closes all consumers at once
-    Runtime.getRuntime().addShutdownHook(new Thread() {
-      @Override
-      public void run() {
-				Consumers.running = false;
-      }
-    });
 
     try {
       // keep running forever until ctrl+c is pressed
@@ -138,9 +127,12 @@ public class Consumers {
                 // if got new results, send results
                 if (searchQuery.madeApiCall) {
                   // TODO not doing keys or partitions yet
-                  ProducerRecord<String, SearchQuery> producerRecord = new ProducerRecord<String, SearchQuery>("queue.podcast-analysis-tool.search-query-with-results", searchQuery);
-                  Producers.searchQueryProducer.send(producerRecord);
+                  ProducerRecord<String, String> producerRecord = new ProducerRecord<String, String>("queue.podcast-analysis-tool.search-results-json", searchQuery.resultJson);
+                  Producers.stringProducer.send(producerRecord);
                 }
+                // to get podcast count for the search
+                searchQuery.extractPodcasts();
+                searchQuery.persist();
 
               } catch (Exception e) {
                 System.out.println("Skipping searchQuery: " + term + " for type: " + searchType + "due to error");
@@ -155,6 +147,7 @@ public class Consumers {
             }
 
           } catch (Throwable e) {
+            e.printStackTrace();
             successful = false;
           }
         }
@@ -175,16 +168,15 @@ public class Consumers {
   }
   
   // Go through results,  and send podcasts feed_url to queue.podcast_analysis_tool.feed_url
-  public static void initializeSearchQueryWithResultsConsumer() throws Exception {
-    KafkaConsumer<String, SearchQuery> consumer = new KafkaConsumer<>(Consumers.searchQueryProps);
-    consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.search-query-with-results"));
+  public static void initializeSearchResultsJsonConsumer() throws Exception {
+    KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Consumers.stringProps);
+    consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.search-results-json"));
 
     final CountDownLatch latch = new CountDownLatch(1);
 
-
     // attach shutdown handler to catch control-c
     // TODO will this work when not with kafka streams? 
-    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook2") {
+    Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
         Consumers.running = false;
@@ -198,30 +190,46 @@ public class Consumers {
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
       while (Consumers.running) {
-        ConsumerRecords<String, SearchQuery> records = consumer.poll(Duration.ofMillis(100));
+        Consumers.spin();
+        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
+        boolean successful = true;
+
         // for each search query, go through its results and get out all the feedurls
-        for (ConsumerRecord<String, SearchQuery> record : records) {
-          SearchQuery sq = record.value();
+        for (ConsumerRecord<String, String> record : records) {
+          try {
+            String resultJson = record.value();
+            // our SearchQuery class manages this business logic, so use that
+            SearchQuery sq = new SearchQuery();
+            sq.setResultJson(resultJson);
 
-          // currently just doing by extracting out podcasts, since all of our feed-url related logic is contained in the Podcast class currently
-          // NOTE currently this also fetches the rss feed, in order to update the podcast based on the rss feed
-          sq.extractPodcasts();
+            // currently just doing by extracting out podcasts, since all of our feed-url related logic is contained in the Podcast class currently
+            // NOTE currently this also fetches the rss feed, in order to update the podcast based on the rss feed
+            sq.extractPodcasts();
 
-          // for each podcast, send its feedUrl to the feed-url topic
-          for (Podcast p : sq.getPodcasts()) {
-            // persist podcast as returned from itunes api NOTE will have to update again once we receive data from rss
-            p.persist();
+            // for each podcast, send its feedUrl to the feed-url topic
+            for (Podcast p : sq.getPodcasts()) {
+              // persist podcast as returned from itunes api NOTE will have to update again once we receive data from rss
 
-            // send feed url to topic
-            // NOTE alternatively to this, set a hook on cassandra that sends to topic when a podcast is persisted (?) TODO
-            ProducerRecord<String, Podcast> producerRecord = new ProducerRecord<String, Podcast>("queue.podcast-analysis-tool.podcast", p);
+              // send podcast  to topic, where it will be persisted and updated based on rss
+              // NOTE alternatively to this, set a hook on cassandra that sends to topic when a podcast is persisted (?) TODO
+              ProducerRecord<String, Podcast> producerRecord = new ProducerRecord<String, Podcast>("queue.podcast-analysis-tool.podcast", p);
 
-            Producers.podcastProducer.send(producerRecord);
+              Producers.podcastProducer.send(producerRecord);
+            }
+
+          } catch (Throwable e) {
+            // just don't mark as successful
+            e.printStackTrace();
+            successful = false;
           }
         }
 
-        consumer.commitSync();
+        if (successful) {
+          // mark these records as read
+          consumer.commitSync();
+        }
       }
+      // end while loop
       consumer.close();
 
     } catch (Throwable e) {
@@ -346,6 +354,8 @@ public class Consumers {
       public void run() {
         // maybe can allow consumers to close before shutting stuff down?
         try {
+          // in the consumer functions themselves, they will close their own consumers
+          // TODO make it all close here, just keeps it simple
           System.out.println("waiting for kafka to close consumers...");
           Thread.sleep(2000);
         }catch (InterruptedException e) {
@@ -357,6 +367,7 @@ public class Consumers {
       }
     });
 
+    // consider running each in separate thread?
     CompletableFuture.runAsync(() -> {
       try {
         System.out.println("initializeQueryTermConsumer:");
@@ -364,13 +375,15 @@ public class Consumers {
       } catch (Exception e) {
       }
     });
+    // consider running each in separate thread?
     CompletableFuture.runAsync(() -> {
       try {
         System.out.println("initializeSearchQueryWithResultsConsumer:");
-        Consumers.initializeSearchQueryWithResultsConsumer();
+        Consumers.initializeSearchResultsJsonConsumer();
       } catch (Exception e) {
       }
     });
+    // consider running each in separate thread?
     CompletableFuture.runAsync(() -> {
       try {
         System.out.println("initializePodcastConsumer:");
@@ -380,6 +393,7 @@ public class Consumers {
     });
 
 
+    // don't keep going, just wait until latch is released
     latch.await();
 
     /*

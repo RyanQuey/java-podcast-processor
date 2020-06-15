@@ -162,7 +162,7 @@
 				<!-- build multiple jars, one for each main we want to specify. https://stackoverflow.com/a/8726969/6952495 -->
 				<executions>
 					<execution>
-						<id>search-query-consumer</id> <!-- this is used for inheritance merges -->
+						<id>run-search-per-term</id> <!-- this is used for inheritance merges -->
 						<phase>package</phase> <!-- bind to the packaging phase -->
 						<goals>
 							<goal>single</goal>
@@ -180,6 +180,28 @@
                 </manifest>
               </archive>
               <finalName>run-search-per-term-${project-package.version}</finalName>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>extract-podcasts-per-search</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+              <descriptorRefs>
+				        <!--  bundle everything into a single file executable with dependencies when packaging -->
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
+              <appendAssemblyId>false</appendAssemblyId>
+              <archive>
+                <manifest>
+                  <mainClass>kafkaMains.ExtractPodcastsPerSearchMain</mainClass>
+                </manifest>
+              </archive>
+              <finalName>extract-podcasts-per-search-${project-package.version}</finalName>
 						</configuration>
 					</execution>
 				</executions>

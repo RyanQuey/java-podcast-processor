@@ -2,12 +2,12 @@ package kafkaMains;
 
 import kafkaHelpers.Consumers;
 
-public class RunSearchPerTermMain extends KafkaMain {
+public class ExtractPodcastsPerSearchMain extends KafkaMain {
 
   private static void startConsumer () throws Exception {
     System.out.println("*************************");
-    System.out.println("run a search query for each term in topic");
-    Consumers.initializeQueryTermConsumer();
+    System.out.println("extract out and persist podcasts for each search ran");
+    Consumers.initializeSearchResultsJsonConsumer();
   }
 
   public static void main (String[] args) throws Exception {

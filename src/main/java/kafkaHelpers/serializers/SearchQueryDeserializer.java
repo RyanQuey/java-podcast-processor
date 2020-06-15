@@ -28,7 +28,7 @@ public class SearchQueryDeserializer implements Deserializer<SearchQuery>
 		}
 
 		try {
-			SearchQuery searchQuery = SerializationUtils.deserialize(data);
+			SearchQuery searchQuery = (SearchQuery)SerializationUtils.deserialize(data);
 			return searchQuery;
 
 		} catch (RuntimeException e) {

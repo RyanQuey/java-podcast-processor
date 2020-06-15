@@ -21,6 +21,7 @@ public class PodcastDeserializer implements Deserializer<Podcast>
 	}
 
 	@Override
+	// params: key, val
 	public Podcast deserialize(String s, byte[] data)
 	{
 		if (data == null) {
@@ -28,7 +29,7 @@ public class PodcastDeserializer implements Deserializer<Podcast>
 		}
 
 		try {
-			Podcast podcast = SerializationUtils.deserialize(data);
+			Podcast podcast = (Podcast) SerializationUtils.deserialize(data);
 			return podcast;
 
 		} catch (RuntimeException e) {

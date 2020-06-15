@@ -47,21 +47,30 @@ public class KafkaMain {
     CassandraDb.closeSession();
   }
 
+  // everything to run before the child's specific stuff
+  public static void setup () throws Exception {
+    // processArgs(args);
+
+    CassandraDb.initialize(); 
+  }
+
+  // everything to run after the child's specific stuff
+  public static void tearDown () {
+    // TODO note that this is still not letting process close
+    // closes the db process...not sure why necessary TODO
+    // https://stackoverflow.com/a/7416103/6952495
+    closeDb();
+
+    System.out.println("Finished running");     
+  }
+
+  // make sure this is overridden in the child classes
   public static void main (String[] args) throws Exception {
     try {
-      processArgs(args);
-      CassandraDb.initialize(); 
-
       // TODO only call this when settings via cmd line args are sent in
+      setup();
       startConsumer();
-
-
-      // TODO note that this is still not letting process close
-      closeDb();
-      System.out.println("Finished running");     
-      
-      // closes the process...not sure why necessary TODO
-      // https://stackoverflow.com/a/7416103/6952495
+      tearDown();
 
     } catch (Exception e) {
       System.out.println("Error in Main:");

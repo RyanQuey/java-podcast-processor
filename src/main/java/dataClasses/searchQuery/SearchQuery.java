@@ -50,6 +50,8 @@ public class SearchQuery extends SearchQueryBase implements Serializable {
   // constructors
 
   // for when initializing from just search term and search type
+  public SearchQuery () {}
+  
   public SearchQuery (String term, String searchType) {
     this.term = term;
     this.searchType = searchType;
@@ -271,7 +273,7 @@ public class SearchQuery extends SearchQueryBase implements Serializable {
 
   // DOES NOT THROW ERRORS just catch it and continue.
   // currently designed to be used in a loop
-  // NOTE this currently fetches the rss feed as well
+  // NOTE this currently DOES NOT fetch the rss feed as well
   private Podcast extractOnePodcast (JSONObject resultJson) throws Exception {
     Podcast podcast;
 
@@ -279,12 +281,14 @@ public class SearchQuery extends SearchQueryBase implements Serializable {
       System.out.println("extracting from json");
       System.out.println(resultJson);
       podcast = new Podcast(resultJson, this);
+
+      // Removing this, hits external apis and makes things really slow
       // not sure if I want to call this here, but it's fine for now
-      System.out.println("updating based on RSS");
+      //System.out.println("updating based on RSS");
       // could do a try-catch here, if wanted to persist this podcast even if this get request failed. But really I don't care about podcasts that don't have RSS feeds that work, so not bothering. 
       // I'm assuming if hitting their rss feed fails, it's their fault of course, but it's a reasonable enough assumption for my use case (if it's my fault, maybe I'd want to persist the podcast and try getting the rss again later). 
       // But it is often enough that the podcast's rss is wrongly listed or they don't want people crawling it, so just don't bother persisting this podcast
-      podcast.updateBasedOnRss();
+      //podcast.updateBasedOnRss();
 
       return podcast;
 

@@ -6,7 +6,7 @@
 # https://unix.stackexchange.com/a/53942/216300
 export topics="
   queue.podcast-analysis-tool.query-term
-  queue.podcast-analysis-tool.search-query-with-results
+  queue.podcast-analysis-tool.search-result-json
   queue.podcast-analysis-tool.podcast
   queue.podcast-analysis-tool.episode
 "
