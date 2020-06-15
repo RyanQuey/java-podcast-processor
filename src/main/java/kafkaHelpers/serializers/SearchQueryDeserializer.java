@@ -2,10 +2,12 @@
 package kafkaHelpers.serializers;
 
 import java.util.Map;
+import java.io.IOException;
 
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.SerializationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dataClasses.searchQuery.SearchQuery;
 
@@ -28,10 +30,11 @@ public class SearchQueryDeserializer implements Deserializer<SearchQuery>
 		}
 
 		try {
-			SearchQuery searchQuery = (SearchQuery)SerializationUtils.deserialize(data);
+			//SearchQuery searchQuery = (SearchQuery)SerializationUtils.deserialize(data);
+			SearchQuery searchQuery = CustomDeserializer.objectMapper.readValue(data, SearchQuery.class);
 			return searchQuery;
 
-		} catch (RuntimeException e) {
+		} catch (IOException | RuntimeException e) {
 			throw new SerializationException("Error deserializing value", e);
 		}
 	}

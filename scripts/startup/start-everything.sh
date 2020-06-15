@@ -31,20 +31,20 @@ cd $HOME/projects/java-podcast-processor && \
 # hopefully will error out if anything doesn't run correctly
 # TODO add handling so can be ran multiple times and handles if something has already been started and NOT error out, just continue through the script
 echo "running _start-kafka-server.sh script" && \
-bash ./scripts/_start-kafka-server.sh && \
+bash ./scripts/startup/_start-kafka-server.sh && \
 
 echo "now packaging java packages" && \
 mvn clean package && \
-CASSANDRA_IS_UP=false
-while [ $CASSANDRA_IS_UP == false ]; do
+CASSANDRA_IS_UP="false"
+while [ $CASSANDRA_IS_UP == "false" ]; do
   # keep running until last command in loop returns true
 
-  $HOME/dse-6.8.0/bin/nodetool status | grep -q 'UN' && CASSANDRA_IS_UP=true
-  if [ $CASSANDRA_IS_UP == false ]; then
+  $HOME/dse-6.8.0/bin/nodetool status | grep -q 'UN' && CASSANDRA_IS_UP="true"
+  if [ $CASSANDRA_IS_UP == "false" ]; then
     # TODO add a timeout or handle if cassandra is down
   	echo "Cassandra is not up yet, waiting and try again"
   	sleep 1s
-  elif [ $JUST_STARTED_CASSANDRA == true ]; then
+  elif [ $JUST_STARTED_CASSANDRA == "true" ]; then
   	echo "Cassandra is up, but just started and even when getting UN for status, not yet ready to connect. So waiting a bit first anyways"
     # sleep 2 minutes anyways...
 		# TODO test how long we need

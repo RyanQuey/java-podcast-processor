@@ -7,6 +7,9 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.SerializationException;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import dataClasses.searchQuery.SearchQuery;
 
 // combines answers https://stackoverflow.com/a/40158971/6952495 
@@ -31,11 +34,12 @@ public class SearchQuerySerializer implements Serializer<SearchQuery>
       try {
         // trying this https://stackoverflow.com/a/13174951/6952495
 				// if not consider https://stackoverflow.com/a/51874263/6952495 to serialize
-        byte[] data = SerializationUtils.serialize(searchQuery);
+        //byte[] data = SerializationUtils.serialize(searchQuery);
+        byte[] data = CustomDeserializer.objectMapper.writeValueAsBytes(searchQuery);
            
         return data;
 
-      } catch (RuntimeException e) {
+      } catch (JsonProcessingException | RuntimeException e) {
         throw new SerializationException("Error serializing value", e);
       }
     }

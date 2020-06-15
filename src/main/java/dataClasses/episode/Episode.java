@@ -6,12 +6,17 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Arrays;
 import java.time.Instant;
+import java.util.Date;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.module.Module; 
 import com.rometools.modules.itunes.EntryInformationImpl;
 import com.rometools.modules.itunes.AbstractITunesObject;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import dataClasses.podcast.Podcast;
 
@@ -21,10 +26,12 @@ import dataClasses.podcast.Podcast;
  * for now, just nesting within the parent podcast
  *
  */
-public class Episode extends EpisodeBase implements Serializable {
+public class Episode extends EpisodeBase {
   private Podcast podcast;
 
   // constructors
+  public Episode() {}
+
   public Episode(SyndEntry entry, Podcast podcast) {
     Module entryModule = entry.getModule(AbstractITunesObject.URI);
     // probably same as before, use EntryInformationImpl rather than EntryInformation
@@ -59,9 +66,17 @@ public class Episode extends EpisodeBase implements Serializable {
     }
     this.setContent(contentStr);
     // NOTE entry returns a Date instance
-    this.setEpisodeUpdatedDate(entry.getUpdatedDate());
+    Date date = entry.getUpdatedDate();
+    if (date != null) {
+      // convert to localDate
+      this.setEpisodeUpdatedDate(date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+    }
     // NOTE entry returns a Date instance
-    this.setPublishedDate(entry.getPublishedDate());
+    Date pubDate = entry.getPublishedDate();
+    if (pubDate != null) {
+      
+      this.setPublishedDate(pubDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+    }
 
       
     // maybe want...maybe too much hassle digging into source code. Did not see any official documentation on this either
@@ -138,10 +153,14 @@ public class Episode extends EpisodeBase implements Serializable {
 
   //////////////////////
   // getters and setters
+  // don't serialize to jackson (for Kafka)
+  @JsonIgnore
   public Podcast getPodcast() {
     return podcast;
   }
 
+  // don't deserialize to jackson (for Kafka)
+  @JsonIgnore
   public void setPodcast(Podcast podcast) {
     this.podcast = podcast;
   }

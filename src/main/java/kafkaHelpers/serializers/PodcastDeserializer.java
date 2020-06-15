@@ -2,10 +2,12 @@
 package kafkaHelpers.serializers;
 
 import java.util.Map;
+import java.io.IOException;
 
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.SerializationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dataClasses.podcast.Podcast;
 
@@ -29,10 +31,12 @@ public class PodcastDeserializer implements Deserializer<Podcast>
 		}
 
 		try {
-			Podcast podcast = (Podcast) SerializationUtils.deserialize(data);
+			//Podcast podcast = (Podcast) SerializationUtils.deserialize(data);
+
+			Podcast podcast = CustomDeserializer.objectMapper.readValue(data, Podcast.class);
 			return podcast;
 
-		} catch (RuntimeException e) {
+		} catch (IOException | RuntimeException e) {
 			throw new SerializationException("Error deserializing value", e);
 		}
 	}

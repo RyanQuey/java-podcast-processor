@@ -7,6 +7,8 @@ import org.apache.kafka.common.serialization.Serializer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.SerializationException;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import dataClasses.episode.Episode;
 
 // combines answers https://stackoverflow.com/a/40158971/6952495 
@@ -31,11 +33,12 @@ public class EpisodeSerializer implements Serializer<Episode>
       try {
         // trying this https://stackoverflow.com/a/13174951/6952495
 				// if not consider https://stackoverflow.com/a/51874263/6952495 to serialize
-        byte[] data = SerializationUtils.serialize(episode);
+        // byte[] data = SerializationUtils.serialize(episode);
+        byte[] data = CustomDeserializer.objectMapper.writeValueAsBytes(episode);
            
         return data;
 
-      } catch (RuntimeException e) {
+      } catch (JsonProcessingException | RuntimeException e) {
         throw new SerializationException("Error serializing value", e);
       }
     }

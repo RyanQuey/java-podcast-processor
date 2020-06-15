@@ -19,6 +19,22 @@
 			<artifactId>guava</artifactId>
 			<version>29.0-jre</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.module/jackson-modules-java8 -->
+		<!-- to support other data structures ( specifically for us, Instant) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.11.0</version>
+    </dependency>
+
+
     <!-- Spark dependency --> 
     <dependency> 
       <groupId>org.apache.spark</groupId>
@@ -26,6 +42,7 @@
       <version>2.4.5</version>
       <scope>provided</scope>
     </dependency>
+
     <!-- https://mvnrepository.com/artifact/com.googlecode.json-simple/json-simple -->
     <!-- if want to stop using org.json:
 		<dependency>

@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.SerializationException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import dataClasses.episode.Episode;
 
@@ -29,10 +30,11 @@ public class EpisodeDeserializer implements Deserializer<Episode>
 		}
 
 		try {
-			Episode episode = SerializationUtils.deserialize(data);
+			// Episode episode = SerializationUtils.deserialize(data);
+			Episode episode = CustomDeserializer.objectMapper.readValue(data, Episode.class);
 			return episode;
 
-		} catch (RuntimeException e) {
+		} catch (IOException | RuntimeException e) {
 			throw new SerializationException("Error deserializing value", e);
 		}
 	}

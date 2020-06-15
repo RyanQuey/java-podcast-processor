@@ -249,6 +249,8 @@ public class EpisodeBase {
   }
 
   // NOTE actually probably inaccurate because it does not set the local time zone, but whatever, it's close enough and we are not bothering to find what their time zone was anyway.
+  // NOTE don't use, breaks java beans conventions (I think) and jackson serializer (definitely)
+  /*
   public void setEpisodeUpdatedDate(Date episodeUpdatedDate) {
     if (episodeUpdatedDate != null) {
       this.episodeUpdatedDate = episodeUpdatedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -256,6 +258,7 @@ public class EpisodeBase {
       this.episodeUpdatedDate = null;
     }
   }
+  */
 
   public LocalDate getPublishedDate() {
     return publishedDate;
@@ -265,6 +268,8 @@ public class EpisodeBase {
     this.publishedDate = publishedDate;
   }
 
+  // NOTE don't use, breaks java beans conventions (I think) and jackson serializer (definitely)
+  /*
   public void setPublishedDate(Date publishedDate) {
     if (publishedDate != null) {
       this.publishedDate = publishedDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
@@ -272,6 +277,7 @@ public class EpisodeBase {
       this.publishedDate = null;
     }
   }
+  */
 
 };
 

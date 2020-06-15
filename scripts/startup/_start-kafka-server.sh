@@ -21,17 +21,17 @@ cd $HOME/kafka_2.12-2.5.0 && \
     # could not connect to kafka server, so start it
     echo "starting kafka server daemon"
     bin/kafka-server-start.sh -daemon config/server.properties
-    KAFKA_IS_UP=false  
-    while [ $KAFKA_IS_UP == false ]; do
+    KAFKA_IS_UP="false"
+    while [ $KAFKA_IS_UP == "false" ]; do
       echo "Kafka is not up yet, waiting..."
       sleep 1s
       # keep running until last command in loop returns true
 
-      bin/zookeeper-shell.sh localhost:2181 ls /brokers/ids && KAFKA_IS_UP=true
+      bin/zookeeper-shell.sh localhost:2181 ls /brokers/ids && KAFKA_IS_UP="true"
     done
     echo "Kafka is up!"
   } && \
 
   # then create topics if they don't exist already
   # create topic(s) for this project
-  bash $HOME/projects/java-podcast-processor/scripts/_create-kafka-topics.sh
+  bash $HOME/projects/java-podcast-processor/scripts/startup/_create-kafka-topics.sh

@@ -86,11 +86,15 @@ public class Consumers {
   private static int spinnerIndex = 0;
   private static String[] logos = {"\\", "|", "/", "-"};
   private static void spin () {
-    System.out.print(Strings.repeat("\b", 12));
-    System.out.print("polling..." + logos[spinnerIndex]);
-    spinnerIndex ++;
-    if (spinnerIndex == logos.length) {
-      spinnerIndex = 0;
+    try {
+      System.out.print(Strings.repeat("\b", 12));
+      System.out.print("polling..." + logos[spinnerIndex]);
+      spinnerIndex ++;
+      if (spinnerIndex == logos.length) {
+        spinnerIndex = 0;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
   //////////////////////////////////////
@@ -159,6 +163,7 @@ public class Consumers {
 
     } catch (Throwable e) {
       // does this go here?
+      e.printStackTrace();
       consumer.close();
       // System.exit(1);
     }
@@ -170,7 +175,6 @@ public class Consumers {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Consumers.stringProps);
     consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.search-results-json"));
 
-    final CountDownLatch latch = new CountDownLatch(1);
 
     // attach shutdown handler to catch control-c
     // TODO will this work when not with kafka streams? 
@@ -189,7 +193,7 @@ public class Consumers {
       // TODO this go before or after the latch?
       while (Consumers.running) {
         Consumers.spin();
-        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
+        ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(2000));
         boolean successful = true;
 
         // for each search query, go through its results and get out all the feedurls
@@ -228,9 +232,11 @@ public class Consumers {
         }
       }
       // end while loop
+      System.out.println("now closing consumer.");
       consumer.close();
 
     } catch (Throwable e) {
+      e.printStackTrace();
       // does this go here?
       consumer.close();
       // System.exit(1);
@@ -242,45 +248,75 @@ public class Consumers {
     KafkaConsumer<String, Podcast> consumer = new KafkaConsumer<>(Consumers.podcastProps);
     consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.podcast"));
 
+    // attach shutdown handler to catch control-c
+    // TODO will this work when not with kafka streams? 
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        Consumers.running = false;
+      }
+    });
+
     try {
-      while (Consumers.running) {
+      // skipping for now, need new system TODO
+      // latch.await();
+
+      System.out.println("running? " + Consumers.running);
+      while (true) {
         Consumers.spin();
-        ConsumerRecords<String, Podcast> records = consumer.poll(Duration.ofMillis(100));
-        boolean successful = true;
-        // for each search query, go through its results and get out all the feedurls
-        for (ConsumerRecord<String, Podcast> record : records) {
-          try {
-            Podcast p = record.value();
+        try {
+          ConsumerRecords<String, Podcast> records = consumer.poll(Duration.ofMillis(1000));
 
-            // since the rss feed might have data that's more up to date than itunes search api
-            // NOTE this performs the fetch to get the rss feed for us
-            p.updateBasedOnRss();
+          boolean successful = true;
+          // for each search query, go through its results and get out all the feedurls
+          for (ConsumerRecord<String, Podcast> record : records) {
+            try {
+              System.out.println("found a podcast");
+              Podcast p = record.value();
+              System.out.println(p.getName());
 
-            p.persist();
+              // since the rss feed might have data that's more up to date than itunes search api
+              // NOTE this performs the fetch to get the rss feed for us
+              System.out.println("about to update");
+              p.updateBasedOnRss();
 
-            // send each episode to episodes topic
-            p.extractEpisodes();
-            for (Episode episode : p.getEpisodes()) {
-              ProducerRecord<String, Episode> producerRecord = new ProducerRecord<String, Episode>("queue.podcast-analysis-tool.episode", episode);
+              System.out.println("about to persist");
+              p.persist();
 
-              Producers.episodeProducer.send(producerRecord);
+              // send each episode to episodes topic
+              System.out.println("about to extract episodes");
+              p.extractEpisodes();
+              for (Episode episode : p.getEpisodes()) {
+                System.out.println("got episode " + episode.getTitle());
+                ProducerRecord<String, Episode> producerRecord = new ProducerRecord<String, Episode>("queue.podcast-analysis-tool.episode", episode);
+
+                Producers.episodeProducer.send(producerRecord);
+              }
+            } catch (Throwable e) {
+              e.printStackTrace();
+              successful = false;
             }
-          } catch (Throwable e) {
-            e.printStackTrace();
-            successful = false;
           }
-        }
 
-        if (successful) {
-          // mark these records as read
-          consumer.commitSync();
+          if (successful) {
+            // mark these records as read
+            consumer.commitSync();
+          }
+          System.out.println("running at end of loop? " + Consumers.running);
+
+        } catch (Exception e) {
+          // I know it fail during deserialization, because other errors should be caught and not rethrown before getting here
+          System.out.println("failed Deserializing podcast");
+          e.printStackTrace();
         }
       } // end while loop
 
-      consumer.close();
+      //System.out.println("now closing consumer.");
+      //consumer.close();
 
     } catch (Throwable e) {
       // does this go here?
+      e.printStackTrace();
       consumer.close();
       // System.exit(1);
     }

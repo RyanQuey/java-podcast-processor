@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.kafka.common.serialization.Serializer;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.SerializationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import dataClasses.podcast.Podcast;
 
@@ -31,11 +32,12 @@ public class PodcastSerializer implements Serializer<Podcast>
       try {
         // trying this https://stackoverflow.com/a/13174951/6952495
 				// if not consider https://stackoverflow.com/a/51874263/6952495 to serialize
-        byte[] data = SerializationUtils.serialize(podcast);
+        //byte[] data = SerializationUtils.serialize(podcast);
+        byte[] data = CustomDeserializer.objectMapper.writeValueAsBytes(podcast);
            
         return data;
 
-      } catch (RuntimeException e) {
+      } catch (JsonProcessingException | RuntimeException e) {
         throw new SerializationException("Error serializing value", e);
       }
     }

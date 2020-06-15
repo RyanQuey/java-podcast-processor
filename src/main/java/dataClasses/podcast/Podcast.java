@@ -48,7 +48,7 @@ import dataClasses.searchQuery.SearchQueryUDT;
  *
  */
 
-public class Podcast extends PodcastBase implements Serializable {
+public class Podcast extends PodcastBase {
 
   // access through getters
   private ArrayList<Episode> episodes = new ArrayList<Episode>();
@@ -74,6 +74,9 @@ public class Podcast extends PodcastBase implements Serializable {
 
   ////////////////////
   // Constructors
+  // required for jackson deserialization https://stackoverflow.com/a/56923998/6952495
+  public Podcast() {}
+
   public Podcast(PodcastByLanguageRecord podcastByLanguageRecord) {
     DataClassesHelpers.copyMatchingFields(podcastByLanguageRecord, this);
   }

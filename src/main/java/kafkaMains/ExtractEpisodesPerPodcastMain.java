@@ -15,6 +15,7 @@ public class ExtractEpisodesPerPodcastMain extends KafkaMain {
       // TODO only call this when settings via cmd line args are sent in
       KafkaMain.setup();
       startConsumer();
+      System.out.println("now tearing down stuff");
       KafkaMain.tearDown();
 
     } catch (Exception e) {

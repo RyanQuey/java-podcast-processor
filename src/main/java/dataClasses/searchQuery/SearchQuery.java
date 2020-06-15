@@ -26,7 +26,7 @@ import helpers.HttpReq;
  * as opposed to PodcastSearch, this is just one query (ie one search ran against an external API)
  */
 
-public class SearchQuery extends SearchQueryBase implements Serializable {
+public class SearchQuery extends SearchQueryBase {
 
   // renaming to searchQueryByTermRecord
   // public Row dbRow;
@@ -50,6 +50,7 @@ public class SearchQuery extends SearchQueryBase implements Serializable {
   // constructors
 
   // for when initializing from just search term and search type
+  // OR when using Jackson deserialization https://stackoverflow.com/a/56923998/6952495
   public SearchQuery () {}
   
   public SearchQuery (String term, String searchType) {
