@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <name>Data Engineering Podcast Analysis Tool</name>
   <packaging>jar</packaging>
-  <version>0.3.0</version>
+  <version>${project-package.version}</version>
   <dependencies>
     <!-- http client, used initially so I can do this https://github.com/rometools/rome/issues/276#issuecomment-192755732 Note though that 5.0 is out--> 
     <dependency>
@@ -120,13 +120,14 @@
 
 	<build>
 		<plugins>
+      <!-- https://stackoverflow.com/questions/15013651/using-maven-execexec-with-arguments -->
+      <!-- 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
 				<version>1.6.0</version>
 				<configuration>
 					<mainClass>${mainClass}</mainClass>
-					<!-- https://stackoverflow.com/questions/15013651/using-maven-execexec-with-arguments -->
 					<executable>java</executable>
 					<arguments>
 						<argument>-Djava.library.path=${project.build.directory}</argument>
@@ -137,6 +138,7 @@
 					</arguments>
 				</configuration>
 			</plugin>
+      -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
@@ -157,24 +159,28 @@
 				<!-- https://stackoverflow.com/a/574650/6952495-->
 				<artifactId>maven-assembly-plugin</artifactId>
 				<configuration>
-					<archive>
-						<manifest>
-					    <mainClass>${mainClass}</mainClass>
-						</manifest>
-					</archive>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
 					<!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
 					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
+				<!-- build multiple jars, one for each main we want to specify. https://stackoverflow.com/a/8726969/6952495 -->
 				<executions>
 					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<id>search-query-consumer</id> <!-- this is used for inheritance merges -->
 						<phase>package</phase> <!-- bind to the packaging phase -->
 						<goals>
 							<goal>single</goal>
 						</goals>
+						<configuration>
+              <archive>
+                <manifest>
+                  <mainClass>kafkaMains.RunSearchPerTermMain</mainClass>
+                </manifest>
+              </archive>
+              <finalName>run-search-per-term-${project-package.version}</finalName>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -183,7 +189,8 @@
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <mainClass>KafkaDriver</mainClass>
 		<java-driver.version>4.6.1</java-driver.version>
+		<project-package.version>0.3.0</project-package.version>
+		<project-package.version>0.3.0</project-package.version>
 	</properties>
 </project>

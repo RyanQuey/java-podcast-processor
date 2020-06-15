@@ -35,10 +35,12 @@ import java.lang.InterruptedException;
 import java.util.regex.Pattern;
 import java.util.concurrent.CompletableFuture;
 
+import com.google.common.base.Strings;
+
 public class Consumers {
   ///////////////////////////////////
   // private fields
-  static private void setPropertyDefaults (Properties props) {
+  private static void setPropertyDefaults (Properties props) {
     props.setProperty("bootstrap.servers", "localhost:9092");
     props.setProperty("group.id", "test");
     props.setProperty("enable.auto.commit", "false");
@@ -48,10 +50,10 @@ public class Consumers {
     props.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
   }
 
-  static private Properties stringProps = new Properties();
-  static private Properties searchQueryProps = new Properties();
-  static private Properties podcastProps = new Properties();
-  static private Properties episodeProps = new Properties();
+  private static Properties stringProps = new Properties();
+  private static Properties searchQueryProps = new Properties();
+  private static Properties podcastProps = new Properties();
+  private static Properties episodeProps = new Properties();
   static {
     Consumers.setPropertyDefaults(stringProps);
     Consumers.setPropertyDefaults(searchQueryProps);
@@ -63,7 +65,7 @@ public class Consumers {
     episodeProps.put("value.deserializer", "kafkaHelpers.serializers.EpisodeDeserializer");
   }
   
-  static private String[] searchTypes = {
+   private static String[] searchTypes = {
     // empty for getting default, which I believe searches more generally (?) or maybe all terms
     "all",
     "titleTerm", 
@@ -72,17 +74,31 @@ public class Consumers {
     "artistTerm"
   };
 
-  static private boolean refreshData = false;
+  private static boolean refreshData = false;
 
+  // if we want consumers to run
+  public static boolean running = true;
 
-
-
+  // TODO maybe make a separate class in a helpers file or something
+  // Try these next
+  // https://stackoverflow.com/a/9302776/6952495
+  private static int spinnerIndex = 0;
+  private static String[] logos = {"\\", "|", "/", "-"};
+  private static void spin () {
+    System.out.print(Strings.repeat("\b", 12));
+    System.out.print("polling..." + logos[spinnerIndex]);
+    spinnerIndex ++;
+    if (spinnerIndex == logos.length) {
+      spinnerIndex = 0;
+    }
+  }
   //////////////////////////////////////
   // some static methods (initializers)
 
   // take a term and hit external api (Itunes) to get some podcasts and basic data about them that match that term
   // currently runs each term with all the different search types to see what gets returned
   // After a search_query is persisted to database, send record to queue.podcast-analysis-tool.search-query-with-results
+  // TODO rename all these to reflect what topic it consumes, and to show what it does. Maybe runSearchQueryForTerm () {}
   public static void initializeQueryTermConsumer() throws Exception {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(Consumers.stringProps);
     consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.query-term"));
@@ -90,27 +106,25 @@ public class Consumers {
     System.out.println("set the latch");
     final CountDownLatch latch = new CountDownLatch(1);
 
+
     // attach shutdown handler to catch control-c
-    System.out.println("add hook");
-    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook1") {
+		// TODO make this on class level, so closes all consumers at once
+    Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
-        consumer.close();
-        latch.countDown();
+				Consumers.running = false;
       }
     });
 
     try {
-      // skipping for now, need new system TODO
-      // latch.await();
-
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
-      while (true) {
+      while (Consumers.running) {
         // ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
+        Consumers.spin();
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
-        System.out.println("polled");
         boolean successful = true;
+
         for (ConsumerRecord<String, String> record : records) {
           try {
             // run the search
@@ -150,13 +164,14 @@ public class Consumers {
           consumer.commitSync();
         }
       }
+      consumer.close();
 
     } catch (Throwable e) {
       // does this go here?
       consumer.close();
-      System.exit(1);
+      // System.exit(1);
     }
-    System.exit(0);
+    // System.exit(0);
   }
   
   // Go through results,  and send podcasts feed_url to queue.podcast_analysis_tool.feed_url
@@ -172,8 +187,7 @@ public class Consumers {
     Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook2") {
       @Override
       public void run() {
-        consumer.close();
-        latch.countDown();
+        Consumers.running = false;
       }
     });
 
@@ -183,7 +197,7 @@ public class Consumers {
 
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
-      while (true) {
+      while (Consumers.running) {
         ConsumerRecords<String, SearchQuery> records = consumer.poll(Duration.ofMillis(100));
         // for each search query, go through its results and get out all the feedurls
         for (ConsumerRecord<String, SearchQuery> record : records) {
@@ -208,13 +222,14 @@ public class Consumers {
 
         consumer.commitSync();
       }
+      consumer.close();
 
     } catch (Throwable e) {
       // does this go here?
       consumer.close();
-      System.exit(1);
+      // System.exit(1);
     }
-    System.exit(0);
+    // System.exit(0);
   }
 
   public static void initializePodcastConsumer() throws Exception {
@@ -223,10 +238,10 @@ public class Consumers {
 
 
     // attach shutdown handler to catch control-c
-    Runtime.getRuntime().addShutdownHook(new Thread("streams-shutdown-hook3") {
+    Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
       public void run() {
-        consumer.close();
+        Consumers.running = false;
       }
     });
 
@@ -236,7 +251,7 @@ public class Consumers {
 
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
-      while (true) {
+      while (Consumers.running) {
         ConsumerRecords<String, Podcast> records = consumer.poll(Duration.ofMillis(100));
         // for each search query, go through its results and get out all the feedurls
         for (ConsumerRecord<String, Podcast> record : records) {
@@ -260,12 +275,14 @@ public class Consumers {
         consumer.commitSync();
       }
 
+      consumer.close();
+
     } catch (Throwable e) {
       // does this go here?
       consumer.close();
-      System.exit(1);
+      // System.exit(1);
     }
-    System.exit(0);
+    // System.exit(0);
   }
 
 
@@ -319,6 +336,8 @@ public class Consumers {
 
   // eventually want all these consumers running on separate machines. But for now just running them all in async jobs
   // TODO I'm trying to run all while avoiding dangers of multithreading. But in reality I don't know how these all work, and the whole latch mechanism is still a mystery. So need to figure this stuff out
+  // TODO this doesn't really work currently. All will start, but when it starts processing stuff it will process some then break. 
+  // Very brittle
   public static void initializeAll () throws Exception {
     final CountDownLatch latch = new CountDownLatch(1);
 

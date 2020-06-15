@@ -58,5 +58,6 @@ while [ $CASSANDRA_IS_UP == false ]; do
 done && \
   echo "run the jar" && \
 
-  mvn exec:exec
+  # mvn exec:exec
+  echo "not running jar now, since we're building several. Just be satisifed with the build"
 
