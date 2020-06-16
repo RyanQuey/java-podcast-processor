@@ -8,6 +8,7 @@ fi
 #########################################
 # instructions: 
 # start with bash NOT sh. Currently only works in bash
+# CUrrent status: doesn't work very well, but if you read it multiple times it works ...:(
 #########################################
 
 # for more advanced try/catch stuff, see here https://stackoverflow.com/a/25180186/6952495
@@ -16,6 +17,7 @@ fi
 # want to start this in a daemon, and asynchronously, since it takes a while.
 # just make sure not to run the main jar file until Cassandra is ready
 # TODO suppress logs in this console
+JUST_STARTED_CASSANDRA=false
 $HOME/dse-6.8.0/bin/nodetool status && 
   echo "cassandra already running, so don't start cassandra" || {
     echo "starting cassandra"
@@ -35,16 +37,16 @@ bash ./scripts/startup/_start-kafka-server.sh && \
 
 echo "now packaging java packages" && \
 mvn clean package && \
-CASSANDRA_IS_UP="false"
-while [ $CASSANDRA_IS_UP == "false" ]; do
+CASSANDRA_IS_UP=false
+while [[ $CASSANDRA_IS_UP == false ]]; do
   # keep running until last command in loop returns true
 
-  $HOME/dse-6.8.0/bin/nodetool status | grep -q 'UN' && CASSANDRA_IS_UP="true"
-  if [ $CASSANDRA_IS_UP == "false" ]; then
+  $HOME/dse-6.8.0/bin/nodetool status | grep -q 'UN' && CASSANDRA_IS_UP=true
+  if [[ $CASSANDRA_IS_UP == false ]]; then
     # TODO add a timeout or handle if cassandra is down
   	echo "Cassandra is not up yet, waiting and try again"
   	sleep 1s
-  elif [ $JUST_STARTED_CASSANDRA == "true" ]; then
+  elif [[ $JUST_STARTED_CASSANDRA == true ]]; then
   	echo "Cassandra is up, but just started and even when getting UN for status, not yet ready to connect. So waiting a bit first anyways"
     # sleep 2 minutes anyways...
 		# TODO test how long we need
