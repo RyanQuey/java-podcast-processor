@@ -35,8 +35,10 @@ cd $HOME/projects/java-podcast-processor && \
 echo "running _start-kafka-server.sh script" && \
 bash ./scripts/startup/_start-kafka-server.sh && \
 
-echo "now packaging java packages" && \
-mvn clean package && \
+# TODO add a cli arg that can package too
+# don't want to package right now, just run!
+# echo "now packaging java packages" && \
+# mvn clean package && \
 CASSANDRA_IS_UP=false
 while [[ $CASSANDRA_IS_UP == false ]]; do
   # keep running until last command in loop returns true
@@ -51,13 +53,17 @@ while [[ $CASSANDRA_IS_UP == false ]]; do
     # sleep 2 minutes anyways...
 		# TODO test how long we need
 		# last time was at least a minute after all this ran.
-    sleep 120s
+    # TODO add this back in if running something in particular that requires C* to be up 
+    # sleep 120s
   fi
 
   # returns true if: nodetool status ran without erroring and there is substring 'UN' in the output.
   
   # if above returns false, will try again
 done && \
+
+  echo "start zeppelin" && \
+  $HOME/dse-6.8.0/bin/dse exec ~/zeppelin/bin/zeppelin-daemon.sh start && \
   echo "run the jar" && \
 
   # mvn exec:exec
