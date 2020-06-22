@@ -85,10 +85,10 @@ public class Consumers {
   // https://stackoverflow.com/a/9302776/6952495
   private static int spinnerIndex = 0;
   private static String[] logos = {"\\", "|", "/", "-"};
-  private static void spin () {
+  private static void spin (String topic) {
     try {
       System.out.print(Strings.repeat("\b", 12));
-      System.out.print("polling..." + logos[spinnerIndex]);
+      System.out.print("polling " + topic + "..." + logos[spinnerIndex]);
       spinnerIndex ++;
       if (spinnerIndex == logos.length) {
         spinnerIndex = 0;
@@ -106,13 +106,14 @@ public class Consumers {
   // TODO rename all these to reflect what topic it consumes, and to show what it does. Maybe runSearchQueryForTerm () {}
   public static void initializeQueryTermConsumer() throws Exception {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(Consumers.stringProps);
-    consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.query-term"));
+    String topic = "queue.podcast-analysis-tool.query-term";
+    consumer.subscribe(Arrays.asList(topic));
 
 
     try {
       while (Consumers.running) {
         // ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
-        Consumers.spin();
+        Consumers.spin(topic);
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
         boolean successful = true;
 
@@ -173,7 +174,8 @@ public class Consumers {
   // Go through results,  and send podcasts feed_url to queue.podcast_analysis_tool.feed_url
   public static void initializeSearchResultsJsonConsumer() throws Exception {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Consumers.stringProps);
-    consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.search-results-json"));
+    String topic = "queue.podcast-analysis-tool.search-results-json";
+    consumer.subscribe(Arrays.asList(topic));
 
 
     // attach shutdown handler to catch control-c
@@ -192,7 +194,7 @@ public class Consumers {
       // keep running forever until ctrl+c is pressed
       // TODO this go before or after the latch?
       while (Consumers.running) {
-        Consumers.spin();
+        Consumers.spin(topic);
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(2000));
         boolean successful = true;
 
@@ -246,7 +248,8 @@ public class Consumers {
 
   public static void initializePodcastConsumer() throws Exception {
     KafkaConsumer<String, Podcast> consumer = new KafkaConsumer<>(Consumers.podcastProps);
-    consumer.subscribe(Arrays.asList("queue.podcast-analysis-tool.podcast"));
+    String topic = "queue.podcast-analysis-tool.podcast";
+    consumer.subscribe(Arrays.asList(topic));
 
     // attach shutdown handler to catch control-c
     // TODO will this work when not with kafka streams? 
@@ -262,7 +265,7 @@ public class Consumers {
       // latch.await();
 
       while (Consumers.running) {
-        Consumers.spin();
+        Consumers.spin(topic);
         try {
           ConsumerRecords<String, Podcast> records = consumer.poll(Duration.ofMillis(1000));
 
