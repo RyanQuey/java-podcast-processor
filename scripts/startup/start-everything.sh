@@ -33,7 +33,7 @@ cd $HOME/projects/java-podcast-processor && \
 # hopefully will error out if anything doesn't run correctly
 # TODO add handling so can be ran multiple times and handles if something has already been started and NOT error out, just continue through the script
 echo "running _start-kafka-server.sh script" && \
-bash ./scripts/startup/_start-kafka-server.sh && \
+bash ./scripts/startup/_start-kafka-server.sh
 
 # TODO add a cli arg that can package too
 # don't want to package right now, just run!
@@ -62,10 +62,8 @@ while [[ $CASSANDRA_IS_UP == false ]]; do
   # if above returns false, will try again
 done && \
 
-  echo "start zeppelin" && \
-  $HOME/dse-6.8.0/bin/dse exec ~/zeppelin/bin/zeppelin-daemon.sh start && \
-  echo "run the jar" && \
-
   # mvn exec:exec
-  echo "not running jar now, since we're building several. Just be satisifed with the build"
+  echo "not running jar now, since we're building several. Just be satisifed with the build" && \
+  echo "start zeppelin" && \
+  $HOME/dse-6.8.0/bin/dse exec ~/zeppelin/bin/zeppelin.sh
 
