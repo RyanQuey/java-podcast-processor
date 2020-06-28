@@ -16,13 +16,26 @@ python3 -m venv venv
 pip install -r requirements.txt
 ```
 
-### Start the server
+### Setup env vars
 ```sh
-export FLASK_APP=main.py && flask run
+cp .env.example .env
+```
+Then change according to your environment
+
+# Start the server in development
+```sh
+flask run
 ```
 
 or if you require remote access:
 
 ```sh
-export FLASK_APP=main.py && flask run --host=0.0.0.0
+flask run --host=0.0.0.0
 ```
+
+### View your app
+http://127.0.0.1:5000/
+
+# Deploy
+
+TODO
