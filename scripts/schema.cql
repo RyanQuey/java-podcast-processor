@@ -1,6 +1,6 @@
-	CREATE KEYSPACE podcast_analysis_tool WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = false;
+	CREATE KEYSPACE IF NOT EXISTS podcast_analysis_tool WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'}  AND durable_writes = false;
 
-	CREATE TABLE podcast_analysis_tool.episodes_by_podcast (
+	CREATE TABLE IF NOT EXISTS podcast_analysis_tool.episodes_by_podcast (
 	    podcast_api text,
 	    podcast_api_id text,
 	    episode_guid text,
@@ -26,24 +26,16 @@
 	    title text,
 	    updated_at timestamp,
 	    PRIMARY KEY ((podcast_api, podcast_api_id), episode_guid)
-	) WITH CLUSTERING ORDER BY (episode_guid ASC)
-	    AND additional_write_policy = '99PERCENTILE'
-	    AND bloom_filter_fp_chance = 0.01
-	    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
-	    AND comment = ''
-	    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
-	    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-	    AND crc_check_chance = 1.0
-	    AND default_time_to_live = 0
-	    AND gc_grace_seconds = 864000
-	    AND max_index_interval = 2048
-	    AND memtable_flush_period_in_ms = 0
-	    AND min_index_interval = 128
-	    AND nodesync = {'enabled': 'true', 'incremental': 'true'}
-	    AND read_repair = 'BLOCKING'
-	    AND speculative_retry = '99PERCENTILE';
+	) WITH CLUSTERING ORDER BY (episode_guid ASC);
+
+	CREATE TYPE IF NOT EXISTS podcast_analysis_tool.search_query (
+    external_api text,
+    search_type text,
+    term text
+	);
+
 	
-	CREATE TABLE podcast_analysis_tool.podcasts_by_language (
+	CREATE TABLE IF NOT EXISTS podcast_analysis_tool.podcasts_by_language (
 	    language text,
 	    feed_url text,
 	    api text,
@@ -72,24 +64,9 @@
 	    webmaster text,
 	    website_url text,
 	    PRIMARY KEY (language, feed_url)
-	) WITH CLUSTERING ORDER BY (feed_url ASC)
-	    AND additional_write_policy = '99PERCENTILE'
-	    AND bloom_filter_fp_chance = 0.01
-	    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
-	    AND comment = ''
-	    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
-	    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-	    AND crc_check_chance = 1.0
-	    AND default_time_to_live = 0
-	    AND gc_grace_seconds = 864000
-	    AND max_index_interval = 2048
-	    AND memtable_flush_period_in_ms = 0
-	    AND min_index_interval = 128
-	    AND nodesync = {'enabled': 'true', 'incremental': 'true'}
-	    AND read_repair = 'BLOCKING'
-	    AND speculative_retry = '99PERCENTILE';
+	) WITH CLUSTERING ORDER BY (feed_url ASC);
 	
-	CREATE TABLE podcast_analysis_tool.search_queries_by_term (
+	CREATE TABLE IF NOT EXISTS podcast_analysis_tool.search_queries_by_term (
 	    term text,
 	    external_api text,
 	    search_type text,
@@ -98,18 +75,4 @@
 	    updated_at timestamp,
 	    PRIMARY KEY (term, external_api, search_type)
 	) WITH CLUSTERING ORDER BY (external_api ASC, search_type ASC)
-	    AND additional_write_policy = '99PERCENTILE'
-	    AND bloom_filter_fp_chance = 0.01
-	    AND caching = {'keys': 'ALL', 'rows_per_partition': 'NONE'}
-	    AND comment = ''
-	    AND compaction = {'class': 'org.apache.cassandra.db.compaction.SizeTieredCompactionStrategy', 'max_threshold': '32', 'min_threshold': '4'}
-	    AND compression = {'chunk_length_in_kb': '64', 'class': 'org.apache.cassandra.io.compress.LZ4Compressor'}
-	    AND crc_check_chance = 1.0
-	    AND default_time_to_live = 0
-	    AND gc_grace_seconds = 864000
-	    AND max_index_interval = 2048
-	    AND memtable_flush_period_in_ms = 0
-	    AND min_index_interval = 128
-	    AND nodesync = {'enabled': 'true', 'incremental': 'true'}
-	    AND read_repair = 'BLOCKING'
-    AND speculative_retry = '99PERCENTILE';
+	;
