@@ -68,7 +68,10 @@ function SEO({ description, lang, meta, title }) {
           content: metaDescription,
         },
       ].concat(meta)}
-    />
+    >
+      {false && `COMMENT: As suggested in official helmet docs ("https://www.gatsbyjs.org/packages/gatsby-plugin-react-helmet/"), following example of "https://github.com/jlengstorf/gatsby-theme-jason-blog/blob/master/src/components/SEO/SEO.js`}
+      <link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/searchkit/2.0.0/theme.css" />
+    </Helmet>
   )
 }
 
