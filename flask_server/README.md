@@ -67,4 +67,11 @@ gatsby develop
 
 # Deploy
 
+```sh
+cd ./gatsby/
+gatsby build
+# now we have the files ready to be served by flask from the gatsby/public folder
+
+# TODO
+```
 TODO
