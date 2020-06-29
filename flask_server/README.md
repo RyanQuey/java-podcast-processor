@@ -25,10 +25,10 @@ Then change according to your environment
 
 ### start flask server
 ```sh
-flask run
+flask run --host=www.local.test
 ```
 
-or if you require remote access:
+or if you require remote access: (NOTE untested)
 
 ```sh
 flask run --host=0.0.0.0

@@ -1,5 +1,6 @@
 from flask import Flask, url_for, render_template, send_from_directory
 import os
+import app.elasticsearch.rest_requests
 
 def create_app():
     app = Flask(__name__, static_folder='gatsby/public', template_folder='gatsby/public')
@@ -45,9 +46,11 @@ def create_app():
         print("********************", path)
         return app.send_static_file('search/index.html')
 
-    @app.route('/user/<username>')
-    def profile(username):
-        return '{}\'s profile'.format(escape(username))
+    @app.route('/api/elasticsearch/<es_index>')
+    def elasticsearch_index(es_index):
+        result = rest_requests.request(es_index)
+
+        return result
 
     # catch all to grab whatever else gatsby is throwing. Otherwise need `/page-data/...` `component...` and so on. but let's be liberal about this
     # note that gatsby is not namespacing their calls to /search, so we don't here either
@@ -64,8 +67,8 @@ def create_app():
 
     with app.test_request_context():
         print("what are my routes?")
-        print(url_for('hello_world', q='test-query'))
+        print(url_for('hello_world'))
         print(url_for('index'))
-        print(url_for('profile', username='username'))
+        print(url_for('search', q='test-query'))
 
     return app

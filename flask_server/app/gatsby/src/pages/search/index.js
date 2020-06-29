@@ -30,7 +30,9 @@ import Layout from "../../components/layout"
 import Image from "../../components/image"
 import SEO from "../../components/seo"
 
-const searchkit = new SearchkitManager("http://localhost:9200/")
+// TODO move to env vars
+const API_URL = "http://www.local.test:5000/api/elasticsearch/podcasts_by_language"
+const searchkit = new SearchkitManager(API_URL)
 
 // putting in /search folder so gatsby uses that route automatically, and doesn't redirect us to "/"
 // (root) when we hit this route over flask
@@ -72,7 +74,6 @@ const IndexPage = () => (
           </SideBar>
           <LayoutResults>
             <ActionBar>
-
               <ActionBarRow>
                 <HitsStats/>
               </ActionBarRow>
@@ -81,7 +82,6 @@ const IndexPage = () => (
                 <SelectedFilters/>
                 <ResetFilters/>
               </ActionBarRow>
-
             </ActionBar>
             <Hits mod="sk-hits-grid" hitsPerPage={10} itemComponent={PodcastHit}
             />
