@@ -1,0 +1,124 @@
+{
+  "settings": { 
+		"keyspace":"podcast_analysis_tool" 
+  }, 
+  "mappings": {
+		"podcasts_by_language": {
+			"properties" : {
+				"language" : {
+					"type": "keyword",
+					"cql_collection": "singleton",
+					"cql_partition_key": true,
+					"cql_primary_key_order": 0
+				},
+				"feed_url" : {
+					"type": "keyword",
+					"cql_collection": "singleton",
+					"cql_partition_key": false,
+					"cql_primary_key_order": 0
+				},
+				"api" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"api_genre_ids" : {
+					"type": "keyword",
+					"cql_collection": "list"
+				},
+				"api_id" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"api_url" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"country" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"description" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"episode_count" : {
+					"type": "integer",
+					"cql_collection": "singleton"
+				},
+				"explicit" : {
+					"type": "boolean",
+					"cql_collection": "singleton"
+				},
+				"found_by_queries" : {
+					"type": "nested",
+					"cql_collection": "set",
+					"cql_udt_name": "search_query"
+				},
+				"genres" : {
+					"type": "keyword",
+					"cql_collection": "list"
+				},
+				"image_url100" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"image_url30" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"image_url60" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"image_url600" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"name" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"owner" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"owner_email" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"primary_genre" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"release_date" : {
+					"type": "date",
+					"cql_collection": "singleton"
+				},
+				"subtitle" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"summary" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"title" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"updated_at" : {
+					"type" : "date",
+					"cql_collection": "singleton"
+				},
+				"webmaster" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"website_url" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				}
+			}
+    }
+  }
+}
