@@ -28,11 +28,13 @@ docker-compose \
   -f $project_root_path/flask_server/docker-compose.yml \
   up -d && \
   # rebuild all elasticsearch indices
+  # TODO try using docker exec nodetool status | grep -q 'UN' && CASSANDRA_IS_UP=true instead
   echo "waiting 60s for it to come up...(TODO ping server to know when it's ready rather than set time)"
   sleep 60s && \
   bash $project_root_path/src/main/resources/create_es_indices/rebuild_all_indices.sh && \
   echo "SUCCESS!"
 
+  # TODO add zeppelin
 
 
 
