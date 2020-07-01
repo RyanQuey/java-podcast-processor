@@ -21,8 +21,9 @@ cd $HOME/kafka_2.12-2.5.0 && \
   nc -vz localhost 9092 && echo "kafka server (broker) running, so no need to start it again" || {
     # could not connect to kafka server, so start it
     echo "starting kafka server daemon"
-    bin/kafka-server-start.sh -daemon config/server.properties
     KAFKA_IS_UP=false
+
+    bin/kafka-server-start.sh -daemon config/server.properties
     while [[ $KAFKA_IS_UP == false ]]; do
       echo "Kafka is not up yet, waiting..."
       sleep 1s
