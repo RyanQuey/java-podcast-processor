@@ -29,13 +29,13 @@ const EpisodeSearchPage = () => (
             operator="AND"
             size={10}
           />
-          {<RangeFilter 
+          <RangeFilter 
             field="published_date" 
             id="published-date" 
             min={0} max={1000} 
             showHistogram={true} 
             title="Published Date"
-          />}
+          />
         </div>
       }
     />

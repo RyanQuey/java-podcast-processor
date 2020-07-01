@@ -1,0 +1,41 @@
+{
+  "settings": { 
+		"keyspace":"podcast_analysis_tool" 
+  }, 
+  "mappings": {
+		"search_queries_by_term": {
+			"properties" : {
+				"term" : {
+					"type" : "keyword",
+					"cql_collection": "singleton",
+					"cql_partition_key": true,
+					"cql_primary_key_order": 0
+				},
+				"external_api" : {
+					"type" : "keyword",
+					"cql_primary_key_order": 0,
+					"cql_partition_key": false,
+					"cql_collection": "singleton"
+				},
+				"search_type" : {
+					"type" : "keyword",
+					"cql_primary_key_order": 1,
+					"cql_partition_key": false,
+					"cql_collection": "singleton"
+				},
+				"podcast_count" : {
+					"type" : "integer",
+					"cql_collection": "singleton"
+				},
+				"result_json" : {
+					"type" : "text",
+					"cql_collection": "singleton"
+				},
+				"updated_at" : {
+					"type" : "date",
+					"cql_collection": "singleton"
+				}
+			}
+    }
+  }
+}
