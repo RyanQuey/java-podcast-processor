@@ -8,5 +8,4 @@ npm i -g gatsby-cli && \
 npm i && \
 gatsby build && \
 cd $current_dir && \
-docker-compose -f docker-compose.yml up && \
-echo "SUCCESS!"
+bash startup.sh

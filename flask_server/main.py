@@ -3,7 +3,7 @@ import os
 from app.settings import config
 from app.routes import set_routes
 
-app=Flask(__name__, static_folder='gatsby/public', template_folder='gatsby/public')
+app=Flask(__name__, static_folder='app/gatsby/public', template_folder='app/gatsby/public')
 config(app)
 set_routes(app)
 
