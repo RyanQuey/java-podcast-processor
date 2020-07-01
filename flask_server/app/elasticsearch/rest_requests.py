@@ -20,7 +20,7 @@ def search(es_index, req):
     print("ES data:", req.data)
     print("ES json:", req.json)
     data_json = json.dumps(req.json)
-    print("in curl it would be:\n", f"curl -XPOST {url} -d \"{data_json}\" -H \"Content-Type: application/json\" ", "\n")
+    print("in curl it would be:\n", f"curl -XPOST {url} -d '{data_json}' -H \"Content-Type: application/json\" ", "\n")
     result = requests.post(url, json.dumps(req.json), headers={"content-type": "application/json"})
 
     # TODO better error handling

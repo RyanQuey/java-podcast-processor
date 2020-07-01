@@ -2,11 +2,12 @@ version: "3.8"
 services:
   flaskapp: 
     # builds using Dockerfile found in current directory
-    build: .
+    build: ${FLASK_DIR:-.}
     env_file: 
-      - .env
+      # so can call from different folder and this works, if they set the FLASK_DIR environment variable to e.g., ./flask_server. uses . as default if none set
+      - ${FLASK_DIR:-.}/.env
     volumes: 
-      - ".:/app"
+      - ${FLASK_DIR:-.}:/app
     container_name: flask-web-app
     ports: 
       - "5000:5000"

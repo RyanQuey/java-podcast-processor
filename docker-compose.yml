@@ -1,0 +1,12 @@
+version: "3.8"
+services:
+  kafka: 
+    # builds using Dockerfile found in current directory
+    build: .
+    env_file: 
+      - .env
+    volumes: 
+      - ".:/app"
+    container_name: flask-web-app
+    ports: 
+      - "5000:5000"
