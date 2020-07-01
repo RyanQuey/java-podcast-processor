@@ -1,0 +1,21 @@
+CREATE TABLE podcast_analysis_tool.podcasts_by_language (                                                                                                                  text,
+     text,
+    found_by_queries set<frozen<search_query>>,
+    genres list<text>,
+    image_url100 text,
+    image_url30 text,
+    image_url60 text,
+    image_url600 text,
+    name text,
+    owner text,
+    owner_email text,
+    primary_genre text,
+    release_date timestamp,
+    subtitle text,
+    summary text,
+    updated_at timestamp,
+    webmaster text,
+    website_url text,
+    PRIMARY KEY (language, feed_url)
+) WITH CLUSTERING ORDER BY (feed_url ASC)
+
