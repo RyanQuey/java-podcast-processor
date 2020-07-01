@@ -1,2 +1,4 @@
 #.flaskenv, for non-secret vars
-FLASK_APP=main.py
+
+# this was working before docker thouhg
+# FLASK_APP=app/main.py

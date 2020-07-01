@@ -65,6 +65,21 @@ cd ./gatsby/
 gatsby develop
 ```
 
+# Develop
+
+## Build a new docker image
+```
+# remove old container 
+docker stop flask-for-podcast-tool
+docker rm flask-for-podcast-tool
+
+# write new image
+docker build -t flask-for-podcast-image .
+
+# start it again
+docker run --name flask-for-podcast-tool -p 5000:5000 flask-for-podcast-image:latest
+```
+
 # Deploy
 
 ```sh
