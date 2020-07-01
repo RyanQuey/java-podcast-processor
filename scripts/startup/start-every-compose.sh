@@ -20,19 +20,37 @@ fi
 
 # always base everything relative to this file to make it simple
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-project_root_path=$parent_path/../../
+project_root_path=$parent_path/../..
 export FLASK_DIR="$project_root_path/flask_server"
+export JAVA_WORKERS_DIR="$project_root_path/java-workers"
+
+# base image for the jars
+built_image=false
+if [ ! -f $project_root_path/ryanquey-java-workers-latest.jar ]; then
+  echo "ryanquey/java-workers File not found! Building image"
+	docker build -f $JAVA_WORKERS_DIR/Dockerfile.base -t "ryanquey/java-workers" $JAVA_WORKERS_DIR && \
+	built_image=true
+elif
+  echo "ryanquey/java-workers jar File found! importing image"
+	docker image load -i  ${project_root_path:-.}/ryanquey-java-workers-latest.jar
+fi
 
 docker-compose \
   -f $project_root_path/elassandra-docker-compose.yml \
-  -f $project_root_path/flask_server/docker-compose.yml \
+  -f $FLASK_DIR/docker-compose.yml \
+  -f $JAVA_WORKERS_DIR/kafka-docker-compose.yml \
   up -d && \
   # rebuild all elasticsearch indices
   # TODO try using docker exec nodetool status | grep -q 'UN' && CASSANDRA_IS_UP=true instead
-  echo "waiting 60s for it to come up...(TODO ping server to know when it's ready rather than set time)"
+  echo "waiting 60s for it to come up...(TODO ping server to know when it's ready rather than set time)" && \
   sleep 60s && \
-  bash $project_root_path/src/main/resources/create_es_indices/rebuild_all_indices.sh && \
+  bash $JAVA_WORKERS_DIR/src/main/resources/create_es_indices/rebuild_all_indices.sh && \
+
   echo "SUCCESS!"
+	if [ built_image ]; then
+		echo "Saving newly built image to jar: "
+		docker image save ryanquey/java-workers:latest -o $project_root_path/ryanquey-java-workers-latest.jar
+	fi
 
   # TODO add zeppelin
 

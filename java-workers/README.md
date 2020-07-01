@@ -1,5 +1,9 @@
 [![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/RyanQuey/java-podcast-processor) 
 
+# UPDATE: use docker-compose instead. Just run `./scripts/startup/start-every-compose.sh`
+It should run literally everything
+
+-------------------------
 # Package:
 
 `mvn package`

@@ -1,0 +1,109 @@
+{
+  "settings": { 
+		"keyspace":"podcast_analysis_tool" 
+  }, 
+  "mappings": {
+		"episodes_by_podcast": {
+			"properties" : {
+				"podcast_api" : {
+					"type": "keyword",
+					"cql_collection": "singleton",
+					"cql_partition_key": true,
+					"cql_primary_key_order": 0
+				},
+				"podcast_api_id" : {
+					"type": "keyword",
+					"cql_collection": "singleton",
+					"cql_partition_key": true,
+					"cql_primary_key_order": 1
+				},
+				"episode_guid" : {
+					"type": "keyword",
+					"cql_primary_key_order": 0,
+					"cql_partition_key": false,
+					"cql_collection": "singleton"
+				},
+				"author" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"closed_captioned" : {
+					"type": "boolean",
+					"cql_collection": "singleton"
+				},
+				"comments" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"content" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"description" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"episode_num" : {
+					"type": "integer",
+					"cql_collection": "singleton"
+				},
+				"episode_type" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"episode_updated_date" : {
+					"type": "date",
+					"cql_collection": "singleton"
+				},
+				"episode_url" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"explicit" : {
+					"type": "boolean",
+					"cql_collection": "singleton"
+				},
+				"image_url" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"keywords" : {
+					"type": "keyword",
+					"cql_collection": "set"
+				},
+				"order_num" : {
+					"type": "integer",
+					"cql_collection": "singleton"
+				},
+				"podcast_website_url" : {
+					"type": "keyword",
+					"cql_collection": "singleton"
+				},
+				"published_date" : {
+					"type": "date",
+					"cql_collection": "singleton"
+				},
+				"season_num" : {
+					"type": "integer",
+					"cql_collection": "singleton"
+				},
+				"subtitle" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"summary" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"title" : {
+					"type": "text",
+					"cql_collection": "singleton"
+				},
+				"updated_at" : {
+					"type" : "date",
+					"cql_collection": "singleton"
+				}
+			}
+    }
+  }
+}

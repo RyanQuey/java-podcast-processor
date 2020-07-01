@@ -1,0 +1,7 @@
+FROM maven:3.6.3-jdk-8
+COPY ${JAVA_WORKERS_DIR:-.} /usr/src/podcast_analysis_tool
+WORKDIR /usr/src/podcast_analysis_tool
+RUN mvn clean package
+CMD "dir ./target"
+# TODO just have an entrypoint script, and then docker compose cna send args to that file
+# CMD "java -jar ./target/run-search-per-term-0.3.0.jar"

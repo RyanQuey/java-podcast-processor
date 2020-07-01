@@ -42,7 +42,8 @@ public class Consumers {
   ///////////////////////////////////
   // private fields
   private static void setPropertyDefaults (Properties props) {
-    props.setProperty("bootstrap.servers", "localhost:9092");
+    String kafkaUrl = System.getenv("KAFKA_URL") != null ? System.getenv("KAFKA_URL") : "localhost:9092";
+    props.setProperty("bootstrap.servers", kafkaUrl);
     props.setProperty("group.id", "test");
     props.setProperty("enable.auto.commit", "false");
     // once we have topics that are not just simple strings, cannot use this

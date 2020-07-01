@@ -107,30 +107,30 @@ public class EpisodeByPodcastDaoImpl__MapperGenerated extends DaoBase implements
         episodeByPodcastRecordHelper.validateEntityFields();
       }
       List<CompletionStage<PreparedStatement>> prepareStages = new ArrayList<>();
-      // Prepare the statement for `findOne(java.lang.String,java.lang.String,java.lang.String)`:
+      // Prepare the statement for `public abstract dataClasses.episode.EpisodeByPodcastRecord findOne(java.lang.String, java.lang.String, java.lang.String) `:
       SimpleStatement findOneStatement_simple = episodeByPodcastRecordHelper.selectByPrimaryKeyParts(3).build();
-      LOG.debug("[{}] Preparing query `{}` for method findOne(java.lang.String,java.lang.String,java.lang.String)",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract dataClasses.episode.EpisodeByPodcastRecord findOne(java.lang.String, java.lang.String, java.lang.String) ",
           context.getSession().getName(),
           findOneStatement_simple.getQuery());
       CompletionStage<PreparedStatement> findOneStatement = prepare(findOneStatement_simple, context);
       prepareStages.add(findOneStatement);
-      // Prepare the statement for `findAllByPodcast(java.lang.String,java.lang.String)`:
+      // Prepare the statement for `public abstract dataClasses.episode.EpisodeByPodcastRecord findAllByPodcast(java.lang.String, java.lang.String) `:
       SimpleStatement findAllByPodcastStatement_simple = episodeByPodcastRecordHelper.selectStart().whereRaw("podcast_api = ':podcastApi' AND podcast_api_id = ':podcastApiId'").build();
-      LOG.debug("[{}] Preparing query `{}` for method findAllByPodcast(java.lang.String,java.lang.String)",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract dataClasses.episode.EpisodeByPodcastRecord findAllByPodcast(java.lang.String, java.lang.String) ",
           context.getSession().getName(),
           findAllByPodcastStatement_simple.getQuery());
       CompletionStage<PreparedStatement> findAllByPodcastStatement = prepare(findAllByPodcastStatement_simple, context);
       prepareStages.add(findAllByPodcastStatement);
-      // Prepare the statement for `create(dataClasses.episode.EpisodeByPodcastRecord)`:
+      // Prepare the statement for `public abstract void create(dataClasses.episode.EpisodeByPodcastRecord) `:
       SimpleStatement createStatement_simple = episodeByPodcastRecordHelper.insert().build();
-      LOG.debug("[{}] Preparing query `{}` for method create(dataClasses.episode.EpisodeByPodcastRecord)",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract void create(dataClasses.episode.EpisodeByPodcastRecord) ",
           context.getSession().getName(),
           createStatement_simple.getQuery());
       CompletionStage<PreparedStatement> createStatement = prepare(createStatement_simple, context);
       prepareStages.add(createStatement);
-      // Prepare the statement for `save(dataClasses.episode.EpisodeByPodcastRecord)`:
+      // Prepare the statement for `public abstract void save(dataClasses.episode.EpisodeByPodcastRecord) `:
       SimpleStatement saveStatement_simple = SimpleStatement.newInstance(((DefaultUpdate)episodeByPodcastRecordHelper.updateByPrimaryKey()).asCql());
-      LOG.debug("[{}] Preparing query `{}` for method save(dataClasses.episode.EpisodeByPodcastRecord)",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract void save(dataClasses.episode.EpisodeByPodcastRecord) ",
           context.getSession().getName(),
           saveStatement_simple.getQuery());
       CompletionStage<PreparedStatement> saveStatement = prepare(saveStatement_simple, context);

@@ -196,8 +196,8 @@ public class SearchQueryUDTHelper__MapperGenerated extends EntityHelperBase<Sear
       }
       // validation of UDT types
       Map<CqlIdentifier, GenericType<?>> expectedTypesPerColumn = new LinkedHashMap<>();
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("search_type"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("term"), GENERIC_TYPE);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("search_type"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("external_api"), GENERIC_TYPE);
       List<CqlIdentifier> expectedColumns = userDefinedType.get().getFieldNames();
       List<DataType> expectedTypes = userDefinedType.get().getFieldTypes();

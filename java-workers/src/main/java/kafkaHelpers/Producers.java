@@ -34,7 +34,8 @@ public class Producers {
   // default props
   static private Properties props = new Properties();
   static private void setPropertyDefaults (Properties props) {
-    props.put("bootstrap.servers", "localhost:9092");
+    String kafkaUrl = System.getenv("KAFKA_URL") != null ? System.getenv("KAFKA_URL") : "localhost:9092";
+    props.put("bootstrap.servers", kafkaUrl);
     props.put("acks", "all");
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");

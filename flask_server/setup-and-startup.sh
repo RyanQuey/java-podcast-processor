@@ -6,6 +6,5 @@ cd $current_dir/app/gatsby && \
 . $HOME/.nvm/nvm.sh use && \
 npm i -g gatsby-cli && \
 npm i && \
-gatsby build && \
 cd $current_dir && \
 bash startup.sh

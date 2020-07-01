@@ -5,3 +5,9 @@ FROM tiangolo/uwsgi-nginx-flask:python3.6
 # will be overwritten by whatever volume we attach (for dev), but (I believe) in prod we have no volumne, so grab all the files at the start
 COPY . /app
 RUN pip install -r /app/requirements.txt
+# TODO try this, then can get rid of some of the startup scripts
+#WORKDIR /app/app/gatsby/
+#RUN nvm use
+#RUN npm i -g gatsby-cli
+#RUN npm i
+  # RUN gatsby build

@@ -103,30 +103,30 @@ public class SearchQueryByTermDaoImpl__MapperGenerated extends DaoBase implement
         searchQueryByTermRecordHelper.validateEntityFields();
       }
       List<CompletionStage<PreparedStatement>> prepareStages = new ArrayList<>();
-      // Prepare the statement for `findOne(java.lang.String,java.lang.String,java.lang.String)`:
+      // Prepare the statement for `public abstract dataClasses.searchQuery.SearchQueryByTermRecord findOne(java.lang.String, java.lang.String, java.lang.String) `:
       SimpleStatement findOneStatement_simple = searchQueryByTermRecordHelper.selectByPrimaryKeyParts(3).build();
-      LOG.debug("[{}] Preparing query `{}` for method findOne(java.lang.String,java.lang.String,java.lang.String)",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract dataClasses.searchQuery.SearchQueryByTermRecord findOne(java.lang.String, java.lang.String, java.lang.String) ",
           context.getSession().getName(),
           findOneStatement_simple.getQuery());
       CompletionStage<PreparedStatement> findOneStatement = prepare(findOneStatement_simple, context);
       prepareStages.add(findOneStatement);
-      // Prepare the statement for `findAll()`:
+      // Prepare the statement for `public abstract PagingIterable<dataClasses.searchQuery.SearchQueryByTermRecord> findAll() `:
       SimpleStatement findAllStatement_simple = searchQueryByTermRecordHelper.selectByPrimaryKeyParts(0).build();
-      LOG.debug("[{}] Preparing query `{}` for method findAll()",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract PagingIterable<dataClasses.searchQuery.SearchQueryByTermRecord> findAll() ",
           context.getSession().getName(),
           findAllStatement_simple.getQuery());
       CompletionStage<PreparedStatement> findAllStatement = prepare(findAllStatement_simple, context);
       prepareStages.add(findAllStatement);
-      // Prepare the statement for `create(dataClasses.searchQuery.SearchQueryByTermRecord)`:
+      // Prepare the statement for `public abstract void create(dataClasses.searchQuery.SearchQueryByTermRecord) `:
       SimpleStatement createStatement_simple = searchQueryByTermRecordHelper.insert().build();
-      LOG.debug("[{}] Preparing query `{}` for method create(dataClasses.searchQuery.SearchQueryByTermRecord)",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract void create(dataClasses.searchQuery.SearchQueryByTermRecord) ",
           context.getSession().getName(),
           createStatement_simple.getQuery());
       CompletionStage<PreparedStatement> createStatement = prepare(createStatement_simple, context);
       prepareStages.add(createStatement);
-      // Prepare the statement for `save(dataClasses.searchQuery.SearchQueryByTermRecord)`:
+      // Prepare the statement for `public abstract void save(dataClasses.searchQuery.SearchQueryByTermRecord) `:
       SimpleStatement saveStatement_simple = SimpleStatement.newInstance(((DefaultUpdate)searchQueryByTermRecordHelper.updateByPrimaryKey()).asCql());
-      LOG.debug("[{}] Preparing query `{}` for method save(dataClasses.searchQuery.SearchQueryByTermRecord)",
+      LOG.debug("[{}] Preparing query `{}` for method public abstract void save(dataClasses.searchQuery.SearchQueryByTermRecord) ",
           context.getSession().getName(),
           saveStatement_simple.getQuery());
       CompletionStage<PreparedStatement> saveStatement = prepare(saveStatement_simple, context);

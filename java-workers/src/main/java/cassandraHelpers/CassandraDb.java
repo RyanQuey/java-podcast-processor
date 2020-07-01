@@ -17,8 +17,10 @@ import migrations.AMigrationRunner;
 
 public class CassandraDb {
   public static CqlSession session = CqlSession.builder().build();
+  String CassandraIP = System.getenv("CASSANDRA_URL") != null ? System.getenv("CASSANDRA_URL") : "127.0.0.1";
   public static InventoryMapper inventoryMapper = InventoryMapper
     .builder(CassandraDb.session)
+    .addContactPoints(CassandraIP)
     .withDefaultKeyspace("podcast_analysis_tool")
     .build();
 

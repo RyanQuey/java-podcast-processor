@@ -3,6 +3,8 @@ services:
   flaskapp: 
     # builds using Dockerfile found in current directory
     build: ${FLASK_DIR:-.}
+    environment:
+      ELASTICSEARCH_URL: http://seed_node:9200
     env_file: 
       # so can call from different folder and this works, if they set the FLASK_DIR environment variable to e.g., ./flask_server. uses . as default if none set
       - ${FLASK_DIR:-.}/.env
