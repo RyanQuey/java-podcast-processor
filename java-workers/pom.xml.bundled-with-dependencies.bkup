@@ -162,19 +162,6 @@
 				</configuration>
 			</plugin>
       -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>3.2.0</version>
-        <configuration>
-          <archive>
-            <manifest>
-              <addClasspath>true</addClasspath>
-              <mainClass>com.ryanquey.podcast.Main</mainClass>
-            </manifest>
-          </archive>
-        </configuration>
-			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
@@ -189,6 +176,80 @@
 						</path>
 					</annotationProcessorPaths>
 				</configuration>
+			</plugin>
+			<plugin>
+				<!--  bundle everything into a single file executable with dependencies when packaging -->
+				<!-- https://stackoverflow.com/a/574650/6952495-->
+        <!-- also https://stackoverflow.com/a/15799254/6952495 -->
+				<artifactId>maven-assembly-plugin</artifactId>
+				<!-- build multiple jars, one for each main we want to specify. https://stackoverflow.com/a/8726969/6952495 -->
+				<executions>
+					<execution>
+						<id>run-search-per-term</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+              <descriptorRefs>
+				        <!--  bundle everything into a single file executable with dependencies when packaging -->
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
+              <appendAssemblyId>false</appendAssemblyId>
+              <archive>
+                <manifest>
+                  <mainClass>kafkaMains.RunSearchPerTermMain</mainClass>
+                </manifest>
+              </archive>
+              <finalName>run-search-per-term-${project-package.version}</finalName>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>extract-podcasts-per-search</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+              <descriptorRefs>
+				        <!--  bundle everything into a single file executable with dependencies when packaging -->
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
+              <appendAssemblyId>false</appendAssemblyId>
+              <archive>
+                <manifest>
+                  <mainClass>kafkaMains.ExtractPodcastsPerSearchMain</mainClass>
+                </manifest>
+              </archive>
+              <finalName>extract-podcasts-per-search-${project-package.version}</finalName>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>extract-episodes-per-podcast</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+              <descriptorRefs>
+				        <!--  bundle everything into a single file executable with dependencies when packaging -->
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <!-- avoid the annoying "-jar-with-dependencies" suffix in the name -->
+              <appendAssemblyId>false</appendAssemblyId>
+              <archive>
+                <manifest>
+                  <mainClass>kafkaMains.ExtractEpisodesPerPodcastMain</mainClass>
+                </manifest>
+              </archive>
+              <finalName>extract-episodes-per-podcasts-${project-package.version}</finalName>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
