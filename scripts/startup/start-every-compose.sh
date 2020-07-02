@@ -63,6 +63,9 @@ while [[ $CASSANDRA_IS_UP == false ]]; do
     # TODO add a timeout or handle if cassandra is down
   	echo "Cassandra is not up yet, waiting and try again"
   	sleep 1s
+  else 
+    echo "Cassandra is up! Continuing"
+    echo "***************************"
   fi
 
   # returns true if: nodetool status ran without erroring and there is substring 'UN' in the output.
@@ -70,7 +73,7 @@ while [[ $CASSANDRA_IS_UP == false ]]; do
   # if above returns false, will try again
 done && \
   # refresh the es indices based on json files. Only do it this recklessly in dev
-  bash $JAVA_WORKERS_DIR/src/main/resources/create_es_indices/rebuild_all_indices.sh && \
+  bash $JAVA_WORKERS_DIR/src/main/resources/com/ryanquey/podcast/create_es_indices/rebuild_all_indices.sh && \
 
   # no need to do this, now can create via env vars passed to docker-compose for kafka
 	# bash _create-kafka-topics.sh && \
