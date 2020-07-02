@@ -14,23 +14,30 @@ export topics="
 #queue.podcast-analysis-tool.rss-feed-url
 #queue.podcast-analysis-tool.rss-feed
 
-{
-  nc -vz localhost 9092
-} || { 
-  echo "kafka not running, start kafka first" 
-  false
-} && \
+KAFKA_IS_UP=true
+test_if_kafka_ready="nc -vz localhost 9092 && docker exec java-podcast-processor_zookeeper_1 bash bin/zkCli.sh localhost:2181 ls /brokers/ids"
+$($test_if_kafka_ready) || {
+  KAFKA_IS_UP=false
 
-  cd $HOME/kafka_2.12-2.5.0 && \
+  while [[ $KAFKA_IS_UP == false ]]; do
+    echo "Kafka is not up yet, waiting..."
+    sleep 1s
+    # keep running until last command in loop returns true
+
+    # TODO confirm that if kafka can't accept messages, this returns false
+    $($test_if_kafka_ready) && KAFKA_IS_UP=true
+  done
+  echo "Kafka is up!"
+}
 
   # create topics if they don't exist already
   # TODO can just add  --if-not-exists flag...but then Have to use deprecated --zookeeper flag, so who knows
-  # would be like this: $HOME/kafka_2.12-2.5.0/bin/kafka-topics.sh --create --zookeeper 127.0.0.1:2181 --replication-factor 1 --partitions 1 --topic streams-plaintext-input --if-not-exists
   echo "now creating topics" && \
 
   for topic in $topics
   do
     {
+      # TODO for this to work in Docker, have to create using docker, not bin/kafka-topics.sh
       bin/kafka-topics.sh --list --bootstrap-server localhost:9092 | grep $topic &> /dev/null
       if [ $? == 0 ]; then
         echo "skipping topic $topic, already made"

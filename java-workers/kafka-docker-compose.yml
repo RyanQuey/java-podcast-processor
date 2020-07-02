@@ -5,13 +5,18 @@ services:
     ports:
       - "2181:2181"
   kafka:
+    # set hostname to resolve this error
+    # https://stackoverflow.com/a/38742537/6952495
+    # https://docs.docker.com/compose/compose-file/#extra_hosts
     image: wurstmeister/kafka:2.12-2.5.0
     ports:
-      - "9092"
+      - "9092:9092"
     environment:
       # in prod need to change this if using multiple brokers
       KAFKA_ADVERTISED_HOST_NAME: localhost
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # https://github.com/wurstmeister/kafka-docker#automatically-create-topics
+      KAFKA_CREATE_TOPICS: "queue.podcast-analysis-tool.query-term,queue.podcast-analysis-tool.search-result-json,queue.podcast-analysis-tool.podcast,queue.podcast-analysis-tool.episode"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
   extract-episodes-per-podcasts: 
