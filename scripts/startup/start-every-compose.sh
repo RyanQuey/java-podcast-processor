@@ -8,7 +8,6 @@ fi
 #########################################
 # instructions: 
 # start with bash NOT sh. Currently only works in bash
-# CUrrent status: doesn't work very well, but if you read it multiple times it works ...:(
 #########################################
 
 # for more advanced try/catch stuff, see here https://stackoverflow.com/a/25180186/6952495
@@ -24,6 +23,14 @@ export PROJECT_ROOT_PATH=$parent_path/../..
 export FLASK_DIR="$PROJECT_ROOT_PATH/flask_server"
 export JAVA_WORKERS_DIR="$PROJECT_ROOT_PATH/java-workers"
 
+# set some cli args
+# if first arg is "rebuild" then will rebuild the jar
+rebuild_jar=$1
+
+echo "Rebuilding the jar?"
+echo $rebuild_jar
+
+
 # TODO accept cli flag for always rebuilding
 # first checks if there is an image exists, in which case use Dockerfile.build_from_base. Otherwise, use Dockerfile.base
 # TODO combine those into one, by using args, only difference is specifying the image
@@ -31,7 +38,7 @@ export JAVA_WORKERS_DIR="$PROJECT_ROOT_PATH/java-workers"
 # get from docker images, or load base image from the jar, or build again
 built_image=false
 docker inspect "ryanquey/java-workers:latest" > /dev/null 2>&1 && {
-  echo "ryanquey/java-workers:latest image exists! Just use that"
+  echo "ryanquey/java-workers:latest image exists!"
 
 } || {
   echo "ryanquey/java-workers:latest image does not exist! Check for jar"
@@ -45,6 +52,17 @@ docker inspect "ryanquey/java-workers:latest" > /dev/null 2>&1 && {
     docker image load -i  ${PROJECT_ROOT_PATH:-.}/ryanquey-java-workers-latest.jar
   fi
 } && \
+
+{
+	if [ $built_image != "true" ] && [ $rebuild_jar == "rebuild" ]; then
+    echo "Rebuilding jar"
+    docker build -f $JAVA_WORKERS_DIR/Dockerfile.build_from_base -t "ryanquey/java-workers" $JAVA_WORKERS_DIR
+    built_image=true
+  else 
+    echo "Not rebuilding, just using it"
+  fi
+}
+
 # fire everything up in one docker-compose statement
 # Note that if it is in one docker-compose statement like this, it allows the separate services to talk to one another even though they have separate docker-compose yml files
 docker-compose \

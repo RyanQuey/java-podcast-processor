@@ -20,6 +20,7 @@ import com.ryanquey.podcast.migrations.AMigrationRunner;
 public class CassandraDb {
   static InetSocketAddress cassandraIP;
   
+  public static InventoryMapper inventoryMapper;
   public static CqlSession session;
     
   // InventoryMapper is our class, built off of C* java driver stuff
@@ -41,11 +42,11 @@ public class CassandraDb {
       CqlIdentifier keyspace = CqlIdentifier.fromCql("podcast_analysis_tool");
       CassandraDb.session = CqlSession.builder()
         .withKeyspace(keyspace)
-        //.addContactPoint(cassandraIP)
+        .addContactPoint(cassandraIP)
         .build();
 
       System.out.println("    setting the inventory mapper for DAO");
-      InventoryMapper
+      inventoryMapper = InventoryMapper
         .builder(CassandraDb.session) // calls the builder method we defined in our InventoryMapper class, which is wrapper for InventoryMapperBuilder
         .withDefaultKeyspace("podcast_analysis_tool")
         .build();

@@ -26,8 +26,9 @@ export JAVA_WORKERS_DIR="$project_root_path/java-workers"
 
 docker-compose \
   -f $project_root_path/elassandra-docker-compose.yml \
+  -f $project_root_path/cp-all-in-one-community/docker-compose.yml \
   -f $FLASK_DIR/docker-compose.yml \
-  -f $JAVA_WORKERS_DIR/kafka-docker-compose.yml \
+  -f $JAVA_WORKERS_DIR/docker-compose.yml \
   stop && \
   # rebuild all elasticsearch indices
   echo "ALL STOPPED!"

@@ -91,23 +91,23 @@ public class PodcastByLanguageDaoImpl__MapperGenerated extends DaoBase implement
         podcastByLanguageRecordHelper.validateEntityFields();
       }
       List<CompletionStage<PreparedStatement>> prepareStages = new ArrayList<>();
-      // Prepare the statement for `public abstract com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord findOne(java.lang.String, java.lang.String, java.lang.String) `:
+      // Prepare the statement for `findOne(java.lang.String,java.lang.String,java.lang.String)`:
       SimpleStatement findOneStatement_simple = podcastByLanguageRecordHelper.selectByPrimaryKeyParts(3).build();
-      LOG.debug("[{}] Preparing query `{}` for method public abstract com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord findOne(java.lang.String, java.lang.String, java.lang.String) ",
+      LOG.debug("[{}] Preparing query `{}` for method findOne(java.lang.String,java.lang.String,java.lang.String)",
           context.getSession().getName(),
           findOneStatement_simple.getQuery());
       CompletionStage<PreparedStatement> findOneStatement = prepare(findOneStatement_simple, context);
       prepareStages.add(findOneStatement);
-      // Prepare the statement for `public abstract void create(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord) `:
+      // Prepare the statement for `create(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord)`:
       SimpleStatement createStatement_simple = podcastByLanguageRecordHelper.insert().build();
-      LOG.debug("[{}] Preparing query `{}` for method public abstract void create(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord) ",
+      LOG.debug("[{}] Preparing query `{}` for method create(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord)",
           context.getSession().getName(),
           createStatement_simple.getQuery());
       CompletionStage<PreparedStatement> createStatement = prepare(createStatement_simple, context);
       prepareStages.add(createStatement);
-      // Prepare the statement for `public abstract void save(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord) `:
+      // Prepare the statement for `save(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord)`:
       SimpleStatement saveStatement_simple = SimpleStatement.newInstance(((DefaultUpdate)podcastByLanguageRecordHelper.updateByPrimaryKey()).asCql());
-      LOG.debug("[{}] Preparing query `{}` for method public abstract void save(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord) ",
+      LOG.debug("[{}] Preparing query `{}` for method save(com.ryanquey.podcast.dataClasses.podcast.PodcastByLanguageRecord)",
           context.getSession().getName(),
           saveStatement_simple.getQuery());
       CompletionStage<PreparedStatement> saveStatement = prepare(saveStatement_simple, context);

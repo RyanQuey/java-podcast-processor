@@ -1,9 +1,9 @@
 package com.ryanquey.podcast;
 
 import com.ryanquey.podcast.kafkaMains.KafkaMain;
-import com.ryanquey.podcast.kafkaMains.RunSearchPerTermMain;
-import com.ryanquey.podcast.kafkaMains.ExtractPodcastsPerSearchMain;
-import com.ryanquey.podcast.kafkaMains.ExtractEpisodesPerPodcastMain;
+import com.ryanquey.podcast.kafkaMains.RunSearchPerTerm;
+import com.ryanquey.podcast.kafkaMains.ExtractPodcastsPerSearch;
+import com.ryanquey.podcast.kafkaMains.ExtractEpisodesPerPodcast;
 
 
 public class Main extends KafkaMain {
@@ -20,14 +20,14 @@ public class Main extends KafkaMain {
 
   public static void startConsumer() throws Exception {
 		switch (Main.consumerClass) {
-			case "RunSearchPerTermMain":
-			  RunSearchPerTermMain.startConsumer(); 
+			case "RunSearchPerTerm":
+			  RunSearchPerTerm.startConsumer(); 
 				break;
-			case "ExtractPodcastsPerSearchMain":
-			  ExtractPodcastsPerSearchMain.startConsumer(); 
+			case "ExtractPodcastsPerSearch":
+			  ExtractPodcastsPerSearch.startConsumer(); 
 				break;
-			case "ExtractEpisodesPerPodcastMain":
-			  ExtractEpisodesPerPodcastMain.startConsumer(); 
+			case "ExtractEpisodesPerPodcast":
+			  ExtractEpisodesPerPodcast.startConsumer(); 
 				break;
 			default:
         System.out.println("Invalid arg or no arg, starting ALL OF THEM!");

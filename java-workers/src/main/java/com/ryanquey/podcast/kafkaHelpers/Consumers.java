@@ -43,6 +43,7 @@ public class Consumers {
   // private fields
   private static void setPropertyDefaults (Properties props) {
     String kafkaUrl = System.getenv("KAFKA_URL") != null ? System.getenv("KAFKA_URL") : "localhost:9092";
+    System.out.println("Kafka broker URL: " + kafkaUrl);
     props.setProperty("bootstrap.servers", kafkaUrl);
     props.setProperty("group.id", "test");
     props.setProperty("enable.auto.commit", "false");
@@ -62,9 +63,9 @@ public class Consumers {
     Consumers.setPropertyDefaults(podcastProps);
     Consumers.setPropertyDefaults(episodeProps);
 
-    searchQueryProps.put("value.deserializer", "kafkaHelpers.serializers.SearchQueryDeserializer");
-    podcastProps.put("value.deserializer", "kafkaHelpers.serializers.PodcastDeserializer");
-    episodeProps.put("value.deserializer", "kafkaHelpers.serializers.EpisodeDeserializer");
+    searchQueryProps.setProperty("value.deserializer", "kafkaHelpers.serializers.SearchQueryDeserializer");
+    podcastProps.setProperty("value.deserializer", "kafkaHelpers.serializers.PodcastDeserializer");
+    episodeProps.setProperty("value.deserializer", "kafkaHelpers.serializers.EpisodeDeserializer");
   }
   
    private static String[] searchTypes = {
