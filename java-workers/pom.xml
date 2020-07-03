@@ -5,6 +5,7 @@
   <name>Data Engineering Podcast Analysis Tool</name>
   <packaging>jar</packaging>
   <version>${project-package.version}</version>
+
   <dependencies>
     <!-- http client, used initially so I can do this https://github.com/rometools/rome/issues/276#issuecomment-192755732 Note though that 5.0 is out--> 
     <dependency>
@@ -144,7 +145,6 @@
 	<build>
 		<plugins>
       <!-- https://stackoverflow.com/questions/15013651/using-maven-execexec-with-arguments -->
-      <!-- 
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
@@ -157,11 +157,13 @@
 						<argument>-classpath</argument>
 						<classpath />
 						<argument>${mainClass}</argument>
-						<argument></argument>
+              <!-- overwrite like so: mvn exec:exec -Dargs="run-search-per-term", see https://stackoverflow.com/questions/15013651/using-maven-execexec-with-arguments -->
+              <!-- NOTE needs to use the properties tag in the pom file, or won't be able to overwrite using cmd line args -->
+						<argument>-consumerClass</argument>
+            <argument>${consumerClass}</argument>
 					</arguments>
 				</configuration>
 			</plugin>
-      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -170,7 +172,7 @@
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
-              <mainClass>com.ryanquey.podcast.Main</mainClass>
+              <mainClass>${mainClass}</mainClass>
             </manifest>
           </archive>
         </configuration>
@@ -192,11 +194,13 @@
 			</plugin>
 		</plugins>
 	</build>
+
   <properties>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
-		<java-driver.version>4.6.1</java-driver.version>
+		<java-driver.version>4.7.0</java-driver.version>
 		<project-package.version>0.3.0</project-package.version>
-		<project-package.version>0.3.0</project-package.version>
+    <mainClass>com.ryanquey.podcast.Main</mainClass>
+    <consumerClass>default</consumerClass>
 	</properties>
 </project>

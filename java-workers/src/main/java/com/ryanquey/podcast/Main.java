@@ -7,19 +7,26 @@ import com.ryanquey.podcast.kafkaMains.ExtractEpisodesPerPodcastMain;
 
 
 public class Main extends KafkaMain {
+  static String consumerClass;
 
   private static void processArgs(String[] args) throws Exception {
-    System.out.println("Starting consumer based on first arg: ");     
-    String consumerClass = args[0];
-    System.out.print(consumerClass);     
-		switch (consumerClass) {
-			case "run-search-per-term":
+    System.out.println("Running with options:");     
+    for (String s: args) {
+      System.out.println(s);     
+    }
+    Main.consumerClass = args.length == 0 ? "default" : args[1];
+    System.out.println("Setting consumer based on first arg: " + consumerClass);  
+  }
+
+  public static void startConsumer() throws Exception {
+		switch (Main.consumerClass) {
+			case "RunSearchPerTermMain":
 			  RunSearchPerTermMain.startConsumer(); 
 				break;
-			case "extract-podcasts-per-search":
+			case "ExtractPodcastsPerSearchMain":
 			  ExtractPodcastsPerSearchMain.startConsumer(); 
 				break;
-			case "extract-episodes-per-podcast":
+			case "ExtractEpisodesPerPodcastMain":
 			  ExtractEpisodesPerPodcastMain.startConsumer(); 
 				break;
 			default:
@@ -32,6 +39,7 @@ public class Main extends KafkaMain {
 
   public static void main (String[] args) throws Exception {
     try {
+      processArgs(args);
       // TODO only call this when settings via cmd line args are sent in
       System.out.println("setting up whatever we'll need to interact with Kafka...");
       KafkaMain.setup();
@@ -42,6 +50,10 @@ public class Main extends KafkaMain {
 
     } catch (Exception e) {
       System.out.println("Error in Main:");
+		  e.printStackTrace();
+		  throw e;
+    } catch (Throwable e) {
+      System.out.println("Throwable in Main:");
 		  e.printStackTrace();
 		  throw e;
 

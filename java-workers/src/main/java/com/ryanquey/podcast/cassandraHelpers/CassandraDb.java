@@ -22,7 +22,7 @@ public class CassandraDb {
   
   public static CqlSession session;
     
-  public static InventoryMapper inventoryMapper;
+  // InventoryMapper is our class, built off of C* java driver stuff
 
   public static void initialize () throws Exception {
     try {
@@ -38,14 +38,15 @@ public class CassandraDb {
 
       // TODO try to import ./application.conf and use that?
       System.out.println("    setting the session");
+      CqlIdentifier keyspace = CqlIdentifier.fromCql("podcast_analysis_tool");
       CassandraDb.session = CqlSession.builder()
-        .withKeyspace(CqlIdentifier.fromCql("podcast_analysis_tool"))
+        .withKeyspace(keyspace)
         //.addContactPoint(cassandraIP)
         .build();
 
       System.out.println("    setting the inventory mapper for DAO");
-      inventoryMapper = InventoryMapper
-        .builder(CassandraDb.session)
+      InventoryMapper
+        .builder(CassandraDb.session) // calls the builder method we defined in our InventoryMapper class, which is wrapper for InventoryMapperBuilder
         .withDefaultKeyspace("podcast_analysis_tool")
         .build();
 

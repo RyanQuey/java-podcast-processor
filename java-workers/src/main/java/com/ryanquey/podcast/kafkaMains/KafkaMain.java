@@ -44,7 +44,7 @@ public class KafkaMain {
   }
 
   // if we don't run this, this java package just keeps running
-  private static void closeDb () {
+  private static void closeDb () throws Exception {
     CassandraDb.closeSession();
   }
 
@@ -54,7 +54,7 @@ public class KafkaMain {
   }
 
   // everything to run after the child's specific stuff
-  public static void tearDown () {
+  public static void tearDown () throws Exception {
     // TODO note that this is still not letting process close
     // closes the db process...not sure why necessary TODO
     // https://stackoverflow.com/a/7416103/6952495
