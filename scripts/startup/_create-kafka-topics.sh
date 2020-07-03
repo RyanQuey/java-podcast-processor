@@ -33,21 +33,22 @@ $($test_if_kafka_ready) || {
   # create topics if they don't exist already
   # TODO can just add  --if-not-exists flag...but then Have to use deprecated --zookeeper flag, so who knows
   echo "now creating topics" && \
-
   for topic in $topics
   do
     {
-      # TODO for this to work in Docker, have to create using docker, not bin/kafka-topics.sh
-      bin/kafka-topics.sh --list --bootstrap-server localhost:9092 | grep $topic &> /dev/null
+      docker exec kafka-broker kafka-topics \
+        --list --bootstrap-server localhost:9092 | grep $topic &> /dev/null
       if [ $? == 0 ]; then
         echo "skipping topic $topic, already made"
       else
         echo "creating topic $topic for project" && \
-        bin/kafka-topics.sh --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic $topic
+        # https://docs.confluent.io/current/quickstart/cos-docker-quickstart.html#step-2-create-ak-topics
+        docker exec kafka-broker kafka-topics \
+          --create --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic $topic
       fi
     }
   done && \
 
   # make sure it ran
   echo "What topics do we have now:" && \
-  bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+  docker exec kafka-broker kafka-topics --list --bootstrap-server localhost:9092

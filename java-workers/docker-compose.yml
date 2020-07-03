@@ -1,0 +1,28 @@
+version: "3.8"
+services:
+  run-search-per-term: 
+    image: "ryanquey/java-workers"
+    # cmd to run on startup
+    entrypoint: ["mvn", "exec:exec", "-DconsumerClass='runSearchPerTerm'"]
+    environment:
+      KAFKA_URL: kafka:9092
+      CASSANDRA_URL: seed_node
+  extract-podcasts-per-search:
+    image: "ryanquey/java-workers"
+    # cmd to run on startup
+    entrypoint: ["mvn", "exec:exec", "-DconsumerClass='extractPodcastsPerSearch'"]
+    environment:
+      KAFKA_URL: kafka:9092
+      CASSANDRA_URL: seed_node
+  extract-episodes-per-podcast: 
+    image: "ryanquey/java-workers"
+    # TODO hopefully one day these volumes will mean we don't need to download all the dependencies into the container, particularly for development. 
+    # In prod will just use the custom image. 
+    # See instructions here: https://hub.docker.com/_/maven, .
+    #volumes: 
+    #- ${JAVA_WORKERS_DIR:-.}:/usr/src/podcast_analysis_tool
+    # cmd to run on startup
+    entrypoint: ["mvn", "exec:exec", "-DconsumerClass='extractEpisodesPerPodcast'"]
+    environment:
+      KAFKA_URL: kafka:9092
+      CASSANDRA_URL: seed_node

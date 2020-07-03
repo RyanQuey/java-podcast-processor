@@ -20,9 +20,9 @@ fi
 
 # always base everything relative to this file to make it simple
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-project_root_path=$parent_path/../..
-export FLASK_DIR="$project_root_path/flask_server"
-export JAVA_WORKERS_DIR="$project_root_path/java-workers"
+export PROJECT_ROOT_PATH=$parent_path/../..
+export FLASK_DIR="$PROJECT_ROOT_PATH/flask_server"
+export JAVA_WORKERS_DIR="$PROJECT_ROOT_PATH/java-workers"
 
 # TODO accept cli flag for always rebuilding
 # first checks if there is an image exists, in which case use Dockerfile.build_from_base. Otherwise, use Dockerfile.base
@@ -35,22 +35,23 @@ docker inspect "ryanquey/java-workers:latest" > /dev/null 2>&1 && {
 
 } || {
   echo "ryanquey/java-workers:latest image does not exist! Check for jar"
-  if [ ! -f $project_root_path/ryanquey-java-workers-latest.jar ]; then
+  if [ ! -f $PROJECT_ROOT_PATH/ryanquey-java-workers-latest.jar ]; then
     echo "no jar for ryanquey/java-workers File not found! Building image"
     echo "ryanquey/java-workers File not found! Building image"
     docker build -f $JAVA_WORKERS_DIR/Dockerfile.base -t "ryanquey/java-workers" $JAVA_WORKERS_DIR && \
     built_image=true
   else
     echo "ryanquey/java-workers jar File found! importing image"
-    docker image load -i  ${project_root_path:-.}/ryanquey-java-workers-latest.jar
+    docker image load -i  ${PROJECT_ROOT_PATH:-.}/ryanquey-java-workers-latest.jar
   fi
 } && \
 # fire everything up in one docker-compose statement
 # Note that if it is in one docker-compose statement like this, it allows the separate services to talk to one another even though they have separate docker-compose yml files
 docker-compose \
-  -f $project_root_path/elassandra-docker-compose.yml \
+  -f $PROJECT_ROOT_PATH/elassandra-docker-compose.yml \
+  -f $PROJECT_ROOT_PATH/cp-all-in-one-community/docker-compose.yml \
   -f $FLASK_DIR/docker-compose.yml \
-  -f $JAVA_WORKERS_DIR/kafka-docker-compose.yml \
+  -f $JAVA_WORKERS_DIR/docker-compose.yml \
   up -d && \
   # rebuild all elasticsearch indices
   echo "waiting for Cassandra to be available..." && \
@@ -75,12 +76,11 @@ done && \
   # refresh the es indices based on json files. Only do it this recklessly in dev
   bash $JAVA_WORKERS_DIR/src/main/resources/com/ryanquey/podcast/create_es_indices/rebuild_all_indices.sh && \
 
-  # no need to do this, now can create via env vars passed to docker-compose for kafka
-	# bash _create-kafka-topics.sh && \
+	bash $parent_path/_create-kafka-topics.sh && \
   echo "SUCCESS!"
 	if [ built_image == true ]; then
 		echo "Saving newly built image to jar: "
-		docker image save ryanquey/java-workers:latest -o $project_root_path/ryanquey-java-workers-latest.jar
+		docker image save ryanquey/java-workers:latest -o $PROJECT_ROOT_PATH/ryanquey-java-workers-latest.jar
 	fi
 	# let's go ahead and create the Kafka topics as well
 

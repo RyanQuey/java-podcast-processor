@@ -15,6 +15,9 @@ public class M20200606161500AddPodcastCountToSearchQueriesByTerm {
     } catch (Exception e) {
       System.out.println("migration AddPodcastCountToSearchQueriesByTerm unsuccessful");
       System.out.println(e);
+      if (e.toString().contains("Invalid column name podcast_count because it conflicts with an existing column")) {
+        System.out.println("And that is ok");
+      }
       // this will throw an error every time after the first run, so no worries
     }
   }
