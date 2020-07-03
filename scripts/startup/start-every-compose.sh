@@ -8,6 +8,7 @@ fi
 #########################################
 # instructions: 
 # start with bash NOT sh. Currently only works in bash
+# add arg "rebuild" to rebuild java files into new jar and make new image from that. Also conveniently auto restarts those containers no matter what
 #########################################
 
 # for more advanced try/catch stuff, see here https://stackoverflow.com/a/25180186/6952495
@@ -23,13 +24,18 @@ export PROJECT_ROOT_PATH=$parent_path/../..
 export FLASK_DIR="$PROJECT_ROOT_PATH/flask_server"
 export JAVA_WORKERS_DIR="$PROJECT_ROOT_PATH/java-workers"
 
+
+
+###################################
+# REBUILD THE JAR (if necessary)
+###################################
+
 # set some cli args
 # if first arg is "rebuild" then will rebuild the jar
 rebuild_jar=$1
 
 echo "Rebuilding the jar?"
 echo $rebuild_jar
-
 
 # TODO accept cli flag for always rebuilding
 # first checks if there is an image exists, in which case use Dockerfile.build_from_base. Otherwise, use Dockerfile.base
@@ -38,30 +44,34 @@ echo $rebuild_jar
 # get from docker images, or load base image from the jar, or build again
 built_image=false
 docker inspect "ryanquey/java-workers:latest" > /dev/null 2>&1 && {
-  echo "ryanquey/java-workers:latest image exists!"
+  echo "ryanquey/java-workers:latest image exists! Should we repackage the java code and rebuild the image based off of updated jar??"
 
 } || {
-  echo "ryanquey/java-workers:latest image does not exist! Check for jar"
-  if [ ! -f $PROJECT_ROOT_PATH/ryanquey-java-workers-latest.jar ]; then
+  echo "ryanquey/java-workers:latest image does not exist! Check for tar file for docker image"
+  if [ ! -f $PROJECT_ROOT_PATH/ryanquey-java-workers-latest.tar ]; then
     echo "no jar for ryanquey/java-workers File not found! Building image"
-    echo "ryanquey/java-workers File not found! Building image"
+    echo "ryanquey/java-workers File not found! Building image (runs mvn package as well)"
     docker build -f $JAVA_WORKERS_DIR/Dockerfile.base -t "ryanquey/java-workers" $JAVA_WORKERS_DIR && \
     built_image=true
   else
-    echo "ryanquey/java-workers jar File found! importing image"
-    docker image load -i  ${PROJECT_ROOT_PATH:-.}/ryanquey-java-workers-latest.jar
+    echo "ryanquey/java-workers tar File found! importing image"
+    docker image load -i  ${PROJECT_ROOT_PATH:-.}/ryanquey-java-workers-latest.tar
   fi
 } && \
 
 {
 	if [ $built_image != "true" ] && [ $rebuild_jar == "rebuild" ]; then
-    echo "Rebuilding jar"
+    echo "Rebuilding docker image (runs mvn package as well)"
     docker build -f $JAVA_WORKERS_DIR/Dockerfile.build_from_base -t "ryanquey/java-workers" $JAVA_WORKERS_DIR
     built_image=true
   else 
     echo "Not rebuilding, just using it"
   fi
 }
+
+#################################################
+# START THE DOCKER CONTAINERS with docker-compose
+#################################################
 
 # fire everything up in one docker-compose statement
 # Note that if it is in one docker-compose statement like this, it allows the separate services to talk to one another even though they have separate docker-compose yml files
@@ -91,14 +101,22 @@ while [[ $CASSANDRA_IS_UP == false ]]; do
   
   # if above returns false, will try again
 done && \
+
+  #################################################
+  # SEED C* DB/KAFKA/SAVE THE JAR
+  # 
+  # note: all of this is not as important 
+  # and doesn't stop rest of app from running
+  #################################################
+
   # refresh the es indices based on json files. Only do it this recklessly in dev
   bash $JAVA_WORKERS_DIR/src/main/resources/com/ryanquey/podcast/create_es_indices/rebuild_all_indices.sh && \
 
 	bash $parent_path/_create-kafka-topics.sh && \
   echo "SUCCESS!"
-	if [ built_image == true ]; then
+	if [ $built_image == true ]; then
 		echo "Saving newly built image to jar: "
-		docker image save ryanquey/java-workers:latest -o $PROJECT_ROOT_PATH/ryanquey-java-workers-latest.jar
+		docker image save ryanquey/java-workers:latest -o $PROJECT_ROOT_PATH/ryanquey-java-workers-latest.tar
 	fi
 	# let's go ahead and create the Kafka topics as well
 

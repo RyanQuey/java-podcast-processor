@@ -99,7 +99,9 @@ public class PodcastByLanguageRecord extends PodcastBase {
   public void saveAndAppendFoundBy () throws Exception {
     System.out.println("0000000000000000000000000");
     System.out.println("about to persist podcast");
-    Term ts = CassandraDb.getTimestamp();
+    // not working in Elassandra
+    // Term ts = CassandraDb.getTimestamp();
+    String ts = CassandraDb.getTimestampCQL();
 
     // currently assuming there'll only be one on a given Podcast
     // TODO allow if multiple
@@ -137,7 +139,9 @@ public class PodcastByLanguageRecord extends PodcastBase {
       .setColumn("author", literal(this.getAuthor()))
       //.setColumn("language", literal(this.getLanguage()))
       .setColumn("website_url", literal(this.getWebsiteUrl()))
-      .setColumn("updated_at", ts)
+      // not working in Elassandra
+      //.setColumn("updated_at", ts)
+      .setColumn("updated_at", raw(ts))
       // only update this unique record, so set by compound primary key
       .whereColumn("language").isEqualTo(literal(this.getLanguage()))
       .whereColumn("feed_url").isEqualTo(literal(this.getFeedUrl()))

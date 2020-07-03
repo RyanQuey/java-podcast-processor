@@ -97,85 +97,85 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
       target = target.set("episode_guid", entity.getEpisodeGuid(), String.class);
     }
 
-    if (entity.getSummary() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("summary", entity.getSummary(), String.class);
-    }
-
-    if (entity.getPodcastWebsiteUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("podcast_website_url", entity.getPodcastWebsiteUrl(), String.class);
-    }
-
-    if (entity.getDuration() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("duration", entity.getDuration(), CqlDuration.class);
-    }
-
-    if (entity.getSubtitle() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("subtitle", entity.getSubtitle(), String.class);
-    }
-
-    if (entity.getOrderNum() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("order_num", entity.getOrderNum(), Integer.class);
-    }
-
-    if (entity.getImageUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("image_url", entity.getImageUrl(), String.class);
-    }
-
-    if (entity.getEpisodeType() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("episode_type", entity.getEpisodeType(), String.class);
-    }
-
-    if (entity.getEpisodeNum() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("episode_num", entity.getEpisodeNum(), Integer.class);
-    }
-
-    if (entity.getSeasonNum() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("season_num", entity.getSeasonNum(), Integer.class);
-    }
-
-    if (entity.getTitle() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("title", entity.getTitle(), String.class);
-    }
-
     if (entity.getAuthor() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("author", entity.getAuthor(), String.class);
-    }
-
-    if (entity.getKeywords() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("keywords", entity.getKeywords(), GENERIC_TYPE);
-    }
-
-    target = target.setBoolean("explicit", entity.isExplicit());
-
-    target = target.setBoolean("closed_captioned", entity.isClosedCaptioned());
-
-    if (entity.getUpdatedAt() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("updated_at", entity.getUpdatedAt(), Instant.class);
-    }
-
-    if (entity.getEpisodeUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("episode_url", entity.getEpisodeUrl(), String.class);
-    }
-
-    if (entity.getDescription() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("description", entity.getDescription(), String.class);
-    }
-
-    if (entity.getContent() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("content", entity.getContent(), String.class);
     }
 
     if (entity.getComments() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("comments", entity.getComments(), String.class);
     }
 
+    if (entity.getContent() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("content", entity.getContent(), String.class);
+    }
+
+    if (entity.getDescription() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("description", entity.getDescription(), String.class);
+    }
+
+    if (entity.getDuration() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("duration", entity.getDuration(), CqlDuration.class);
+    }
+
+    if (entity.getEpisodeNum() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("episode_num", entity.getEpisodeNum(), Integer.class);
+    }
+
+    if (entity.getEpisodeType() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("episode_type", entity.getEpisodeType(), String.class);
+    }
+
     if (entity.getEpisodeUpdatedDate() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("episode_updated_date", entity.getEpisodeUpdatedDate(), LocalDate.class);
+    }
+
+    if (entity.getEpisodeUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("episode_url", entity.getEpisodeUrl(), String.class);
+    }
+
+    if (entity.getImageUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("image_url", entity.getImageUrl(), String.class);
+    }
+
+    if (entity.getKeywords() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("keywords", entity.getKeywords(), GENERIC_TYPE);
+    }
+
+    if (entity.getOrderNum() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("order_num", entity.getOrderNum(), Integer.class);
+    }
+
+    if (entity.getPodcastWebsiteUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("podcast_website_url", entity.getPodcastWebsiteUrl(), String.class);
     }
 
     if (entity.getPublishedDate() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("published_date", entity.getPublishedDate(), LocalDate.class);
     }
+
+    if (entity.getSeasonNum() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("season_num", entity.getSeasonNum(), Integer.class);
+    }
+
+    if (entity.getSubtitle() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("subtitle", entity.getSubtitle(), String.class);
+    }
+
+    if (entity.getSummary() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("summary", entity.getSummary(), String.class);
+    }
+
+    if (entity.getTitle() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("title", entity.getTitle(), String.class);
+    }
+
+    if (entity.getUpdatedAt() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("updated_at", entity.getUpdatedAt(), Instant.class);
+    }
+
+    target = target.setBoolean("closed_captioned", entity.isClosedCaptioned());
+
+    target = target.setBoolean("explicit", entity.isExplicit());
 
     return target;
   }
@@ -190,47 +190,47 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
 
     returnValue.setEpisodeGuid(source.get("episode_guid", String.class));
 
-    returnValue.setSummary(source.get("summary", String.class));
-
-    returnValue.setPodcastWebsiteUrl(source.get("podcast_website_url", String.class));
-
-    returnValue.setDuration(source.get("duration", CqlDuration.class));
-
-    returnValue.setSubtitle(source.get("subtitle", String.class));
-
-    returnValue.setOrderNum(source.get("order_num", Integer.class));
-
-    returnValue.setImageUrl(source.get("image_url", String.class));
-
-    returnValue.setEpisodeType(source.get("episode_type", String.class));
-
-    returnValue.setEpisodeNum(source.get("episode_num", Integer.class));
-
-    returnValue.setSeasonNum(source.get("season_num", Integer.class));
-
-    returnValue.setTitle(source.get("title", String.class));
-
     returnValue.setAuthor(source.get("author", String.class));
-
-    returnValue.setKeywords(source.get("keywords", GENERIC_TYPE));
-
-    returnValue.setExplicit(source.getBoolean("explicit"));
-
-    returnValue.setClosedCaptioned(source.getBoolean("closed_captioned"));
-
-    returnValue.setUpdatedAt(source.get("updated_at", Instant.class));
-
-    returnValue.setEpisodeUrl(source.get("episode_url", String.class));
-
-    returnValue.setDescription(source.get("description", String.class));
-
-    returnValue.setContent(source.get("content", String.class));
 
     returnValue.setComments(source.get("comments", String.class));
 
+    returnValue.setContent(source.get("content", String.class));
+
+    returnValue.setDescription(source.get("description", String.class));
+
+    returnValue.setDuration(source.get("duration", CqlDuration.class));
+
+    returnValue.setEpisodeNum(source.get("episode_num", Integer.class));
+
+    returnValue.setEpisodeType(source.get("episode_type", String.class));
+
     returnValue.setEpisodeUpdatedDate(source.get("episode_updated_date", LocalDate.class));
 
+    returnValue.setEpisodeUrl(source.get("episode_url", String.class));
+
+    returnValue.setImageUrl(source.get("image_url", String.class));
+
+    returnValue.setKeywords(source.get("keywords", GENERIC_TYPE));
+
+    returnValue.setOrderNum(source.get("order_num", Integer.class));
+
+    returnValue.setPodcastWebsiteUrl(source.get("podcast_website_url", String.class));
+
     returnValue.setPublishedDate(source.get("published_date", LocalDate.class));
+
+    returnValue.setSeasonNum(source.get("season_num", Integer.class));
+
+    returnValue.setSubtitle(source.get("subtitle", String.class));
+
+    returnValue.setSummary(source.get("summary", String.class));
+
+    returnValue.setTitle(source.get("title", String.class));
+
+    returnValue.setUpdatedAt(source.get("updated_at", Instant.class));
+
+    returnValue.setClosedCaptioned(source.getBoolean("closed_captioned"));
+
+    returnValue.setExplicit(source.getBoolean("explicit"));
     return returnValue;
   }
 
@@ -244,27 +244,27 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
         .value("podcast_api", QueryBuilder.bindMarker("podcast_api"))
         .value("podcast_api_id", QueryBuilder.bindMarker("podcast_api_id"))
         .value("episode_guid", QueryBuilder.bindMarker("episode_guid"))
-        .value("summary", QueryBuilder.bindMarker("summary"))
-        .value("podcast_website_url", QueryBuilder.bindMarker("podcast_website_url"))
-        .value("duration", QueryBuilder.bindMarker("duration"))
-        .value("subtitle", QueryBuilder.bindMarker("subtitle"))
-        .value("order_num", QueryBuilder.bindMarker("order_num"))
-        .value("image_url", QueryBuilder.bindMarker("image_url"))
-        .value("episode_type", QueryBuilder.bindMarker("episode_type"))
-        .value("episode_num", QueryBuilder.bindMarker("episode_num"))
-        .value("season_num", QueryBuilder.bindMarker("season_num"))
-        .value("title", QueryBuilder.bindMarker("title"))
         .value("author", QueryBuilder.bindMarker("author"))
-        .value("keywords", QueryBuilder.bindMarker("keywords"))
-        .value("explicit", QueryBuilder.bindMarker("explicit"))
-        .value("closed_captioned", QueryBuilder.bindMarker("closed_captioned"))
-        .value("updated_at", QueryBuilder.bindMarker("updated_at"))
-        .value("episode_url", QueryBuilder.bindMarker("episode_url"))
-        .value("description", QueryBuilder.bindMarker("description"))
-        .value("content", QueryBuilder.bindMarker("content"))
         .value("comments", QueryBuilder.bindMarker("comments"))
+        .value("content", QueryBuilder.bindMarker("content"))
+        .value("description", QueryBuilder.bindMarker("description"))
+        .value("duration", QueryBuilder.bindMarker("duration"))
+        .value("episode_num", QueryBuilder.bindMarker("episode_num"))
+        .value("episode_type", QueryBuilder.bindMarker("episode_type"))
         .value("episode_updated_date", QueryBuilder.bindMarker("episode_updated_date"))
-        .value("published_date", QueryBuilder.bindMarker("published_date"));
+        .value("episode_url", QueryBuilder.bindMarker("episode_url"))
+        .value("image_url", QueryBuilder.bindMarker("image_url"))
+        .value("keywords", QueryBuilder.bindMarker("keywords"))
+        .value("order_num", QueryBuilder.bindMarker("order_num"))
+        .value("podcast_website_url", QueryBuilder.bindMarker("podcast_website_url"))
+        .value("published_date", QueryBuilder.bindMarker("published_date"))
+        .value("season_num", QueryBuilder.bindMarker("season_num"))
+        .value("subtitle", QueryBuilder.bindMarker("subtitle"))
+        .value("summary", QueryBuilder.bindMarker("summary"))
+        .value("title", QueryBuilder.bindMarker("title"))
+        .value("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .value("closed_captioned", QueryBuilder.bindMarker("closed_captioned"))
+        .value("explicit", QueryBuilder.bindMarker("explicit"));
   }
 
   public Select selectByPrimaryKeyParts(int parameterCount) {
@@ -291,27 +291,27 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
         .column("podcast_api")
         .column("podcast_api_id")
         .column("episode_guid")
-        .column("summary")
-        .column("podcast_website_url")
-        .column("duration")
-        .column("subtitle")
-        .column("order_num")
-        .column("image_url")
-        .column("episode_type")
-        .column("episode_num")
-        .column("season_num")
-        .column("title")
         .column("author")
-        .column("keywords")
-        .column("explicit")
-        .column("closed_captioned")
-        .column("updated_at")
-        .column("episode_url")
-        .column("description")
-        .column("content")
         .column("comments")
+        .column("content")
+        .column("description")
+        .column("duration")
+        .column("episode_num")
+        .column("episode_type")
         .column("episode_updated_date")
-        .column("published_date");
+        .column("episode_url")
+        .column("image_url")
+        .column("keywords")
+        .column("order_num")
+        .column("podcast_website_url")
+        .column("published_date")
+        .column("season_num")
+        .column("subtitle")
+        .column("summary")
+        .column("title")
+        .column("updated_at")
+        .column("closed_captioned")
+        .column("explicit");
   }
 
   public DeleteSelection deleteStart() {
@@ -347,27 +347,27 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
         ? QueryBuilder.update(tableId)
         : QueryBuilder.update(keyspaceId, tableId);
     return ((DefaultUpdate)update
-        .setColumn("summary", QueryBuilder.bindMarker("summary"))
-        .setColumn("podcast_website_url", QueryBuilder.bindMarker("podcast_website_url"))
-        .setColumn("duration", QueryBuilder.bindMarker("duration"))
-        .setColumn("subtitle", QueryBuilder.bindMarker("subtitle"))
-        .setColumn("order_num", QueryBuilder.bindMarker("order_num"))
-        .setColumn("image_url", QueryBuilder.bindMarker("image_url"))
-        .setColumn("episode_type", QueryBuilder.bindMarker("episode_type"))
-        .setColumn("episode_num", QueryBuilder.bindMarker("episode_num"))
-        .setColumn("season_num", QueryBuilder.bindMarker("season_num"))
-        .setColumn("title", QueryBuilder.bindMarker("title"))
         .setColumn("author", QueryBuilder.bindMarker("author"))
-        .setColumn("keywords", QueryBuilder.bindMarker("keywords"))
-        .setColumn("explicit", QueryBuilder.bindMarker("explicit"))
-        .setColumn("closed_captioned", QueryBuilder.bindMarker("closed_captioned"))
-        .setColumn("updated_at", QueryBuilder.bindMarker("updated_at"))
-        .setColumn("episode_url", QueryBuilder.bindMarker("episode_url"))
-        .setColumn("description", QueryBuilder.bindMarker("description"))
-        .setColumn("content", QueryBuilder.bindMarker("content"))
         .setColumn("comments", QueryBuilder.bindMarker("comments"))
+        .setColumn("content", QueryBuilder.bindMarker("content"))
+        .setColumn("description", QueryBuilder.bindMarker("description"))
+        .setColumn("duration", QueryBuilder.bindMarker("duration"))
+        .setColumn("episode_num", QueryBuilder.bindMarker("episode_num"))
+        .setColumn("episode_type", QueryBuilder.bindMarker("episode_type"))
         .setColumn("episode_updated_date", QueryBuilder.bindMarker("episode_updated_date"))
-        .setColumn("published_date", QueryBuilder.bindMarker("published_date")));
+        .setColumn("episode_url", QueryBuilder.bindMarker("episode_url"))
+        .setColumn("image_url", QueryBuilder.bindMarker("image_url"))
+        .setColumn("keywords", QueryBuilder.bindMarker("keywords"))
+        .setColumn("order_num", QueryBuilder.bindMarker("order_num"))
+        .setColumn("podcast_website_url", QueryBuilder.bindMarker("podcast_website_url"))
+        .setColumn("published_date", QueryBuilder.bindMarker("published_date"))
+        .setColumn("season_num", QueryBuilder.bindMarker("season_num"))
+        .setColumn("subtitle", QueryBuilder.bindMarker("subtitle"))
+        .setColumn("summary", QueryBuilder.bindMarker("summary"))
+        .setColumn("title", QueryBuilder.bindMarker("title"))
+        .setColumn("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .setColumn("closed_captioned", QueryBuilder.bindMarker("closed_captioned"))
+        .setColumn("explicit", QueryBuilder.bindMarker("explicit")));
   }
 
   @Override
@@ -402,27 +402,27 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
     expectedCqlNames.add(CqlIdentifier.fromCql("podcast_api"));
     expectedCqlNames.add(CqlIdentifier.fromCql("podcast_api_id"));
     expectedCqlNames.add(CqlIdentifier.fromCql("episode_guid"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("summary"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("podcast_website_url"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("duration"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("subtitle"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("order_num"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("image_url"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("episode_type"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("episode_num"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("season_num"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("title"));
     expectedCqlNames.add(CqlIdentifier.fromCql("author"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("keywords"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("explicit"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("closed_captioned"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("updated_at"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("episode_url"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("description"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("content"));
     expectedCqlNames.add(CqlIdentifier.fromCql("comments"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("content"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("description"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("duration"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("episode_num"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("episode_type"));
     expectedCqlNames.add(CqlIdentifier.fromCql("episode_updated_date"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("episode_url"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("image_url"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("keywords"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("order_num"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("podcast_website_url"));
     expectedCqlNames.add(CqlIdentifier.fromCql("published_date"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("season_num"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("subtitle"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("summary"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("title"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("updated_at"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("closed_captioned"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("explicit"));
     Optional<TableMetadata> tableMetadata = keyspace.flatMap(v -> v.getTable(tableId));
     Optional<UserDefinedType> userDefinedType = keyspace.flatMap(v -> v.getUserDefinedType(tableId));
     if (tableMetadata.isPresent()) {
@@ -451,11 +451,11 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_num"), GENERIC_TYPE1);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("explicit"), GENERIC_TYPE2);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_updated_date"), GENERIC_TYPE3);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("comments"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("title"), GENERIC_TYPE4);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("comments"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE4);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("author"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("duration"), GENERIC_TYPE5);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("author"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("season_num"), GENERIC_TYPE1);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_guid"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("podcast_api"), GENERIC_TYPE4);
@@ -469,8 +469,8 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("image_url"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_type"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("summary"), GENERIC_TYPE4);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_url"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("order_num"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_url"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("published_date"), GENERIC_TYPE3);
       List<String> missingTableTypes = findTypeMismatches(expectedTypesPerColumn, tableMetadata.get().getColumns(), context.getSession().getContext().getCodecRegistry());
       throwMissingTableTypesIfNotEmpty(missingTableTypes, keyspaceId, tableId, entityClassName);
@@ -487,11 +487,11 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_num"), GENERIC_TYPE1);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("explicit"), GENERIC_TYPE2);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_updated_date"), GENERIC_TYPE3);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("comments"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("title"), GENERIC_TYPE4);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("comments"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("description"), GENERIC_TYPE4);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("author"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("duration"), GENERIC_TYPE5);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("author"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("season_num"), GENERIC_TYPE1);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_guid"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("podcast_api"), GENERIC_TYPE4);
@@ -505,8 +505,8 @@ public class EpisodeByPodcastRecordHelper__MapperGenerated extends EntityHelperB
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("image_url"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_type"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("summary"), GENERIC_TYPE4);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_url"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("order_num"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("episode_url"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("published_date"), GENERIC_TYPE3);
       List<CqlIdentifier> expectedColumns = userDefinedType.get().getFieldNames();
       List<DataType> expectedTypes = userDefinedType.get().getFieldTypes();

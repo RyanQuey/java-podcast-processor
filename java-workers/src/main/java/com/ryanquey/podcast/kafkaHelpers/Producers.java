@@ -52,9 +52,10 @@ public class Producers {
     Producers.setPropertyDefaults(podcastProps);
     Producers.setPropertyDefaults(episodeProps);
     
-    searchQueryProps.setProperty("value.serializer", "kafkaHelpers.serializers.SearchQuerySerializer");
-    podcastProps.setProperty("value.serializer", "kafkaHelpers.serializers.PodcastSerializer");
-    episodeProps.setProperty("value.serializer", "kafkaHelpers.serializers.EpisodeSerializer");
+    // TODO do something so if this doesn't import, java can prevent the build right away
+    searchQueryProps.setProperty("value.serializer", "com.ryanquey.podcast.kafkaHelpers.serializers.SearchQuerySerializer");
+    podcastProps.setProperty("value.serializer", "com.ryanquey.podcast.kafkaHelpers.serializers.PodcastSerializer");
+    episodeProps.setProperty("value.serializer", "com.ryanquey.podcast.kafkaHelpers.serializers.EpisodeSerializer");
   }
 
   static Producer<String, String> stringProducer = new KafkaProducer<>(stringProps);

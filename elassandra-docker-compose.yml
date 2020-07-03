@@ -20,6 +20,11 @@ services:
       resources: 
         limits: 
           memory: 2000M
+    healthcheck:
+      start_period: 31s
+      interval: 10s
+      timeout: 15s
+      retries: 10
           
   node:
     image: "docker.io/strapdata/elassandra:6.8.4.3"

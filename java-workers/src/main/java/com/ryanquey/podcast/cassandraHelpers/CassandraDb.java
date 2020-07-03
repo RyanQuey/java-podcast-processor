@@ -43,6 +43,7 @@ public class CassandraDb {
       CassandraDb.session = CqlSession.builder()
         .withKeyspace(keyspace)
         .addContactPoint(cassandraIP)
+        .withLocalDatacenter("DC1") // now required since we're setting contact points
         .build();
 
       System.out.println("    setting the inventory mapper for DAO");
@@ -55,9 +56,12 @@ public class CassandraDb {
       System.out.println("    running db migrations");
       AMigrationRunner.runMigrations();
       // TODO they don't recommend changing keyspace during a run. Not sure when you're supposed to set it htough
+      // NOTE I think I don't need this anymore,, because we're setting keyspace above
       session.execute("USE podcast_analysis_tool;");
     } catch (Exception e) {
+      // TODO remove this try catch, we'll just catch later
       e.printStackTrace();
+      throw e;
     }
   }
 
@@ -86,8 +90,15 @@ public class CassandraDb {
     // see https://docs.datastax.com/en/developer/java-driver/4.6/manual/core/#cql-to-java-type-mapping
     //return TypeCodecs.TypeCodec(Instant.now()); 
     // return LocalDateTime.now();// .toDate(); 
+    // from this com.datastax.oss.driver.api.querybuilder.QueryBuilder.
+    // returns a Term
     return currentTimestamp();
     //return TypeCodecs.TypeCodec(Instant.now()); 
+  }
+
+  // used raw, so there's no checking by compiler, but let's give it a try
+  public static String getTimestampCQL() {
+    return "toTimestamp(now())";
   }
 
   // string that matches format of cassandra's timestamp (Cassandra allows optional T letter)

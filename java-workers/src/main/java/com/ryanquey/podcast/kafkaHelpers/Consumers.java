@@ -63,9 +63,10 @@ public class Consumers {
     Consumers.setPropertyDefaults(podcastProps);
     Consumers.setPropertyDefaults(episodeProps);
 
-    searchQueryProps.setProperty("value.deserializer", "kafkaHelpers.serializers.SearchQueryDeserializer");
-    podcastProps.setProperty("value.deserializer", "kafkaHelpers.serializers.PodcastDeserializer");
-    episodeProps.setProperty("value.deserializer", "kafkaHelpers.serializers.EpisodeDeserializer");
+    // TODO do something so if this doesn't import, java can prevent the build right away
+    searchQueryProps.setProperty("value.deserializer", "com.ryanquey.podcast.kafkaHelpers.serializers.SearchQueryDeserializer");
+    podcastProps.setProperty("value.deserializer", "com.ryanquey.podcast.kafkaHelpers.serializers.PodcastDeserializer");
+    episodeProps.setProperty("value.deserializer", "com.ryanquey.podcast.kafkaHelpers.serializers.EpisodeDeserializer");
   }
   
    private static String[] searchTypes = {
@@ -89,8 +90,11 @@ public class Consumers {
   private static String[] logos = {"\\", "|", "/", "-"};
   private static void spin (String topic) {
     try {
-      System.out.print(Strings.repeat("\b", 12));
-      System.out.print("polling " + topic + "..." + logos[spinnerIndex]);
+      String output = "polling " + topic + "..." + logos[spinnerIndex];
+      // clear the last output
+      System.out.print(Strings.repeat("\b", output.length()));
+      System.out.print(output);
+      // spin the spinner
       spinnerIndex ++;
       if (spinnerIndex == logos.length) {
         spinnerIndex = 0;
@@ -106,7 +110,7 @@ public class Consumers {
   // currently runs each term with all the different search types to see what gets returned
   // After a search_query is persisted to database, send record to queue.podcast-analysis-tool.search-query-with-results
   // TODO rename all these to reflect what topic it consumes, and to show what it does. Maybe runSearchQueryForTerm () {}
-  public static void initializeQueryTermConsumer() throws Exception {
+  public static void runSearchPerTermConsumer() throws Exception {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<String, String>(Consumers.stringProps);
     String topic = "queue.podcast-analysis-tool.query-term";
     consumer.subscribe(Arrays.asList(topic));
@@ -116,6 +120,7 @@ public class Consumers {
       while (Consumers.running) {
         // ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
         Consumers.spin(topic);
+        // check once every second
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(1000));
         boolean successful = true;
 
@@ -174,7 +179,7 @@ public class Consumers {
   }
   
   // Go through results,  and send podcasts feed_url to queue.podcast_analysis_tool.feed_url
-  public static void initializeSearchResultsJsonConsumer() throws Exception {
+  public static void extractPodcastsPerSearchConsumer() throws Exception {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Consumers.stringProps);
     String topic = "queue.podcast-analysis-tool.search-results-json";
     consumer.subscribe(Arrays.asList(topic));
@@ -197,6 +202,7 @@ public class Consumers {
       // TODO this go before or after the latch?
       while (Consumers.running) {
         Consumers.spin(topic);
+        // check once every two seconds (why slower? Can't remember...)
         ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(2000));
         boolean successful = true;
 
@@ -248,7 +254,7 @@ public class Consumers {
     // System.exit(0);
   }
 
-  public static void initializePodcastConsumer() throws Exception {
+  public static void extractEpisodesPerPodcastConsumer() throws Exception {
     KafkaConsumer<String, Podcast> consumer = new KafkaConsumer<>(Consumers.podcastProps);
     String topic = "queue.podcast-analysis-tool.podcast";
     consumer.subscribe(Arrays.asList(topic));
@@ -403,24 +409,24 @@ public class Consumers {
     // consider running each in separate thread?
     CompletableFuture.runAsync(() -> {
       try {
-        System.out.println("initializeQueryTermConsumer:");
-        Consumers.initializeQueryTermConsumer();
+        System.out.println("runSearchPerTermConsumer:");
+        Consumers.runSearchPerTermConsumer();
       } catch (Exception e) {
       }
     });
     // consider running each in separate thread?
     CompletableFuture.runAsync(() -> {
       try {
-        System.out.println("initializeSearchResultsJsonConsumer:");
-        Consumers.initializeSearchResultsJsonConsumer();
+        System.out.println("extractPodcastsPerSearchConsumer:");
+        Consumers.extractPodcastsPerSearchConsumer();
       } catch (Exception e) {
       }
     });
     // consider running each in separate thread?
     CompletableFuture.runAsync(() -> {
       try {
-        System.out.println("initializePodcastConsumer:");
-        Consumers.initializePodcastConsumer();
+        System.out.println("extractEpisodesPerPodcastConsumer:");
+        Consumers.extractEpisodesPerPodcastConsumer();
       } catch (Exception e) {
       }
     });

@@ -2,11 +2,12 @@
 # to build, run: 
 #   docker build -f $HOME/projects/java-podcast-processor/Dockerfile.build_from_base -t "ryanquey/java-workers" $HOME/projects/java-podcast-processor
 #   docker image save ryanquey/java-workers:latest -o $HOME/projects/java-podcast-processor/ryanquey-java-workers-latest.jar
+#
+#   see start-every-compose for example
+#
 # this will overwrite that image
 FROM ryanquey/java-workers
 COPY ${JAVA_WORKERS_DIR:-.} /usr/src/podcast_analysis_tool
 WORKDIR /usr/src/podcast_analysis_tool
 RUN mvn clean package
-CMD "dir ./target"
-# TODO just have an entrypoint script, and then docker compose cna send args to that file
-# CMD "java -jar ./target/run-search-per-term-0.3.0.jar"
+CMD "dir ./target # basically, not doing anything currently. Depends on the script given in docker-compose"

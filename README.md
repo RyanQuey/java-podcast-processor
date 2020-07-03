@@ -2,8 +2,14 @@
 Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using Airflow, Kafka, Spark, and Cassandra. Some of these tools are a little overkill for this project...but it's a learning project too, so just having fun with it
 See README files in individual directories for how to use (though some or all need updating)
 
-Start everything with: `./scripts/startup/start-every-compose.sh`
+## Start Everything
+- Start everything with: `./scripts/startup/start-every-compose.sh`
+- Open up React Gatsby project (serving searchkit) via flask app at http://www.local.test:5000/
 
+## Development
+- If made changes to java code and want to rebuild what docker is running, run
+
+    `./scripts/startup/start-every-compose.sh rebuild`
 
 # Released under MIT License
 

@@ -3,7 +3,7 @@ services:
   run-search-per-term: 
     image: "ryanquey/java-workers"
     # cmd to run on startup
-    entrypoint: ["mvn", "exec:exec", "-DconsumerClass='RunSearchPerTerm'"]
+    entrypoint: ["mvn", "exec:exec", "-DconsumerClass=RunSearchPerTerm"]
     environment:
       KAFKA_URL: 'kafka-broker:29092'
       CASSANDRA_URL: 'seed_node'
@@ -13,7 +13,7 @@ services:
   extract-podcasts-per-search:
     image: "ryanquey/java-workers"
     # cmd to run on startup
-    entrypoint: ["mvn", "exec:exec", "-DconsumerClass='ExtractPodcastsPerSearch'"]
+    entrypoint: ["mvn", "exec:exec", "-DconsumerClass=ExtractPodcastsPerSearch"]
     environment:
       KAFKA_URL: 'kafka-broker:29092'
       CASSANDRA_URL: 'seed_node'
@@ -28,7 +28,7 @@ services:
     #volumes: 
     #- ${JAVA_WORKERS_DIR:-.}:/usr/src/podcast_analysis_tool
     # cmd to run on startup
-    entrypoint: ["mvn", "exec:exec", "-DconsumerClass='ExtractEpisodesPerPodcast'"]
+    entrypoint: ["mvn", "exec:exec", "-DconsumerClass=ExtractEpisodesPerPodcast"]
     environment:
       KAFKA_URL: 'kafka-broker:29092'
       CASSANDRA_URL: 'seed_node'

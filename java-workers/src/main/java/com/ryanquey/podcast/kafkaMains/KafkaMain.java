@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.lang.System;
 import java.lang.Exception;
+import java.util.concurrent.TimeUnit;
 // import java.io.IOException; 
 
 // local imports
@@ -50,7 +51,31 @@ public class KafkaMain {
 
   // everything to run before the child's specific stuff
   public static void setup () throws Exception {
-    CassandraDb.initialize(); 
+    // given that we don't know if the external Cassandra db is up yet ( especially if it's within another docker container), allow some retries
+    Integer limit = 25;
+    boolean ready = false;
+    Exception error;
+
+    for(int i = 0; i < limit; ++i) {
+      try {
+        CassandraDb.initialize(); 
+        break;
+
+      } catch (Exception e) {
+        // TODO more specific error handling. C* will throw a java.nio.channels.ClosedChannelException I think. 
+        // I don't know about Kafka
+
+        error = e;
+        System.out.println(e);
+
+        System.out.println("Failed to connect to Kafka/C* " + i + 1 + "times. Trying again...");
+        TimeUnit.SECONDS.sleep(15);
+
+        if (i + 1 == limit) {
+          throw error;
+        }
+      }
+    }
   }
 
   // everything to run after the child's specific stuff
@@ -66,6 +91,7 @@ public class KafkaMain {
   // make sure this is overridden in the child classes
   // This can be used as a main class though as well, as is
   public static void main (String[] args) throws Exception {
+
     try {
       // TODO only call this when settings via cmd line args are sent in
       setup();
