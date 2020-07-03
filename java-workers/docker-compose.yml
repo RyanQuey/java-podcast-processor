@@ -5,7 +5,7 @@ services:
     # cmd to run on startup
     entrypoint: ["mvn", "exec:exec", "-DconsumerClass='RunSearchPerTerm'"]
     environment:
-      KAFKA_URL: 'kafka-broker:9092'
+      KAFKA_URL: 'kafka-broker:29092'
       CASSANDRA_URL: 'seed_node'
     depends_on:
       - kafka-broker
@@ -15,7 +15,7 @@ services:
     # cmd to run on startup
     entrypoint: ["mvn", "exec:exec", "-DconsumerClass='ExtractPodcastsPerSearch'"]
     environment:
-      KAFKA_URL: 'kafka-broker:9092'
+      KAFKA_URL: 'kafka-broker:29092'
       CASSANDRA_URL: 'seed_node'
     depends_on:
       - kafka-broker
@@ -30,7 +30,7 @@ services:
     # cmd to run on startup
     entrypoint: ["mvn", "exec:exec", "-DconsumerClass='ExtractEpisodesPerPodcast'"]
     environment:
-      KAFKA_URL: 'kafka-broker:9092'
+      KAFKA_URL: 'kafka-broker:29092'
       CASSANDRA_URL: 'seed_node'
     depends_on:
       - kafka-broker
