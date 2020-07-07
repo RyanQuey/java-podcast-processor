@@ -1,5 +1,9 @@
 # java-podcast-processor
-Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using [Airflow](https://github.com/apache/airflow), [Kafka](https://kafka.apache.org/), [Spark](https://spark.apache.org/), and [Cassandra](https://cassandra.apache.org/). Results displayed using a [searchkit](https://github.com/searchkit/searchkit) interface over [React](https://reactjs.org/) (built using [Gatsby](https://www.gatsbyjs.org/)), served by a Python [Flask app](https://flask.palletsprojects.com/). 
+Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using [Airflow](https://github.com/apache/airflow), [Kafka](https://kafka.apache.org/), [Spark](https://spark.apache.org/), and [Cassandra](https://cassandra.apache.org/). The particular Cassandra distribution used is [Elassandra](https://www.elassandra.io/), which allows seamless integration with [Elasticsearch](https://www.elastic.co/). 
+
+Workers are built into separate Java jars and consume and produce to Kafka, in order to distribute the workload across the cluster. Everything is built on top of [Docker containers](https://www.docker.com/) and linked together using docker-compose.
+
+Results displayed using a [searchkit](https://github.com/searchkit/searchkit) interface over [React](https://reactjs.org/) (built using [Gatsby](https://www.gatsbyjs.org/)), served by a Python [Flask app](https://flask.palletsprojects.com/). 
 
 See README files in subdirectories for how to setup and use this tool (though some are out of date).
 
