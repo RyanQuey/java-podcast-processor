@@ -7,7 +7,7 @@ Results displayed using a [searchkit](https://github.com/searchkit/searchkit) in
 
 See README files in subdirectories for how to setup and use this tool (though some are out of date).
 
-For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-zeppelin-notebooks).
+For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-zeppelin-notebooks). For Airflow DAGs source code, see [here](https://github.com/RyanQuey/airflow-with-podcasts).
 
 ![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/wh_Podcast%20Analysis%20Tool.png)
 
