@@ -1,8 +1,20 @@
 # java-podcast-processor
-Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using Airflow, Kafka, Spark, and Cassandra. Some of these tools are a little overkill for this project...but it's a learning project too, so just having fun with it
-See README files in individual directories for how to use (though some or all need updating)
+Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using Airflow, Kafka, Spark, and Cassandra. Results displayed using a [searchkit](https://github.com/searchkit/searchkit) interface over [React](https://reactjs.org/), served by a Python [Flask app](https://flask.palletsprojects.com/). 
 
-Start everything with: `./scripts/startup/start-every-compose.sh`
+See README files in subdirectories for how to setup and use this tool (though some are out of date).
+
+For the related zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-zeppelin-notebooks).
+
+![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/wh_Podcast\ Analysis\ Tool.png)
+
+## Features
+### Results Displayed Using Searchkit
+![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/searchkit-podcasts-sample-search.png)
+
+## Setup
+- install Docker compose
+- Start everything with: `./scripts/startup/start-every-compose.sh`
+- View from Zeppelin using [these Zeppelin notebooks](https://github.com/RyanQuey/dse-zeppelin-notebooks).
 
 
 # Released under MIT License
