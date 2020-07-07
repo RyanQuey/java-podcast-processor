@@ -5,7 +5,7 @@ See README files in subdirectories for how to setup and use this tool (though so
 
 For the related zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-zeppelin-notebooks).
 
-![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/wh_Podcast\ Analysis\ Tool.png)
+![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/wh_Podcast%20Analysis%20Tool.png)
 
 ## Features
 ### Results Displayed Using Searchkit
