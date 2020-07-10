@@ -2,16 +2,16 @@
 [0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	SimpleApp$$anonfun$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SimpleApp$$anonfun$1.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	SparkWordCount.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SparkWordCount.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SparkStreamingTest$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SparkStreamingTest$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	SimpleApp$.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SimpleApp$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	SparkWordCount$$anonfun$1.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SparkWordCount$$anonfun$1.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	SimpleApp$$anonfun$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SimpleApp$$anonfun$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	SimpleApp.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SimpleApp.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	SparkWordCount$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SparkWordCount$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SparkStreamingTest$$anonfun$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SparkStreamingTest$$anonfun$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SparkStreamingTest.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /home/ubuntu/projects/java-podcast-processor/spark-scripts/target/scala-2.11/classes/SparkStreamingTest.class[0m
 [0m[[0m[0mdebug[0m] [0m[0mDone packaging.[0m

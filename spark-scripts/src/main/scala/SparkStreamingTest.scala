@@ -1,10 +1,9 @@
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.SparkSession
-//breaking for some reason
 
-// singleton class (our main)
-object SparkWordCount {
-	def notMain (args: Array[String]) { 
+// singleton class (our main). Runs a word count over network (localhost:9999)
+object SparkStreamingTest {
+	def main (args: Array[String]) { 
     val spark = SparkSession
       .builder
       .appName("StructuredNetworkWordCount")
