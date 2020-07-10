@@ -1,1 +1,3 @@
 ryanquey-java-workers-latest.tar
+spark-scripts/project/target/**
+spark-scripts/target/**

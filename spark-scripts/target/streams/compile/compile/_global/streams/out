@@ -1,4 +1,0 @@
-[0m[[0m[31merror[0m] [0m[0m/home/ubuntu/projects/java-podcast-processor/spark-scripts/src/main/scala/SparkStreamingTest.scala:23:25: Unable to find encoder for type String. An implicit Encoder[String] is needed to store String instances in a Dataset. Primitive types (Int, String, etc) and Product types (case classes) are supported by importing spark.implicits._  Support for serializing other types will be added in future releases.[0m
-[0m[[0m[31merror[0m] [0m[0m    val words = lines.as[String].flatMap(_.split(" "))[0m
-[0m[[0m[31merror[0m] [0m[0m                        ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
