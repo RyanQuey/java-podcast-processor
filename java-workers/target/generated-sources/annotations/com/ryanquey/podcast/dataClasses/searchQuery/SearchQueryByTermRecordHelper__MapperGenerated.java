@@ -85,16 +85,16 @@ public class SearchQueryByTermRecordHelper__MapperGenerated extends EntityHelper
       target = target.set("external_api", entity.getExternalApi(), String.class);
     }
 
-    if (entity.getPodcastCount() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("podcast_count", entity.getPodcastCount(), Integer.class);
-    }
-
     if (entity.getResultJson() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("result_json", entity.getResultJson(), String.class);
     }
 
     if (entity.getUpdatedAt() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("updated_at", entity.getUpdatedAt(), Instant.class);
+    }
+
+    if (entity.getPodcastCount() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("podcast_count", entity.getPodcastCount(), Integer.class);
     }
 
     return target;
@@ -110,11 +110,11 @@ public class SearchQueryByTermRecordHelper__MapperGenerated extends EntityHelper
 
     returnValue.setExternalApi(source.get("external_api", String.class));
 
-    returnValue.setPodcastCount(source.get("podcast_count", Integer.class));
-
     returnValue.setResultJson(source.get("result_json", String.class));
 
     returnValue.setUpdatedAt(source.get("updated_at", Instant.class));
+
+    returnValue.setPodcastCount(source.get("podcast_count", Integer.class));
     return returnValue;
   }
 
@@ -128,9 +128,9 @@ public class SearchQueryByTermRecordHelper__MapperGenerated extends EntityHelper
         .value("term", QueryBuilder.bindMarker("term"))
         .value("search_type", QueryBuilder.bindMarker("search_type"))
         .value("external_api", QueryBuilder.bindMarker("external_api"))
-        .value("podcast_count", QueryBuilder.bindMarker("podcast_count"))
         .value("result_json", QueryBuilder.bindMarker("result_json"))
-        .value("updated_at", QueryBuilder.bindMarker("updated_at"));
+        .value("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .value("podcast_count", QueryBuilder.bindMarker("podcast_count"));
   }
 
   public Select selectByPrimaryKeyParts(int parameterCount) {
@@ -157,9 +157,9 @@ public class SearchQueryByTermRecordHelper__MapperGenerated extends EntityHelper
         .column("term")
         .column("search_type")
         .column("external_api")
-        .column("podcast_count")
         .column("result_json")
-        .column("updated_at");
+        .column("updated_at")
+        .column("podcast_count");
   }
 
   public DeleteSelection deleteStart() {
@@ -195,9 +195,9 @@ public class SearchQueryByTermRecordHelper__MapperGenerated extends EntityHelper
         ? QueryBuilder.update(tableId)
         : QueryBuilder.update(keyspaceId, tableId);
     return ((DefaultUpdate)update
-        .setColumn("podcast_count", QueryBuilder.bindMarker("podcast_count"))
         .setColumn("result_json", QueryBuilder.bindMarker("result_json"))
-        .setColumn("updated_at", QueryBuilder.bindMarker("updated_at")));
+        .setColumn("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .setColumn("podcast_count", QueryBuilder.bindMarker("podcast_count")));
   }
 
   @Override
@@ -232,9 +232,9 @@ public class SearchQueryByTermRecordHelper__MapperGenerated extends EntityHelper
     expectedCqlNames.add(CqlIdentifier.fromCql("term"));
     expectedCqlNames.add(CqlIdentifier.fromCql("search_type"));
     expectedCqlNames.add(CqlIdentifier.fromCql("external_api"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("podcast_count"));
     expectedCqlNames.add(CqlIdentifier.fromCql("result_json"));
     expectedCqlNames.add(CqlIdentifier.fromCql("updated_at"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("podcast_count"));
     Optional<TableMetadata> tableMetadata = keyspace.flatMap(v -> v.getTable(tableId));
     Optional<UserDefinedType> userDefinedType = keyspace.flatMap(v -> v.getUserDefinedType(tableId));
     if (tableMetadata.isPresent()) {

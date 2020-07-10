@@ -101,12 +101,32 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
       target = target.set("feed_url", entity.getFeedUrl(), String.class);
     }
 
-    if (entity.getApi() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("api", entity.getApi(), String.class);
+    if (entity.getOwner() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("owner", entity.getOwner(), String.class);
     }
 
-    if (entity.getApiGenreIds() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("api_genre_ids", entity.getApiGenreIds(), GENERIC_TYPE);
+    if (entity.getName() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("name", entity.getName(), String.class);
+    }
+
+    if (entity.getImageUrl30() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("image_url30", entity.getImageUrl30(), String.class);
+    }
+
+    if (entity.getImageUrl60() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("image_url60", entity.getImageUrl60(), String.class);
+    }
+
+    if (entity.getImageUrl100() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("image_url100", entity.getImageUrl100(), String.class);
+    }
+
+    if (entity.getImageUrl600() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("image_url600", entity.getImageUrl600(), String.class);
+    }
+
+    if (entity.getApi() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("api", entity.getApi(), String.class);
     }
 
     if (entity.getApiId() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
@@ -117,19 +137,57 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
       target = target.set("api_url", entity.getApiUrl(), String.class);
     }
 
-    if (entity.getAuthor() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("author", entity.getAuthor(), String.class);
-    }
-
     if (entity.getCountry() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("country", entity.getCountry(), String.class);
     }
+
+    if (entity.getGenres() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("genres", entity.getGenres(), GENERIC_TYPE);
+    }
+
+    if (entity.getApiGenreIds() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("api_genre_ids", entity.getApiGenreIds(), GENERIC_TYPE);
+    }
+
+    if (entity.getReleaseDate() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("release_date", entity.getReleaseDate(), Instant.class);
+    }
+
+    target = target.setBoolean("explicit", entity.isExplicit());
+
+    target = target.setInt("episode_count", entity.getEpisodeCount());
 
     if (entity.getDescription() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
       target = target.set("description", entity.getDescription(), String.class);
     }
 
-    target = target.setInt("episode_count", entity.getEpisodeCount());
+    if (entity.getSummary() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("summary", entity.getSummary(), String.class);
+    }
+
+    if (entity.getSubtitle() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("subtitle", entity.getSubtitle(), String.class);
+    }
+
+    if (entity.getWebmaster() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("webmaster", entity.getWebmaster(), String.class);
+    }
+
+    if (entity.getOwnerEmail() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("owner_email", entity.getOwnerEmail(), String.class);
+    }
+
+    if (entity.getAuthor() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("author", entity.getAuthor(), String.class);
+    }
+
+    if (entity.getWebsiteUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("website_url", entity.getWebsiteUrl(), String.class);
+    }
+
+    if (entity.getUpdatedAt() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
+      target = target.set("updated_at", entity.getUpdatedAt(), Instant.class);
+    }
 
     Set<SearchQueryUDT> mappedCollection = entity.getFoundByQueries();
     if (mappedCollection != null) {
@@ -145,64 +203,6 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
       target = target.set("found_by_queries", null, GENERIC_TYPE1);
     }
 
-    if (entity.getGenres() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("genres", entity.getGenres(), GENERIC_TYPE);
-    }
-
-    if (entity.getImageUrl100() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("image_url100", entity.getImageUrl100(), String.class);
-    }
-
-    if (entity.getImageUrl30() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("image_url30", entity.getImageUrl30(), String.class);
-    }
-
-    if (entity.getImageUrl60() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("image_url60", entity.getImageUrl60(), String.class);
-    }
-
-    if (entity.getImageUrl600() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("image_url600", entity.getImageUrl600(), String.class);
-    }
-
-    if (entity.getName() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("name", entity.getName(), String.class);
-    }
-
-    if (entity.getOwner() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("owner", entity.getOwner(), String.class);
-    }
-
-    if (entity.getOwnerEmail() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("owner_email", entity.getOwnerEmail(), String.class);
-    }
-
-    if (entity.getReleaseDate() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("release_date", entity.getReleaseDate(), Instant.class);
-    }
-
-    if (entity.getSubtitle() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("subtitle", entity.getSubtitle(), String.class);
-    }
-
-    if (entity.getSummary() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("summary", entity.getSummary(), String.class);
-    }
-
-    if (entity.getUpdatedAt() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("updated_at", entity.getUpdatedAt(), Instant.class);
-    }
-
-    if (entity.getWebmaster() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("webmaster", entity.getWebmaster(), String.class);
-    }
-
-    if (entity.getWebsiteUrl() != null || nullSavingStrategy == NullSavingStrategy.SET_TO_NULL) {
-      target = target.set("website_url", entity.getWebsiteUrl(), String.class);
-    }
-
-    target = target.setBoolean("explicit", entity.isExplicit());
-
     return target;
   }
 
@@ -216,21 +216,51 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
 
     returnValue.setFeedUrl(source.get("feed_url", String.class));
 
-    returnValue.setApi(source.get("api", String.class));
+    returnValue.setOwner(source.get("owner", String.class));
 
-    returnValue.setApiGenreIds(source.get("api_genre_ids", GENERIC_TYPE));
+    returnValue.setName(source.get("name", String.class));
+
+    returnValue.setImageUrl30(source.get("image_url30", String.class));
+
+    returnValue.setImageUrl60(source.get("image_url60", String.class));
+
+    returnValue.setImageUrl100(source.get("image_url100", String.class));
+
+    returnValue.setImageUrl600(source.get("image_url600", String.class));
+
+    returnValue.setApi(source.get("api", String.class));
 
     returnValue.setApiId(source.get("api_id", String.class));
 
     returnValue.setApiUrl(source.get("api_url", String.class));
 
-    returnValue.setAuthor(source.get("author", String.class));
-
     returnValue.setCountry(source.get("country", String.class));
+
+    returnValue.setGenres(source.get("genres", GENERIC_TYPE));
+
+    returnValue.setApiGenreIds(source.get("api_genre_ids", GENERIC_TYPE));
+
+    returnValue.setReleaseDate(source.get("release_date", Instant.class));
+
+    returnValue.setExplicit(source.getBoolean("explicit"));
+
+    returnValue.setEpisodeCount(source.getInt("episode_count"));
 
     returnValue.setDescription(source.get("description", String.class));
 
-    returnValue.setEpisodeCount(source.getInt("episode_count"));
+    returnValue.setSummary(source.get("summary", String.class));
+
+    returnValue.setSubtitle(source.get("subtitle", String.class));
+
+    returnValue.setWebmaster(source.get("webmaster", String.class));
+
+    returnValue.setOwnerEmail(source.get("owner_email", String.class));
+
+    returnValue.setAuthor(source.get("author", String.class));
+
+    returnValue.setWebsiteUrl(source.get("website_url", String.class));
+
+    returnValue.setUpdatedAt(source.get("updated_at", Instant.class));
 
     Set<UdtValue> rawCollection1 = source.get("found_by_queries", GENERIC_TYPE1);
     if (rawCollection1 != null) {
@@ -241,36 +271,6 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
       }
       returnValue.setFoundByQueries(mappedCollection1);
     }
-
-    returnValue.setGenres(source.get("genres", GENERIC_TYPE));
-
-    returnValue.setImageUrl100(source.get("image_url100", String.class));
-
-    returnValue.setImageUrl30(source.get("image_url30", String.class));
-
-    returnValue.setImageUrl60(source.get("image_url60", String.class));
-
-    returnValue.setImageUrl600(source.get("image_url600", String.class));
-
-    returnValue.setName(source.get("name", String.class));
-
-    returnValue.setOwner(source.get("owner", String.class));
-
-    returnValue.setOwnerEmail(source.get("owner_email", String.class));
-
-    returnValue.setReleaseDate(source.get("release_date", Instant.class));
-
-    returnValue.setSubtitle(source.get("subtitle", String.class));
-
-    returnValue.setSummary(source.get("summary", String.class));
-
-    returnValue.setUpdatedAt(source.get("updated_at", Instant.class));
-
-    returnValue.setWebmaster(source.get("webmaster", String.class));
-
-    returnValue.setWebsiteUrl(source.get("website_url", String.class));
-
-    returnValue.setExplicit(source.getBoolean("explicit"));
     return returnValue;
   }
 
@@ -284,30 +284,30 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
         .value("language", QueryBuilder.bindMarker("language"))
         .value("primary_genre", QueryBuilder.bindMarker("primary_genre"))
         .value("feed_url", QueryBuilder.bindMarker("feed_url"))
-        .value("api", QueryBuilder.bindMarker("api"))
-        .value("api_genre_ids", QueryBuilder.bindMarker("api_genre_ids"))
-        .value("api_id", QueryBuilder.bindMarker("api_id"))
-        .value("api_url", QueryBuilder.bindMarker("api_url"))
-        .value("author", QueryBuilder.bindMarker("author"))
-        .value("country", QueryBuilder.bindMarker("country"))
-        .value("description", QueryBuilder.bindMarker("description"))
-        .value("episode_count", QueryBuilder.bindMarker("episode_count"))
-        .value("found_by_queries", QueryBuilder.bindMarker("found_by_queries"))
-        .value("genres", QueryBuilder.bindMarker("genres"))
-        .value("image_url100", QueryBuilder.bindMarker("image_url100"))
+        .value("owner", QueryBuilder.bindMarker("owner"))
+        .value("name", QueryBuilder.bindMarker("name"))
         .value("image_url30", QueryBuilder.bindMarker("image_url30"))
         .value("image_url60", QueryBuilder.bindMarker("image_url60"))
+        .value("image_url100", QueryBuilder.bindMarker("image_url100"))
         .value("image_url600", QueryBuilder.bindMarker("image_url600"))
-        .value("name", QueryBuilder.bindMarker("name"))
-        .value("owner", QueryBuilder.bindMarker("owner"))
-        .value("owner_email", QueryBuilder.bindMarker("owner_email"))
+        .value("api", QueryBuilder.bindMarker("api"))
+        .value("api_id", QueryBuilder.bindMarker("api_id"))
+        .value("api_url", QueryBuilder.bindMarker("api_url"))
+        .value("country", QueryBuilder.bindMarker("country"))
+        .value("genres", QueryBuilder.bindMarker("genres"))
+        .value("api_genre_ids", QueryBuilder.bindMarker("api_genre_ids"))
         .value("release_date", QueryBuilder.bindMarker("release_date"))
-        .value("subtitle", QueryBuilder.bindMarker("subtitle"))
+        .value("explicit", QueryBuilder.bindMarker("explicit"))
+        .value("episode_count", QueryBuilder.bindMarker("episode_count"))
+        .value("description", QueryBuilder.bindMarker("description"))
         .value("summary", QueryBuilder.bindMarker("summary"))
-        .value("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .value("subtitle", QueryBuilder.bindMarker("subtitle"))
         .value("webmaster", QueryBuilder.bindMarker("webmaster"))
+        .value("owner_email", QueryBuilder.bindMarker("owner_email"))
+        .value("author", QueryBuilder.bindMarker("author"))
         .value("website_url", QueryBuilder.bindMarker("website_url"))
-        .value("explicit", QueryBuilder.bindMarker("explicit"));
+        .value("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .value("found_by_queries", QueryBuilder.bindMarker("found_by_queries"));
   }
 
   public Select selectByPrimaryKeyParts(int parameterCount) {
@@ -334,30 +334,30 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
         .column("language")
         .column("primary_genre")
         .column("feed_url")
-        .column("api")
-        .column("api_genre_ids")
-        .column("api_id")
-        .column("api_url")
-        .column("author")
-        .column("country")
-        .column("description")
-        .column("episode_count")
-        .column("found_by_queries")
-        .column("genres")
-        .column("image_url100")
+        .column("owner")
+        .column("name")
         .column("image_url30")
         .column("image_url60")
+        .column("image_url100")
         .column("image_url600")
-        .column("name")
-        .column("owner")
-        .column("owner_email")
+        .column("api")
+        .column("api_id")
+        .column("api_url")
+        .column("country")
+        .column("genres")
+        .column("api_genre_ids")
         .column("release_date")
-        .column("subtitle")
+        .column("explicit")
+        .column("episode_count")
+        .column("description")
         .column("summary")
-        .column("updated_at")
+        .column("subtitle")
         .column("webmaster")
+        .column("owner_email")
+        .column("author")
         .column("website_url")
-        .column("explicit");
+        .column("updated_at")
+        .column("found_by_queries");
   }
 
   public DeleteSelection deleteStart() {
@@ -393,30 +393,30 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
         ? QueryBuilder.update(tableId)
         : QueryBuilder.update(keyspaceId, tableId);
     return ((DefaultUpdate)update
-        .setColumn("api", QueryBuilder.bindMarker("api"))
-        .setColumn("api_genre_ids", QueryBuilder.bindMarker("api_genre_ids"))
-        .setColumn("api_id", QueryBuilder.bindMarker("api_id"))
-        .setColumn("api_url", QueryBuilder.bindMarker("api_url"))
-        .setColumn("author", QueryBuilder.bindMarker("author"))
-        .setColumn("country", QueryBuilder.bindMarker("country"))
-        .setColumn("description", QueryBuilder.bindMarker("description"))
-        .setColumn("episode_count", QueryBuilder.bindMarker("episode_count"))
-        .setColumn("found_by_queries", QueryBuilder.bindMarker("found_by_queries"))
-        .setColumn("genres", QueryBuilder.bindMarker("genres"))
-        .setColumn("image_url100", QueryBuilder.bindMarker("image_url100"))
+        .setColumn("owner", QueryBuilder.bindMarker("owner"))
+        .setColumn("name", QueryBuilder.bindMarker("name"))
         .setColumn("image_url30", QueryBuilder.bindMarker("image_url30"))
         .setColumn("image_url60", QueryBuilder.bindMarker("image_url60"))
+        .setColumn("image_url100", QueryBuilder.bindMarker("image_url100"))
         .setColumn("image_url600", QueryBuilder.bindMarker("image_url600"))
-        .setColumn("name", QueryBuilder.bindMarker("name"))
-        .setColumn("owner", QueryBuilder.bindMarker("owner"))
-        .setColumn("owner_email", QueryBuilder.bindMarker("owner_email"))
+        .setColumn("api", QueryBuilder.bindMarker("api"))
+        .setColumn("api_id", QueryBuilder.bindMarker("api_id"))
+        .setColumn("api_url", QueryBuilder.bindMarker("api_url"))
+        .setColumn("country", QueryBuilder.bindMarker("country"))
+        .setColumn("genres", QueryBuilder.bindMarker("genres"))
+        .setColumn("api_genre_ids", QueryBuilder.bindMarker("api_genre_ids"))
         .setColumn("release_date", QueryBuilder.bindMarker("release_date"))
-        .setColumn("subtitle", QueryBuilder.bindMarker("subtitle"))
+        .setColumn("explicit", QueryBuilder.bindMarker("explicit"))
+        .setColumn("episode_count", QueryBuilder.bindMarker("episode_count"))
+        .setColumn("description", QueryBuilder.bindMarker("description"))
         .setColumn("summary", QueryBuilder.bindMarker("summary"))
-        .setColumn("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .setColumn("subtitle", QueryBuilder.bindMarker("subtitle"))
         .setColumn("webmaster", QueryBuilder.bindMarker("webmaster"))
+        .setColumn("owner_email", QueryBuilder.bindMarker("owner_email"))
+        .setColumn("author", QueryBuilder.bindMarker("author"))
         .setColumn("website_url", QueryBuilder.bindMarker("website_url"))
-        .setColumn("explicit", QueryBuilder.bindMarker("explicit")));
+        .setColumn("updated_at", QueryBuilder.bindMarker("updated_at"))
+        .setColumn("found_by_queries", QueryBuilder.bindMarker("found_by_queries")));
   }
 
   @Override
@@ -451,30 +451,30 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
     expectedCqlNames.add(CqlIdentifier.fromCql("language"));
     expectedCqlNames.add(CqlIdentifier.fromCql("primary_genre"));
     expectedCqlNames.add(CqlIdentifier.fromCql("feed_url"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("api"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("api_genre_ids"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("api_id"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("api_url"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("author"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("country"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("description"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("episode_count"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("found_by_queries"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("genres"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("image_url100"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("owner"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("name"));
     expectedCqlNames.add(CqlIdentifier.fromCql("image_url30"));
     expectedCqlNames.add(CqlIdentifier.fromCql("image_url60"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("image_url100"));
     expectedCqlNames.add(CqlIdentifier.fromCql("image_url600"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("name"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("owner"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("owner_email"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("api"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("api_id"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("api_url"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("country"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("genres"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("api_genre_ids"));
     expectedCqlNames.add(CqlIdentifier.fromCql("release_date"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("subtitle"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("summary"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("updated_at"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("webmaster"));
-    expectedCqlNames.add(CqlIdentifier.fromCql("website_url"));
     expectedCqlNames.add(CqlIdentifier.fromCql("explicit"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("episode_count"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("description"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("summary"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("subtitle"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("webmaster"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("owner_email"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("author"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("website_url"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("updated_at"));
+    expectedCqlNames.add(CqlIdentifier.fromCql("found_by_queries"));
     Optional<TableMetadata> tableMetadata = keyspace.flatMap(v -> v.getTable(tableId));
     Optional<UserDefinedType> userDefinedType = keyspace.flatMap(v -> v.getUserDefinedType(tableId));
     if (tableMetadata.isPresent()) {
@@ -511,8 +511,8 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("subtitle"), GENERIC_TYPE2);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("release_date"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("genres"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("found_by_queries"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("genres"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("api_id"), GENERIC_TYPE2);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("api_genre_ids"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("image_url100"), GENERIC_TYPE2);
@@ -550,8 +550,8 @@ public class PodcastByLanguageRecordHelper__MapperGenerated extends EntityHelper
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("subtitle"), GENERIC_TYPE2);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("release_date"), GENERIC_TYPE4);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("name"), GENERIC_TYPE2);
-      expectedTypesPerColumn.put(CqlIdentifier.fromCql("genres"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("found_by_queries"), GENERIC_TYPE1);
+      expectedTypesPerColumn.put(CqlIdentifier.fromCql("genres"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("api_id"), GENERIC_TYPE2);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("api_genre_ids"), GENERIC_TYPE);
       expectedTypesPerColumn.put(CqlIdentifier.fromCql("image_url100"), GENERIC_TYPE2);

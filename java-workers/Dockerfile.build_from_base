@@ -4,7 +4,7 @@
 #   docker image save ryanquey/java-workers:latest -o $HOME/projects/java-podcast-processor/ryanquey-java-workers-latest.jar
 #
 #   see start-every-compose for example
-#
+
 # this will overwrite that image
 FROM ryanquey/java-workers
 COPY ${JAVA_WORKERS_DIR:-.} /usr/src/podcast_analysis_tool
