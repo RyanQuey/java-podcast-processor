@@ -1,10 +1,29 @@
 # java-podcast-processor
-Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using Airflow, Kafka, Spark, and Cassandra. Some of these tools are a little overkill for this project...but it's a learning project too, so just having fun with it
-See README files in individual directories for how to use (though some or all need updating)
+Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using [Airflow](https://github.com/apache/airflow), [Kafka](https://kafka.apache.org/), [Spark](https://spark.apache.org/), and [Cassandra](https://cassandra.apache.org/). The particular Cassandra distribution used is [Elassandra](https://www.elassandra.io/), which allows seamless integration with [Elasticsearch](https://www.elastic.co/). 
+
+Workers are built into separate Java jars and consume and produce to Kafka, in order to distribute the workload across the cluster. Everything is built on top of [Docker containers](https://www.docker.com/) and linked together using docker-compose.
+
+Results displayed using a [searchkit](https://github.com/searchkit/searchkit) interface over [React](https://reactjs.org/) (built using [Gatsby](https://www.gatsbyjs.org/)), served by a Python [Flask app](https://flask.palletsprojects.com/). 
+
+See README files in subdirectories for how to setup and use this tool (though some are out of date).
+
+For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-zeppelin-notebooks). For Airflow DAGs source code, see [here](https://github.com/RyanQuey/airflow-with-podcasts).
+
+![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/wh_Podcast%20Analysis%20Tool.png)
 
 ## Start Everything
 - Start everything with: `./scripts/startup/start-every-compose.sh`
 - Open up React Gatsby project (serving searchkit) via flask app at http://www.local.test:5000/
+
+
+## Features
+### Results Displayed Using Searchkit
+![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/searchkit-podcasts-sample-search.png)
+
+## Setup
+- install Docker compose
+- Start everything with: `./scripts/startup/start-every-compose.sh`
+- View from Zeppelin using [these Zeppelin notebooks](https://github.com/RyanQuey/dse-zeppelin-notebooks).
 
 ## Development
 - If made changes to java code and want to rebuild what docker is running, run
