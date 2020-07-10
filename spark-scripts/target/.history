@@ -1,0 +1,2 @@
+set ThisBuild / scalaVersion := "2.11.12"
+session save
