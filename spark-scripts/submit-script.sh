@@ -15,7 +15,7 @@
 SPARK_HOME=$HOME/lib/spark
 
 # MAIN="SparkKafkaStreamingTest"
-MAIN="SparkKafkaStreamingAvgTimeDiff"
+MAIN="SparkAggKafkaStreamingTest"
 printf "\n\n== Now submitting spark job $MAIN to spark-submit ==\n"
 $SPARK_HOME/bin/spark-submit \
   --class $MAIN \
