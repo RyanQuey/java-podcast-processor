@@ -9,9 +9,6 @@ import org.apache.kafka.common.serialization.StringDeserializer
 object SparkKafkaStreamingTest {
 	def main (args: Array[String]) { 
     /* 
-     * sbt will download the dependency and check for errors on compile, but need to still tell spark to send these packages to master/driver/worker nodes. 
-     * Format using this example: https://stackoverflow.com/a/35130993/6952495
-     * But trying to specify in the config here rather than in the spark conf file
      */
 
     val spark = SparkSession
@@ -29,9 +26,8 @@ object SparkKafkaStreamingTest {
 			.readStream
 			.format("kafka")
 			.option("kafka.bootstrap.servers", "localhost:9092") // NOTE doesn't tell me when not able to connect !
-			//.option("subscribePattern", "queue.*")
-			.option("subscribePattern", "queue.podcast-analysis-tool.query-term")
-			.option("auto.offset.reset", "earliest") // get from beginning
+			.option("subscribePattern", "queue.podcast-analysis-tool.*")
+			//.option("subscribe", "queue.podcast-analysis-tool.query-term")
 			.option("startingOffsets", "earliest") // get from beginning
 			.load()
 
@@ -41,8 +37,9 @@ object SparkKafkaStreamingTest {
 		//val selectedDf = df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
 		//  .as[(String, String)]
 			
-		val messageByTopicCountDf = df.groupBy("topic")
-		val count =  messageByTopicCountDf.count()
+		// NOTE this is not a DF, needs an action called on it first
+		val messageByTopicCountAgg = df.groupBy("topic")
+		val countDf =  messageByTopicCountAgg.count()
 			
 			
 
@@ -50,20 +47,23 @@ object SparkKafkaStreamingTest {
 
 		import org.apache.spark.sql.streaming.ProcessingTime
 
+    val processingTimeSec = 1
 		// write to memory so we can read it using Spark
-		val query = count.writeStream
+		val query = countDf.writeStream
 			.outputMode("complete")
 			.format("memory") // can't do to console or will jam up Zeppelin
 			.queryName("in_memory_table") // for querying this stream 
-			.trigger(ProcessingTime("3 seconds"))
+			.trigger(ProcessingTime(s"$processingTimeSec seconds"))
 			.start()
 
-		// DON"T DO THIS will just block everything
-		// https://stackoverflow.com/a/47487443/6952495
-		// query.awaitTermination()
+		// https://stackoverflow.com/a/57065726/6952495
+		// every 10 seconds, print out whatever we want here
+		while(query.isActive){
+      Thread.sleep(processingTimeSec * 1000)
 
+		  spark.sql("SELECT * FROM in_memory_table LIMIT 30").show()
 
-		spark.table("in_memory_table").show()
+    }
 
     query.awaitTermination()
   }
