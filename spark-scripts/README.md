@@ -2,6 +2,8 @@
 
 ## How to start
 
+In the `./spark-scripts` dir:
+
 ```
 sbt package
 $HOME/lib/dse-6.8.0/bin/dse spark-submit \
@@ -10,7 +12,9 @@ $HOME/lib/dse-6.8.0/bin/dse spark-submit \
   target/scala-2.11/spark-scripts-for-podcast-analysis-tool_2.11-0.3.0.jar
 ```
 
-Or since we made a quick script: 
+But change the class to whichever class is your main class. 
+
+Or since we made a quick script, which set the latest main class for us:  
 ```
 bash submit-script.sh
 

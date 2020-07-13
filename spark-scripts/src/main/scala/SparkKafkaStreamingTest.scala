@@ -8,9 +8,15 @@ import org.apache.kafka.common.serialization.StringDeserializer
 // singleton class (our main). Runs a word count over network (localhost:9999)
 object SparkKafkaStreamingTest {
 	def main (args: Array[String]) { 
+    /* 
+     * sbt will download the dependency and check for errors on compile, but need to still tell spark to send these packages to master/driver/worker nodes. 
+     * Format using this example: https://stackoverflow.com/a/35130993/6952495
+     * But trying to specify in the config here rather than in the spark conf file
+     */
+
     val spark = SparkSession
       .builder
-      .appName("StructuredNetworkWordCount")
+      .appName("SparkKafkaStreamingTest")
       .getOrCreate()
       
     import spark.implicits._
