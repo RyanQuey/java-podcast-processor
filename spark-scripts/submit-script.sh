@@ -14,9 +14,11 @@
 # not exporting yet, not sure if it will affect dse if it gets set globally. Probably safe to export in one terminal though, but no need to yet
 SPARK_HOME=$HOME/lib/spark
 
-printf "\n\n== Now submitting spark job to spark-submit =="
+# MAIN="SparkKafkaStreamingTest"
+MAIN="SparkKafkaStreamingAvgTimeDiff"
+printf "\n\n== Now submitting spark job $MAIN to spark-submit ==\n"
 $SPARK_HOME/bin/spark-submit \
-  --class "SparkKafkaStreamingTest" \
+  --class $MAIN \
   --master local[3] \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.6 \
   target/scala-2.11/spark-scripts-for-podcast-analysis-tool_2.11-0.3.0.jar
