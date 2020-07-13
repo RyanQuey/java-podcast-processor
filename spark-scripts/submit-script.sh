@@ -14,8 +14,7 @@
 # not exporting yet, not sure if it will affect dse if it gets set globally. Probably safe to export in one terminal though, but no need to yet
 SPARK_HOME=$HOME/lib/spark
 
-# MAIN="SparkKafkaStreamingTest"
-MAIN="SparkAggKafkaStreamingTest"
+MAIN="SparkKafkaStreamingAvgTimeDiff"
 printf "\n\n== Now submitting spark job $MAIN to spark-submit ==\n"
 $SPARK_HOME/bin/spark-submit \
   --class $MAIN \

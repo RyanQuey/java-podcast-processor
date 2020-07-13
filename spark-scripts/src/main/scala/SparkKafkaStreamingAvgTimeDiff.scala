@@ -10,7 +10,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 
 // singleton class (our main). Runs a word count over network (localhost:9999)
 object SparkKafkaStreamingAvgTimeDiff {
-	def main (args: Array[String]) { 
+	def main (args: Array[String]) {
     /* 
      */
 
@@ -38,7 +38,7 @@ object SparkKafkaStreamingAvgTimeDiff {
 			.load()
 
 		// only grab window of 15 minutes for each (should be plenty). 
-		val actionWithWatermarkDf = actionDf.withWatermark("timestamp", "15 minutes")
+		val actionWithWatermarkDf = actionDf.withWatermark("timestamp", "1 minutes")
       .select(
         $"topic".as("action_topic"), 
         $"offset".as("action_offset"), 
@@ -46,43 +46,75 @@ object SparkKafkaStreamingAvgTimeDiff {
         $"timestamp".as("action_timestamp")
       )
 
-		val reactionWithWatermarkDf = reactionDf.withWatermark("timestamp", "25 minutes")
+		val reactionWithWatermarkDf = reactionDf.withWatermark("timestamp", "1 minutes")
       .select(
-        $"topic", 
-        $"offset", 
-        $"value".cast(StringType).as("value"),
-        $"timestamp"
+        $"topic".as("reaction_topic"), 
+        $"offset".as("reaction_offset"), 
+        $"value".cast(StringType).as("reaction_value"),
+        $"timestamp".as("reaction_timestamp")
       )
 
-    val actionToReactionDf = actionWithWatermarkDf.join(
+    // inner join where values match. 
+    // Not currently getting for example actions that don't have corresponding reactions (left outer join)
+    // same value, with action time less than reaction time, but not more than 10 minutes less than reaction time 
+    //(don't want our tests interferering with each other too much!
+    val actionWithReactionDf = actionWithWatermarkDf.join(
       reactionWithWatermarkDf,
-      expr( // same value, with action time less than reaction time, but not more than 10 minutes less than reaction time
+      expr( 
         """
-        action_value = value AND
-        action_timestamp <= timestamp AND
-        action_timestamp + INTERVAL 10 minutes >= timestamp 
+        action_value = reaction_value AND
+        action_timestamp <= reaction_timestamp AND
+        action_timestamp + INTERVAL 10 minutes >= reaction_timestamp 
         """
       )
+    // time between action and reaction in seconds
+    ).withColumn("reaction_time_sec", unix_timestamp($"reaction_timestamp") - unix_timestamp($"action_timestamp"))
+    .select(
+      $"action_value".as("value"), // joining on value, so don't need both!
+      $"action_offset",
+      $"reaction_offset",
+      $"action_timestamp",
+      $"reaction_timestamp",
+      $"reaction_time_sec",
+      $"action_topic" // something to group by for the agg
     )
-  /*
-      .agg(
-        first($"timestamp").as("first"),
-        last($"timestamp").as("last"),
-        avg($"timestamp").as("avg")
-    ).withColumn("totalDiffSec", (unix_timestamp($"last") - unix_timestamp($"first")))// divide by 1000 to get seconds
-    .withColumn("avgDiffSec", $"totalDiffSec" /2) 
-    */
+    .withWatermark("action_timestamp", "10 minutes") // needs this watermark, or can't do aggs on this stream
+
+
+    // need this window also, or can't do aggs on streaming because of same error: 
+    // `Append output mode not supported when there are streaming aggregations on streaming DataFrames/DataSets wit
+    // hout watermark`
+    val avgReactionTimeDf = actionWithReactionDf.groupBy($"action_topic", window($"action_timestamp", "5 minutes")).agg(
+      first($"reaction_time_sec").as("first_reaction_time_sec"),
+      last($"reaction_time_sec").as("last_reaction_time_sec"),
+      avg($"reaction_time_sec").as("avg_reaction_time_sec"),
+      sum($"reaction_time_sec").as("sum_reaction_time_sec")
+    ).drop("action_topic")
 
 		import org.apache.spark.sql.streaming.ProcessingTime
 
     val processingTimeSec = 3
 
-		val aggQuery = actionToReactionDf.writeStream
+		val actionWithReactionQuery = actionWithReactionDf.writeStream
 			.outputMode("append")
+			.option("truncate", "false")
 			.format("console") // can't do to console or will jam up Zeppelin
 			.trigger(ProcessingTime(s"$processingTimeSec seconds"))
 			.start()
 
+    // can't do complete here, need to do append because we join two streams. 
+    // See here for some interaction with this issue: https://stackoverflow.com/a/54118633/6952495
+    // Or here: https://stackoverflow.com/a/45497609/6952495
+    // Basically, they recommend saving results to kafka and then getting totals there instead, to get total sums and averages, with no windows
+    // OR TRY mapGroupWithState 
+		val aggQuery = avgReactionTimeDf.writeStream
+			.outputMode("append")
+			.format("console") // can't do to console or will jam up Zeppelin
+			.option("truncate", "false")
+			.trigger(ProcessingTime(s"$processingTimeSec seconds"))
+			.start()
+
     aggQuery.awaitTermination()
+    actionWithReactionQuery.awaitTermination()
   }
 }
