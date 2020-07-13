@@ -32,23 +32,22 @@ object SparkKafkaStreamingAvgTimeDiff {
         "queue.podcast-analysis-tool.podcast," + 
         "queue.podcast-analysis-tool.episode"
         ) // subscribe to some topics
-			.option("startingOffsets", "earliest") // get from beginning (I think just beginning of when we started streaming (?) Note that it only outputs for topics that have had a new event happen since after we started running these spark scripts (even if we've stopped and started it in the meantime)
+			.option("startingOffsets", "latest") // get from beginning (I think just beginning of when we started streaming (?) Note that it only outputs for topics that have had a new event happen since after we started running these spark scripts (even if we've stopped and started it in the meantime)
 			.load()
 
 		df.printSchema
 
-    val windowSpec = Window.partitionBy("topic").orderBy("unix_timestamp")
-
     val aggDf = df.groupBy("topic").agg(
-        first($"timestamp"),
-        last($"timestamp"),
-        mean($"timestamp")
-    )
+        first($"timestamp").as("first"),
+        last($"timestamp").as("last"),
+        avg($"timestamp").as("avg")
+    ).withColumn("totalDiffSec", (unix_timestamp($"last") - unix_timestamp($"first")))// divide by 1000 to get seconds
+    .withColumn("avgDiffSec", $"totalDiffSec" /2) 
 
-			
 		import org.apache.spark.sql.streaming.ProcessingTime
 
-    val processingTimeSec = 1
+    val processingTimeSec = 3
+
 		val aggQuery = aggDf.writeStream
 			.outputMode("complete")
 			.format("console") // can't do to console or will jam up Zeppelin
