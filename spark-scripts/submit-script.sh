@@ -1,6 +1,6 @@
-# NOTE does not package your jar though. If made changes to java/scala code, maek sure to run like: 
+# NOTE does not package your jar though. If made changes to java/scala code, make sure to run this instead: 
 #
-# sbt package && bash submit-script.sh
+# bash setup-and-submit-script.sh
 #
 # Note that we can set these configs when initializing our spark session as well.
 # However, need to specify the main class here, so it knows which class to look at and which config to load!
@@ -14,7 +14,7 @@
 # not exporting yet, not sure if it will affect dse if it gets set globally. Probably safe to export in one terminal though, but no need to yet
 SPARK_HOME=$HOME/lib/spark
 
-echo "Now submitting spark job to spark-submit:"
+printf "\n\n== Now submitting spark job to spark-submit =="
 $SPARK_HOME/bin/spark-submit \
   --class "SparkKafkaStreamingTest" \
   --master local[3] \

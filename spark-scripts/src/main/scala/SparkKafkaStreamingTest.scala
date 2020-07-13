@@ -1,5 +1,6 @@
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types._
 
 import org.apache.spark.sql.kafka010._
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -18,29 +19,44 @@ object SparkKafkaStreamingTest {
       
     import spark.implicits._
 
-
-
-
-
 		val df = spark
 			.readStream
 			.format("kafka")
 			.option("kafka.bootstrap.servers", "localhost:9092") // NOTE doesn't tell me when not able to connect !
-			.option("subscribePattern", "queue.podcast-analysis-tool.*")
-			//.option("subscribe", "queue.podcast-analysis-tool.query-term")
-			.option("startingOffsets", "earliest") // get from beginning
+			.option("subscribe", 
+        "queue.podcast-analysis-tool.query-term," + 
+        "queue.podcast-analysis-tool.test," + 
+        "queue.podcast-analysis-tool.search-results-json," + 
+        "queue.podcast-analysis-tool.podcast," + 
+        "queue.podcast-analysis-tool.episode"
+        ) // subscribe to some topics
+			//.option("subscribePattern", "queue.podcast-analysis-tool.*") // subscribe to all our topics
+			//.option("subscribe", "queue.podcast-analysis-tool.query-term") // subscribe to one topic
+			.option("startingOffsets", "earliest") // get from beginning (I think just beginning of when we started streaming (?)
 			.load()
 
 		df.printSchema
 
-		// not sure what I'm using this one for
-		//val selectedDf = df.selectExpr("CAST(key AS STRING)", "CAST(value AS STRING)")
-		//  .as[(String, String)]
+		// select as 
+		// https://stackoverflow.com/a/32634826/6952495
+		val castDf = df.select(
+      $"offset", 
+      $"topic",
+      $"key".cast(StringType).as("key"), 
+      $"value".cast(StringType).as("value"),
+      unix_timestamp(col("timestamp")).as("unix_timestamp")
+    )
 			
+		////////////////////////////////////
+    // One df to count topics
 		// NOTE this is not a DF, needs an action called on it first
-		val messageByTopicCountAgg = df.groupBy("topic")
+		val messageByTopicCountAgg = castDf.groupBy("topic")
+		// this is a DF :)
 		val countDf =  messageByTopicCountAgg.count()
 			
+    ///////////////////////////////////
+    // One df to get avg interval between events
+		//val intervalBetweenEvents = 
 			
 
 		// Spark docs: "The output is stored in memory as an in-memory table. Both, Append and Complete output modes, are supported. This should be used for debugging purposes on low data volumes as the entire output is collected and stored in the driver’s memory. Hence, use it with caution.""
@@ -49,22 +65,31 @@ object SparkKafkaStreamingTest {
 
     val processingTimeSec = 1
 		// write to memory so we can read it using Spark
-		val query = countDf.writeStream
+		val topicCountQuery = countDf.writeStream
 			.outputMode("complete")
-			.format("memory") // can't do to console or will jam up Zeppelin
-			.queryName("in_memory_table") // for querying this stream 
+			.format("console") // can't do to console or will jam up Zeppelin
 			.trigger(ProcessingTime(s"$processingTimeSec seconds"))
 			.start()
 
+		val allEventsQuery = castDf.writeStream
+			.outputMode("append")
+			.format("console") // can't do to console or will jam up Zeppelin
+			.trigger(ProcessingTime(s"$processingTimeSec seconds"))
+			.start()
+
+      /*
 		// https://stackoverflow.com/a/57065726/6952495
 		// every 10 seconds, print out whatever we want here
-		while(query.isActive){
+		while(topicCountQuery.isStreaming){
       Thread.sleep(processingTimeSec * 1000)
 
-		  spark.sql("SELECT * FROM in_memory_table LIMIT 30").show()
+		  // will have one row per topic
+		  spark.sql("SELECT * FROM counts LIMIT 5").show()
 
     }
+    */
 
-    query.awaitTermination()
+    allEventsQuery.awaitTermination()
+    topicCountQuery.awaitTermination()
   }
 }
