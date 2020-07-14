@@ -48,6 +48,31 @@ Take a look at other scripts in `scripts/kafka-testers/`
 
 
 # Implementation decisions
+## Kafka Implementation
+
+Can use `../scripts/kafka-testers/*.sh` files to test these out some. It is trivial to 
+### Kafka Topics
+
+####  "queue.podcast-analysis-tool.query-term"
+Value: A search term that we will pass to our external apis using several different query types (e.g., keyword, author, etc)
+
+####  "queue.podcast-analysis-tool.search-results-json"
+Value: Results of the search of "query-term", which we use to extract podcasts from.
+
+####  "queue.podcast-analysis-tool.podcast"
+Value: A single podcast extracted from "search-results-json"
+
+Gets persisted and used to grab RSS feed for this podcast to fetch episodes for this podcast.
+
+####  "queue.podcast-analysis-tool.episode"
+Value: A single episode pulled from RSS feed of a podcast
+
+####  "queue.podcast-analysis-tool.test"
+Just a test topic, especially for Spark
+
+####  "queue.podcast-analysis-tool.test-reaction"
+Just a test topic, especially for Spark. Used for timing between the "test" topic and then this topic, to build a spark job that compares time between the two events.
+
 ## Several main classes
 Rather than doing [multiple modules](https://maven.apache.org/guides/mini/guide-multiple-modules.html), it seems better in this case to do just one module, since we want multiple jars but (at least for now) each jar will potentially be reusing the same old classes (e.g., all will use Podcast.java, etc).
 
@@ -58,42 +83,17 @@ So instead, will just run `mvn package` multiple times, one for each main class.
   - There is probably a better way that doing this, but this is fine for now
 * This main main method just gets runs a search, extracts relevant podcasts, and then processes the podcasts, extracting episodes from rss feeds. Does not interact with kafka
 * Make sure to wait for cassandra AND kafka to start up. `nodetool status` will error out until cassandra is up and running (at least on a local machine...will have to figure something else out for prod)
-`bin/nodetool status && mvn clean package && mvn exec:exec` 
-
-or 
-
-`bin/nodetool status && mvn clean package && java -jar ./target/podcast-analysis-tool-0.2.0.jar` 
-
-(both commands should do the same thing)
 
 
-#### Options
-- Do not perform a search for podcasts:
-Change default args to have `--perform-search=false`
+#### Update 6/2020: Using docker-compose and a try-catch block (with retries) in `KafkaMain.setup();` to automatically make sure everything is running before starting
 
-- Perform a search for podcasts and then run:
-Change default args to have `--perform-search=true`
+No need to check for anything outside the jar like running `nodetool status`, can just start the jar as long as Cassandra and Kafka are going to start in a reasonable amount of time after the jar is ran.
 
-- process all the search results ever found
-Change default args to have `--process=all`
+`mvn clean package && mvn exec:exec` 
 
-- process only the new search results retrieved in this last run
-Change default args to have `--process=new`
-*TODO* should persist something on a SearchQuery record that says if we've processed it or not. Much more reliable
+In other words, just using docker-compose will take care of this for you
 
-- Process our default query only ("podcast-data/artist_big-data.json"). Mostly for testing:
-Change default args to have `--process=default-query`
-
-#### Good defaults:
-`--process=new`
-`--perform-search=true`
-
-
-
-## Next TODOs
-- Change it around so that it runs iteratively on an Airflow job
-- Once Search result is retrieved and persisted, have a hook that sends to Kafka stream. 
-- Have a Spark job consume that Kafka topic and process each podcast to retrieve and persist all episodes
+# Next TODOs
 - Set things up so I can find podcasts that I really want
 - Add visualizations
 
