@@ -73,6 +73,47 @@ Just a test topic, especially for Spark
 ####  "queue.podcast-analysis-tool.test-reaction"
 Just a test topic, especially for Spark. Used for timing between the "test" topic and then this topic, to build a spark job that compares time between the two events.
 
+## Data Classes ("`dataClasses`")
+
+### General Concept
+These more or less take the place of a model in the MVC. As a whole, they represent the business logic for a given resource. 
+
+### Java Classes
+Each "data class" has the following java classes with it (or should have once everything is finished):
+- a "base" class, which other classes can inherit from (e.g., `PodcastBase`). 
+    * This specifies the resource's fields and has getters and setters for those fields
+    * Should only have fields that are going to be persisted in the db (otherwise, our DAO class won't work, since it inherits from the base)
+    * Other classes 
+
+- a "primary" class, using just the name (e.g., `Podcast`)
+    * Adds methods and fields that are helpful for interacting with this resource, but that should not get persisted
+    * Add helper methods here, and other kinds of wrappers for interacting with this resource
+    * Interact with related/associated records here (e.g., `podcasts` will interact with `episodes`).
+    * In general, should do most of our direct interaction with the resource using the "primary" class.
+
+For every DB table, should also have: 
+- a "Record" class
+    * This stands between the base class and the DAO class, AND between the primary and DAO class, as an abstraction
+    * As an abstraction between between the base and DAO class: 
+        - For for Cassandra for example, this allows us to have something to set primary and clustering keys for this given table, so we don't have to set it on the base class (which is particularly necessary if we have multiple tables for this resource)
+        - has a `getDao ()` method to fetch the "DAO" class for this "record" class
+
+    * As an abstraction between the primary and DAO class:
+        - Means that if we want to persist to all tables at once (a common scenario for a denormalized schema), we can do so easily by calling the `persist ()` method on the "primary" class instance (e.g., `podcast.persist();`. This will in turn call the `save` method for all the "record" classes of this resource. 
+        - Consistently define a few simple apis to do CRUD, e.g., `save` to create/update (Cassandra makes it easy to call one method and create if record exists, or update if it doesn't). `findOne` for grabbing a single record using its entire primary key. And of course, `delete`, etc (NOTE not all are implemented on each "record" class yet, but it's a TODO. Will add as needed).
+        - Alternatively, if we want to call something other than `save` on the record class, we can easily change the definition in the "primary" class and everything still works wherever `persist` is called on the "primary" class. This allows for us to use the "primary" class as an easy to use wrapper around all the "record" classes, since we can call the same thing no matter what and just change behavior by adjusting a few simple, consistent methods found on the "primary" class. (see `Podcast` class for example; we want to not just save the PodcastByLanguageRecord instance, we also want to append the `foundBy` field to existing `foundByQueries` data, so we call `podcastByLanguageRecord.saveAndAppendFoundBy()` instead. 
+        - Each record class should also have a constructor that takes the "primary" class as an argument and returns an instance of this "record" class, so you can easily do something like `new PodcastByLanguageRecord(podcast);`. 
+
+- a "DAO" class
+    * Directly interacts with the DB java driver for this resource. 
+    * Especially for Cassandra where data is often going to be duplicated (i.e, denormalized), is necessary to have separate subclasses for each table
+
+### Evaluation of this system
+Given that I have a limited amount of exposure to other systems, I tend to find this to be very effective, at the very least when interacting with Cassandra Java Driver. I would imagine however that this is also very effective for other setups as well. 
+
+Having a base like this maintains continuity and a clear place to look for what fields in a resource gets persisted (i.e., what is on the "base" class) and what is temporary (ie what is on the primary class)
+
+
 ## Several main classes
 Rather than doing [multiple modules](https://maven.apache.org/guides/mini/guide-multiple-modules.html), it seems better in this case to do just one module, since we want multiple jars but (at least for now) each jar will potentially be reusing the same old classes (e.g., all will use Podcast.java, etc).
 

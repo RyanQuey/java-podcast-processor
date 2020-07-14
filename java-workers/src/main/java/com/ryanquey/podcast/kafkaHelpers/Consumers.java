@@ -142,6 +142,8 @@ public class Consumers {
                 }
                 // to get podcast count for the search
                 searchQuery.extractPodcasts();
+
+                // save search query itself (not the results) to db
                 searchQuery.persist();
 
               } catch (Exception e) {
