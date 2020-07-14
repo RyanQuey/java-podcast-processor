@@ -9,7 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 
 // singleton class (our main). Runs a word count over network (localhost:9999)
-object SparkKafkaStreamingAvgTimeDiff {
+object SparkKafkaStreamingAvgTimeDiffTest {
 	def main (args: Array[String]) {
     /* 
      */
@@ -21,18 +21,11 @@ object SparkKafkaStreamingAvgTimeDiff {
       
     import spark.implicits._
 
-    /*
-     * TODO make the topic dynamically set based on args, so can run this job for different topics
-     *
-        "queue.podcast-analysis-tool.search-results-json"
-        "queue.podcast-analysis-tool.podcast"
-        "queue.podcast-analysis-tool.episode"
-     */
 		val actionDf = spark
 			.readStream
 			.format("kafka")
 			.option("kafka.bootstrap.servers", "localhost:9092") 
-			.option("subscribe", "queue.podcast-analysis-tool.query-term") 
+			.option("subscribe", "queue.podcast-analysis-tool.test") 
 			.option("startingOffsets", "earliest") // get from beginning (I think just beginning of when we started streaming (?) Note that it only outputs for topics that have had a new event happen since after we started running these spark scripts (even if we've stopped and started it in the meantime)
 			.load()
 
@@ -40,7 +33,7 @@ object SparkKafkaStreamingAvgTimeDiff {
 			.readStream
 			.format("kafka")
 			.option("kafka.bootstrap.servers", "localhost:9092")
-			.option("subscribe", "queue.podcast-analysis-tool.search-results-json")
+			.option("subscribe", "queue.podcast-analysis-tool.test-reaction")
       .option("startingOffsets", "earliest") // get from beginning (I think just beginning of when we started streaming (?) Note that it only outputs for topics that have had a new event happen since after we started running these spark scripts (even if we've stopped and started it in the meantime)
 			.load()
 
