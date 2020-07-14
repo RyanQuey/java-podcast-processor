@@ -1,7 +1,7 @@
 # java-podcast-processor
 Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using [Airflow](https://github.com/apache/airflow), [Kafka](https://kafka.apache.org/), [Spark](https://spark.apache.org/), and [Cassandra](https://cassandra.apache.org/). The particular Cassandra distribution used is [Elassandra](https://www.elassandra.io/), which allows seamless integration with [Elasticsearch](https://www.elastic.co/). 
 
-Workers are built into separate Java jars and consume and produce to Kafka, in order to distribute the workload across the cluster. Everything is built on top of [Docker containers](https://www.docker.com/) and linked together using docker-compose.
+[Workers](https://github.com/RyanQuey/java-podcast-processor/tree/master/java-workers) are divided into separate Main classes in a single Java jar and consume and produce to Kafka, in order to distribute the workload across the cluster. Everything is built on top of [Docker containers](https://www.docker.com/) and linked together using docker-compose.
 
 Results displayed using a [searchkit](https://github.com/searchkit/searchkit) interface over [React](https://reactjs.org/) (built using [Gatsby](https://www.gatsbyjs.org/)), served by a Python [Flask app](https://flask.palletsprojects.com/). 
 
@@ -13,6 +13,10 @@ For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-z
 
 ## Start Everything
 - Start everything with: `./scripts/startup/start-every-compose.sh`
+    * Starts up all services, connecting them using chained docker-compose files.
+    * Runs shell script to make sure Cassandra and Kafka are successfully started
+    * Once C* and Kafka are up, runs initializers (e.g., creating kafka topics and ES indices for Elassandra)
+
 - Open up React Gatsby project (serving searchkit) via flask app at http://www.local.test:5000/
 
 
@@ -29,6 +33,11 @@ For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-z
 - If made changes to java code and want to rebuild what docker is running, run
 
     `./scripts/startup/start-every-compose.sh rebuild`
+
+## Debugging
+- Can get logs from containers by using `docker logs`:
+    * Get logs for running searches: `docker logs -f java-podcast-processor_run-search-per-term_1`
+    * Get logs for RSS feeds: `docker logs -f java-podcast-processor_extract-episodes-per-podcast_1`
 
 # Released under MIT License
 

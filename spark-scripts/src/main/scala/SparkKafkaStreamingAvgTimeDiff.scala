@@ -22,17 +22,27 @@ object SparkKafkaStreamingAvgTimeDiff {
     import spark.implicits._
 
     /*
+     * Currently using `podcast` topic as the "action" and `episode topic as the reaction for our proof of concept
+     * This way we can do things like:
+     *   - test how many episodes were successfully parsed out, by comparing our `episode` kafka topic with the episodeCount returned from itunes api call
+     *   - test how long it took to retrieve the rss feed over HTTP Call (compare podcast timestamp to first episode timestamp, though there will also be a little bit of time added from how long it took to extract that first episode from the XML)
+     *   - test how many episodes failed
+     *   - test how long each episode took to parse on average, and how long it took for all of them to finish
+     *
+     * Really these are the most interesting topics that we have
+     *
      * TODO make the topic dynamically set based on args, so can run this job for different topics
      *
         "queue.podcast-analysis-tool.search-results-json"
         "queue.podcast-analysis-tool.podcast"
         "queue.podcast-analysis-tool.episode"
      */
+
 		val actionDf = spark
 			.readStream
 			.format("kafka")
 			.option("kafka.bootstrap.servers", "localhost:9092") 
-			.option("subscribe", "queue.podcast-analysis-tool.query-term") 
+			.option("subscribe", "queue.podcast-analysis-tool.podcast") 
 			.option("startingOffsets", "earliest") // get from beginning (I think just beginning of when we started streaming (?) Note that it only outputs for topics that have had a new event happen since after we started running these spark scripts (even if we've stopped and started it in the meantime)
 			.load()
 
@@ -40,7 +50,7 @@ object SparkKafkaStreamingAvgTimeDiff {
 			.readStream
 			.format("kafka")
 			.option("kafka.bootstrap.servers", "localhost:9092")
-			.option("subscribe", "queue.podcast-analysis-tool.search-results-json")
+			.option("subscribe", "queue.podcast-analysis-tool.episode")
       .option("startingOffsets", "earliest") // get from beginning (I think just beginning of when we started streaming (?) Note that it only outputs for topics that have had a new event happen since after we started running these spark scripts (even if we've stopped and started it in the meantime)
 			.load()
 

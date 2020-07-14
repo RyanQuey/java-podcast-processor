@@ -56,16 +56,31 @@ Can use `../scripts/kafka-testers/*.sh` files to test these out some. It is triv
 ####  "queue.podcast-analysis-tool.query-term"
 Value: A search term that we will pass to our external apis using several different query types (e.g., keyword, author, etc)
 
+Produced by: currently, just a simple CLI kafka producer
+Consumed by: RunSearchPerTermConsumer class
+- The RunSearchPerTermConsumer class hits an external podcast API once for each search type.
+
 ####  "queue.podcast-analysis-tool.search-results-json"
-Value: Results of the search of "query-term", which we use to extract podcasts from.
+Value: Results of the search of "query-term", which we use to extract podcasts from. 
+
+Note that for each term, we will run about five of these searches, and so produce about five events for this topic (I forget the exact number, but it is one for each search type)
+
+Produced by: RunSearchPerTermConsumer class
+Consumed by: ExtractPodcastsPerSearchConsumer class
+- Does no CRUD. Simply reads the JSON, extracting out all podcasts from the search result json retrieved from the external API (if any were found for this query term/search type combination)
 
 ####  "queue.podcast-analysis-tool.podcast"
 Value: A single podcast extracted from "search-results-json"
 
-Gets persisted and used to grab RSS feed for this podcast to fetch episodes for this podcast.
+Produced by: ExtractPodcastsPerSearchConsumer class
+Consumed by: ExtractEpisodesPerPodcastConsumer class
+- For each podcast, fetches the RSS feed associated with the podcast (assuming an RSS feed was returned as part of the podcast data received back from the external API), and then parses that RSS and extracts out each episode mentioned in the RSS feed. Persists both the podcast and all the episodes
 
 ####  "queue.podcast-analysis-tool.episode"
 Value: A single episode pulled from RSS feed of a podcast
+
+Produced by: ExtractEpisodesPerPodcastConsumer class
+Consumed by: (None yet, as of 7/2020)
 
 ####  "queue.podcast-analysis-tool.test"
 Just a test topic, especially for Spark

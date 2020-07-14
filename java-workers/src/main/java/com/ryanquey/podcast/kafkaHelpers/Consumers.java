@@ -212,7 +212,9 @@ public class Consumers {
         for (ConsumerRecord<String, String> record : records) {
           try {
             String resultJson = record.value();
+
             // our SearchQuery class manages this business logic, so use that
+            // NOTE does not currently set term or searchType on the search query, since we don't have that from the resultJson
             SearchQuery sq = new SearchQuery();
             sq.setResultJson(resultJson);
 

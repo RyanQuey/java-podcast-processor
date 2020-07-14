@@ -82,6 +82,7 @@ public class Podcast extends PodcastBase {
   }
 
   // TODO add some error handling, so that for every attribute, if it doesn't work, just move on, no problem. Just get as much information as we can
+  // Currently used for taking incoming external podcast api (ie Itunes) data, which is JSON, and turning it into a podcast object.
   public Podcast(JSONObject podcastJson, SearchQuery fromQuery) 
     throws Exception {
       // really is an `org.apache.commons.exec.ExecuteException`, but that inherits from IOException
