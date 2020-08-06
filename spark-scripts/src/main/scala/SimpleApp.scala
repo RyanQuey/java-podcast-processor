@@ -1,4 +1,7 @@
-/* SimpleApp.scala */
+/* 
+ * SimpleApp.scala 
+ * count lines in README.md that have a or b
+*/
 import org.apache.spark.sql.SparkSession
 
 // level 1: get spark streaming to work

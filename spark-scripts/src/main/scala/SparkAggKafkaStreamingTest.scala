@@ -8,10 +8,12 @@ import org.apache.spark.sql.kafka010._
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 
-// singleton class (our main). Runs a word count over network (localhost:9999)
+// singleton class (our main)
 object SparkAggKafkaStreamingTest {
 	def main (args: Array[String]) { 
     /* 
+     * for each topic, get timestamp of first and last event that occurs.
+     * Also get the average time interval between messages (avgDiffSec)
      */
 
     val spark = SparkSession
