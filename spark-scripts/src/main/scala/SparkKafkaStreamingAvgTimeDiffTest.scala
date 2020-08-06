@@ -8,10 +8,13 @@ import org.apache.spark.sql.kafka010._
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 
-// singleton class (our main). Runs a word count over network (localhost:9999)
+// singleton class (our main)
 object SparkKafkaStreamingAvgTimeDiffTest {
 	def main (args: Array[String]) {
     /* 
+     * this is close to what we want to do, but only uses fake topics (`test` as an action,  and `test-reaction` as reaction). 
+     * we can then take a producer running in a terminal session and send events to these, just to make sure that our logic is working correctly, before we were on this on our actual kafka topics
+     * For the final product, see spark-scripts/src/main/scala/SparkKafkaStreamingAvgTimeDiff.scala
      */
 
     val spark = SparkSession
