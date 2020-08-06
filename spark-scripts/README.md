@@ -86,6 +86,19 @@ TODO
 $HOME/lib/dse-6.8.0/bin/dse spark  --packages org.apache.spark:spark-sql-kafka-0-10_2.11:2.4.0
 
 ## Notes: 
+### What are all these classes?
+It is a learning project, so I some old examples of things that work as we moved up in complexity. 
+
+`SparkKafkaStreamingAvgTimeDiff` is the only real class that matters for podcast app.
+
+In order of complexity (and what I built from first to last):
+  1)    SimpleApp.scala
+  2)    SparkStreamingTest.scala
+  3)    SparkKafkaStreamingTest.scala
+  4)    SparkAggKafkaStreamingTest.scala
+  5)    SparkKafkaStreamingAvgTimeDiffTest.scala
+  6)    SparkKafkaStreamingAvgTimeDiff.scala
+
 ### Our setup
 Initialized using:
 
