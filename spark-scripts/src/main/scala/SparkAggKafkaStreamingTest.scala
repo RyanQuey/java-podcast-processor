@@ -12,6 +12,7 @@ import org.apache.kafka.common.serialization.StringDeserializer
 object SparkAggKafkaStreamingTest {
 	def main (args: Array[String]) { 
     /* 
+     * Level 4: Run aggregations on these Spark streams that are consuming Kafka topics
      * for each topic, get timestamp of first and last event that occurs.
      * Also get the average time interval between messages (avgDiffSec)
      */

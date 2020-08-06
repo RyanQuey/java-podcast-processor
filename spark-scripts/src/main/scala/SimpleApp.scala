@@ -4,7 +4,7 @@
 */
 import org.apache.spark.sql.SparkSession
 
-// level 1: get spark streaming to work
+// level 1: get spark to work from an sbt project
 object SimpleApp {
   def main(args: Array[String]) {
     val logFile = "file:///home/ubuntu/projects/java-podcast-processor/spark-scripts/README.md" // Should be some file on your system

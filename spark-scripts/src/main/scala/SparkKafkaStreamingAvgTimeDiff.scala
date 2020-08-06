@@ -23,6 +23,8 @@ object SparkKafkaStreamingAvgTimeDiff {
     import spark.implicits._
 
     /*
+     * Level 6: Do it on our actual podcast kafka topics
+     *
      * Currently using `podcast` topic as the "action" and `episode topic as the reaction for our proof of concept
      * This way we can do things like:
      *   - test how many episodes were successfully parsed out, by comparing our `episode` kafka topic with the episodeCount returned from itunes api call

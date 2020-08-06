@@ -6,7 +6,7 @@ import org.apache.spark.sql.kafka010._
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 
-// level 2: get Sparks Streaming to work with kafka topics
+// level 3: get Sparks Streaming to work with kafka topics
 object SparkKafkaStreamingTest {
 	def main (args: Array[String]) { 
     /* 

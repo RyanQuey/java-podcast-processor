@@ -12,8 +12,13 @@ import org.apache.kafka.common.serialization.StringDeserializer
 object SparkKafkaStreamingAvgTimeDiffTest {
 	def main (args: Array[String]) {
     /* 
+     * Level 5: Get average time between events between two different kafka topics, but specifically when the 2nd topic is consuming from the 1st topic, so we see a "reaction time". 
+     * This is done by doing `select where` clause that filters `action_value = reaction_value`. 
+     * E.g., if in `test` there is an event with value `event1`, it won't be paired with events in topic `test-reaction` with value `event3`, but rather only with value `event1`.
+     *
      * this is close to what we want to do, but only uses fake topics (`test` as an action,  and `test-reaction` as reaction). 
      * we can then take a producer running in a terminal session and send events to these, just to make sure that our logic is working correctly, before we were on this on our actual kafka topics
+     *
      * For the final product, see spark-scripts/src/main/scala/SparkKafkaStreamingAvgTimeDiff.scala
      */
 

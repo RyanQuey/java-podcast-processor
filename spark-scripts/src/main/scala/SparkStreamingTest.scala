@@ -1,6 +1,7 @@
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.SparkSession
 
+// level 2: get spark streaming to work
 // singleton class (our main). Runs a word count over network (localhost:9999)
 object SparkStreamingTest {
 	def main (args: Array[String]) { 
