@@ -6,10 +6,11 @@ import org.apache.spark.sql.kafka010._
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.common.serialization.StringDeserializer
 
-// singleton class (our main). Runs a word count over network (localhost:9999)
 object SparkKafkaStreamingTest {
 	def main (args: Array[String]) { 
     /* 
+     * simple singleton class to subscribe to our podcast Kafka topics, and count message per topic (countDf)
+     * Runs over micro-batch interval of `processingTimeSec` seconds
      */
 
     val spark = SparkSession
