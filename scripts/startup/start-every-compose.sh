@@ -31,7 +31,7 @@ export JAVA_WORKERS_DIR="$PROJECT_ROOT_PATH/java-workers"
 ###################################
 
 # set some cli args
-# if first arg is "rebuild" then will rebuild the jar
+# if first arg is "rebuild" then will rebuild the jar NOTE only rebuilds the jar, not everything else
 rebuild_jar=${1:-}
 
 echo "Rebuilding the jar?"

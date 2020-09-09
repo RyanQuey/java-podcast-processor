@@ -41,7 +41,8 @@ public class CassandraDb {
       System.out.println("    setting the session");
       CqlIdentifier keyspace = CqlIdentifier.fromCql("podcast_analysis_tool");
       CassandraDb.session = CqlSession.builder()
-        .withKeyspace(keyspace)
+        // TODO doesn't work with first run
+        //.withKeyspace(keyspace)
         .addContactPoint(cassandraIP)
         .withLocalDatacenter("DC1") // now required since we're setting contact points
         .build();

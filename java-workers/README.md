@@ -15,6 +15,9 @@ It should run literally everything
 * However, now that we're bundling all of dependencies into the jar, can use `java-jar...` command
 
 ## Run it all (except currently, not the jars themselves), skipping things that are already running
+
+**Note that all these paths are relative to the repo dir, not this dir**
+
 ```sh
 bash ./scripts/start-everything.sh
 
