@@ -17,7 +17,7 @@ For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-z
     * Runs shell script to make sure Cassandra and Kafka are successfully started
     * Once C* and Kafka are up, runs initializers (e.g., creating kafka topics and ES indices for Elassandra)
 
-- Open up React Gatsby project (serving searchkit) via flask app at http://www.local.test:5000/
+- Open up React Gatsby project (serving searchkit) via flask app at http://localhost:5000/search
 
 
 ## Features
