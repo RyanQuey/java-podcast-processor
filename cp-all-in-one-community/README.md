@@ -1,4 +1,4 @@
-![image](../images/confluent-logo-300-2.png)
+![image](../images/kafka.png)
 
 # How to use
 
