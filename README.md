@@ -14,7 +14,7 @@ See README files in subdirectories for how to setup and use this tool (though so
   * For Airflow DAGs source code, see [here](https://github.com/RyanQuey/airflow-with-podcasts).
   * I recently presented on Kafka with Cassandra for the [Cassandra & DataStax DC Meetup](https://www.meetup.com/Cassandra-DataStax-DC/) using this project for their Cassandra Lunch. The presentation was featured on [Anant Corporation's blog](https://blog.anant.us/cassandra-lunch-18-connecting-cassandra-to-kafka/). 
   
-  <div><a href="https://youtu.be/g9ITZ_qyezs" target="_blank" style="width: 350px;"><img src="https://raw.githubusercontent.com/RyanQuey/java-podcast-processor/master/screenshots/lunch18-presentation-screenshot.png" /></a></div>
+  <div><a href="https://youtu.be/g9ITZ_qyezs" target="_blank"><img src="https://raw.githubusercontent.com/RyanQuey/java-podcast-processor/master/screenshots/lunch18-presentation-screenshot.png" /></a></div>
 
 ## Start Everything
 - Start everything with: `./scripts/startup/start-every-compose.sh`
