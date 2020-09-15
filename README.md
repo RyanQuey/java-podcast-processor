@@ -1,15 +1,20 @@
 # java-podcast-processor
 Personal tool to grab podcast data related to several topics I'm interested in, store them, and process using [Airflow](https://github.com/apache/airflow), [Kafka](https://kafka.apache.org/), [Spark](https://spark.apache.org/), and [Cassandra](https://cassandra.apache.org/). The particular Cassandra distribution used is [Elassandra](https://www.elassandra.io/), which allows seamless integration with [Elasticsearch](https://www.elastic.co/). 
 
+![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/wh_Podcast%20Analysis%20Tool.png)
+
 [Workers](https://github.com/RyanQuey/java-podcast-processor/tree/master/java-workers) are divided into separate Main classes in a single Java jar and consume and produce to Kafka, in order to distribute the workload across the cluster. Everything is built on top of [Docker containers](https://www.docker.com/) and linked together using docker-compose.
 
 Results displayed using a [searchkit](https://github.com/searchkit/searchkit) interface over [React](https://reactjs.org/) (built using [Gatsby](https://www.gatsbyjs.org/)), served by a Python [Flask app](https://flask.palletsprojects.com/). 
 
 See README files in subdirectories for how to setup and use this tool (though some are out of date).
 
-For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-zeppelin-notebooks). For Airflow DAGs source code, see [here](https://github.com/RyanQuey/airflow-with-podcasts).
-
-![image](https://github.com/RyanQuey/java-podcast-processor/raw/master/screenshots/wh_Podcast%20Analysis%20Tool.png)
+## Related Links
+  * For the related Zeppelin notebooks, see [here](https://github.com/RyanQuey/dse-zeppelin-notebooks). 
+  * For Airflow DAGs source code, see [here](https://github.com/RyanQuey/airflow-with-podcasts).
+  * I recently presented on Kafka with Cassandra for the [Cassandra & DataStax DC Meetup](https://www.meetup.com/Cassandra-DataStax-DC/) using this project for their Cassandra Lunch. The presentation was featured on [Anant Corporation's blog](https://blog.anant.us/cassandra-lunch-18-connecting-cassandra-to-kafka/). 
+  
+  <div><a href="https://youtu.be/g9ITZ_qyezs" target="_blank" style="width: 350px;"><img src="https://raw.githubusercontent.com/RyanQuey/java-podcast-processor/master/screenshots/lunch18-presentation-screenshot.png" /></a></div>
 
 ## Start Everything
 - Start everything with: `./scripts/startup/start-every-compose.sh`
