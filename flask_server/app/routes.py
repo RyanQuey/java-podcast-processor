@@ -1,16 +1,18 @@
 from flask import Flask, url_for, render_template, send_from_directory, request
+from flask_cors import CORS, cross_origin
 from app.elasticsearch import rest_requests
 import os
 
 
 # avoiding error: `UserWarning: The session cookie domain is an IP address. This may not work as intended in some browsers. Add an entry to your hosts file, for example "localhost.localdomain", and use that instead` so using www.local.test
-CLIENT_URL = os.environ.get("CLIENT_URL", "www.local.test:8000")
+CLIENT_URL = os.environ.get("CLIENT_URL", "www.local.test:5000")
 
 def set_routes(app):
 
     ####################################
     # Routes
 
+    @cross_origin(origin='*')
     @app.route('/')
     def index():
         return "home page. Nothing here yet, but check out <a href='/search'>Search</a>"

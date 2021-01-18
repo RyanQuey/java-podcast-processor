@@ -1,6 +1,5 @@
 package com.ryanquey.podcast.dataClasses.searchQuery;
 
-// import com.datastax.oss.driver.api.core.cql.ResultSet;
 // import com.datastax.oss.driver.api.core.cql.Row;
 import com.datastax.oss.driver.api.mapper.annotations.ClusteringColumn;
 // DSE Mapper

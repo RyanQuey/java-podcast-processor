@@ -29,11 +29,13 @@ def config(app):
     # cross origin.
     # TODO consider adding supports_credentials=True, to allow sending cookies cross-origin also
 
-    CORS(app, resources={
-        r'/api/*': {"origins": "*"}
-        # r'/api/*': {"origins": [CLIENT_URL]}
-    })
-    # CORS(app)
+    # CORS(app, resources={
+    #     # this will also allow e.g., /search for searchkit
+    #     r'/*': {"origins": "*"}
+    #     #r'/api/*': {"origins": "*"}
+    #     # r'/api/*': {"origins": [CLIENT_URL]}
+    # })
+    CORS(app)
 
 
     app.config.update(
