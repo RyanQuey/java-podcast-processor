@@ -61,7 +61,7 @@
 		<dependency> 
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
-			<version>2.6</version>
+			<version>2.7</version>
 		</dependency> 
     <!-- if want to try an alternative to rome. But has less rss specific features, as far as I've seen so far
     <dependency>
